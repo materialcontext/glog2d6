@@ -1,0 +1,6 @@
+// _forms.scss
+@use '../utils/variables' as vars;
+
+.form-group {
+  color: vars.$c-primary;
+}

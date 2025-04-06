@@ -1,0 +1,44 @@
+{
+  "name": "glog2d6",
+  "version": "0.0.1",
+  "description": "A custom FoundryVTT system for use with my customized 2d6 GLOG system.",
+  "main": "glog2d.ts",
+  "scripts": {
+    "build": "gulp build",
+    "watch": "gulp watch",
+    "clean": "gulp clean",
+    "lint": "eslint --ext .js,.ts src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/materialcontext/glog2d6.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/materialcontext/glog2d6/issues"
+  },
+  "homepage": "https://github.com/materialcontext/glog2d6#readme",
+  "devDependencies": {
+    "@types/jquery": "^3.5.32",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "autoprefixer": "^10.4.21",
+    "del": "^8.0.0",
+    "eslint": "^9.24.0",
+    "fvtt-types": "github:League-of-Foundry-Developers/foundry-vtt-types#main",
+    "gulp": "^5.0.0",
+    "gulp-autoprefixer": "^9.0.0",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-less": "^5.0.0",
+    "gulp-postcss": "^10.0.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-sass": "^6.0.1",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "handlebars": "^4.7.8",
+    "sass": "^1.86.3",
+    "typescript": "^5.8.3"
+  }
+}

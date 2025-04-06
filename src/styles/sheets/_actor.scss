@@ -1,0 +1,5 @@
+@use '../utils/mixins' as mix;
+
+.actor-sheet {
+  @include mix.flex-col;
+}

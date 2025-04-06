@@ -1,0 +1,77 @@
+{
+  "Actor": {
+    "types": ["character", "npc"],
+    "templates": {
+      "base": {
+        "hp": {
+          "value": 10,
+          "max": 10
+        },
+        "attributes": {
+          "strength": {
+            "value": 0,
+            "mod": 0
+          },
+          "dexterity": {
+            "value": 0,
+            "mod": 0
+          },
+          "constitution": {
+            "value": 0,
+            "mod": 0
+          },
+          "intelligence": {
+            "value": 0,
+            "mod": 0
+          },
+          "wisdom": {
+            "value": 0,
+            "mod": 0
+          },
+          "charisma": {
+            "value": 0,
+            "mod": 0
+          }
+        }
+      }
+    },
+    "character": {
+      "templates": ["base"]
+    },
+    "npc": {
+      "templates": ["base"]
+    }
+  },
+  "Item": {
+    "types": ["weapon", "armor", "spell", "feature"],
+    "templates": {
+      "base": {
+        "description": ""
+      },
+      "physical": {
+        "quantity": 1,
+        "weight": 0
+      }
+    },
+    "weapon": {
+      "templates": ["base", "physical"],
+      "damage": "1d6",
+      "attackBonus": 0
+    },
+    "armor": {
+      "templates": ["base", "physical"],
+      "armorClass": 10
+    },
+    "spell": {
+      "templates": ["base"],
+      "level": 1,
+      "castingTime": "1 action",
+      "range": "30 feet",
+      "duration": "Instantaneous",
+      "damage": ""
+    },
+    "feature": {
+      "templates": ["base"]
+    }
+  }
+}

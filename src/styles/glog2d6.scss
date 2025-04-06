@@ -1,0 +1,42 @@
+// Import utilities
+@use 'utils/variables' as vars;
+@use 'utils/mixins' as mix;
+
+// Import components
+@use 'components/forms';
+@use 'components/resource';
+@use 'components/tabs';
+@use 'components/items';
+
+// Import sheet styles
+@use 'sheets/actor';
+@use 'sheets/item';
+
+/* Global styles */
+.my-foundry-system {
+  .window-content {
+    background: #f0f0f0;
+    padding: 5px;
+    color: #191813;
+  }
+
+  .grid {
+    display: grid;
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+    margin: 10px 0;
+    padding: 0;
+  }
+
+  .grid-2col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-3col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-4col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

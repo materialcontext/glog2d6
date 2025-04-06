@@ -1,0 +1,32 @@
+{
+  "id": "glog2d6",
+  "title": "My Custom System",
+  "description": "A custom game system for Foundry VTT",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "authors": [
+    {
+      "name": "Your Name",
+      "url": "https://yourwebsite.com"
+    }
+  ],
+  "esmodules": ["glog2d6.js"],
+  "styles": ["styles/glog2d6.min.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "gridDistance": 5,
+  "gridUnits": "ft",
+  "primaryTokenAttribute": "hp",
+  "secondaryTokenAttribute": "stamina",
+  "url": "https://github.com/yourusername/glog2d6",
+  "manifest": "https://raw.githubusercontent.com/yourusername/glog2d6/main/src/system.json",
+  "download": "https://github.com/yourusername/glog2d6/releases/download/0.1.0/glog2d6-v0.1.0.zip"
+}

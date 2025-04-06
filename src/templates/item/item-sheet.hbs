@@ -1,0 +1,20 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="Name"/>
+      </h1>
+    </div>
+  </header>
+
+  <!-- Sheet Body -->
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>Description</label>
+      <div class="form-fields">
+        <textarea name="system.description">{{system.description}}</textarea>
+      </div>
+    </div>
+  </section>
+</form>

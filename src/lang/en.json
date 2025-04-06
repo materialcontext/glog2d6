@@ -1,0 +1,23 @@
+{
+  "MY-SYSTEM": {
+    "AbilityStr": "Strength",
+    "AbilityDex": "Dexterity",
+    "AbilityCon": "Constitution",
+    "AbilityInt": "Intelligence",
+    "AbilityWis": "Wisdom",
+    "AbilityCha": "Charisma",
+
+    "HP": "HP",
+    "HitPoints": "Hit Points",
+
+    "SheetLabels": {
+      "Actor": "Character Sheet",
+      "Item": "Item Sheet"
+    },
+
+    "SETTINGS": {
+      "MacroShorthandName": "Macro Shorthand",
+      "MacroShorthandHint": "Enable macro shorthand syntax for inline rolls"
+    }
+  }
+}
