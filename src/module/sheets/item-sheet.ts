@@ -16,8 +16,8 @@ export class GlogItemSheet extends ItemSheet {
   }
 
   /** @override */
-  get template(): string {
-    return `systems/glog2d6/templates/item/${this.item.type}-sheet.hbs`;
+  get template() {
+    return `templates/item/${this.item.type}-sheet.hbs`;
   }
 
   /** @override */

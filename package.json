@@ -8,7 +8,8 @@
     "watch": "gulp watch",
     "clean": "gulp clean",
     "lint": "eslint --ext .js,.ts src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "link": "powershell -ExecutionPolicy Bypass -File foundry-link.ps1"
   },
   "repository": {
     "type": "git",
