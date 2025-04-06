@@ -1,0 +1,38 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'GLOG.Name'}}"/>
+      </h1>
+    </div>
+  </header>
+
+  <!-- Sheet Body -->
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>{{localize "GLOG.Requirements"}}</label>
+      <div class="form-fields">
+        <input type="text" name="system.requirements" value="{{system.requirements}}"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Activation"}}</label>
+      <div class="form-fields">
+        <select name="system.activation">
+          <option value="passive" {{#if (eq system.activation "passive")}}selected{{/if}}>{{localize "GLOG.Passive"}}</option>
+          <option value="action" {{#if (eq system.activation "action")}}selected{{/if}}>{{localize "GLOG.Action"}}</option>
+          <option value="reaction" {{#if (eq system.activation "reaction")}}selected{{/if}}>{{localize "GLOG.Reaction"}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Description"}}</label>
+      <div class="form-fields">
+        <textarea name="system.description">{{system.description}}</textarea>
+      </div>
+    </div>
+  </section>
+</form>

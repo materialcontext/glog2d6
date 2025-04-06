@@ -1,77 +1,173 @@
 {
   "Actor": {
-    "types": ["character", "npc"],
+    "types": ["character", "npc", "hireling"],
     "templates": {
       "base": {
         "hp": {
-          "value": 10,
-          "max": 10
+          "value": 1,
+          "max": 1,
+          "temp": 0
         },
+        "wounds": [],
         "attributes": {
           "strength": {
-            "value": 0,
+            "value": 7,
             "mod": 0
           },
           "dexterity": {
-            "value": 0,
+            "value": 7,
             "mod": 0
           },
           "constitution": {
-            "value": 0,
+            "value": 7,
             "mod": 0
           },
           "intelligence": {
-            "value": 0,
+            "value": 7,
             "mod": 0
           },
           "wisdom": {
-            "value": 0,
+            "value": 7,
             "mod": 0
           },
           "charisma": {
-            "value": 0,
+            "value": 7,
             "mod": 0
+          }
+        },
+        "derived": {
+          "movement": {
+            "value": 4,
+            "exploration": 120,
+            "combat": 40,
+            "running": 120,
+            "milesPerDay": 24
+          },
+          "attack": {
+            "value": 0
+          },
+          "defense": {
+            "value": 0,
+            "armor": 0,
+            "dexterity": 0
+          },
+          "initiative": {
+            "value": 0,
+            "bonus": 0
+          },
+          "encumbrance": {
+            "value": 0,
+            "max": 10
+          }
+        },
+        "details": {
+          "level": 0,
+          "xp": {
+            "value": 0,
+            "min": 0,
+            "max": 1000
+          },
+          "templates": {
+            "list": [],
+            "max": 4
           }
         }
       }
     },
     "character": {
-      "templates": ["base"]
+      "templates": ["base"],
+      "biography": "",
+      "traits": {
+        "background": "",
+        "reputation": "",
+        "quirks": []
+      }
     },
     "npc": {
-      "templates": ["base"]
+      "templates": ["base"],
+      "reaction": {
+        "value": 7
+      },
+      "morale": {
+        "value": 7
+      }
+    },
+    "hireling": {
+      "templates": ["base"],
+      "loyalty": {
+        "value": 4,
+        "max": 6
+      },
+      "cost": {
+        "value": 0,
+        "period": "day"
+      },
+      "share": {
+        "value": 0
+      }
     }
   },
   "Item": {
-    "types": ["weapon", "armor", "spell", "feature"],
+    "types": ["weapon", "armor", "gear", "template", "spell", "feature", "wound"],
     "templates": {
       "base": {
-        "description": ""
+        "description": "",
+        "source": ""
       },
       "physical": {
         "quantity": 1,
-        "weight": 0
+        "weight": 0,
+        "price": 0,
+        "slots": 1
       }
     },
     "weapon": {
       "templates": ["base", "physical"],
-      "damage": "1d6",
-      "attackBonus": 0
+      "weaponType": "medium",
+      "damage": "1d6+0",
+      "attackBonus": 0,
+      "range": 0,
+      "reload": "",
+      "broken": 0
     },
     "armor": {
       "templates": ["base", "physical"],
-      "armorClass": 10
+      "armorType": "light",
+      "defense": 1,
+      "encumbrance": 0,
+      "broken": 0,
+      "penalties": {
+        "swimming": false,
+        "endurance": 0
+      }
+    },
+    "gear": {
+      "templates": ["base", "physical"]
+    },
+    "template": {
+      "templates": ["base"],
+      "class": "",
+      "level": "A",
+      "features": []
     },
     "spell": {
       "templates": ["base"],
-      "level": 1,
-      "castingTime": "1 action",
-      "range": "30 feet",
-      "duration": "Instantaneous",
-      "damage": ""
+      "school": "orthodox",
+      "range": "",
+      "target": "",
+      "duration": "",
+      "effect": ""
     },
     "feature": {
-      "templates": ["base"]
+      "templates": ["base"],
+      "requirements": "",
+      "activation": "passive"
+    },
+    "wound": {
+      "templates": ["base"],
+      "severity": 1,
+      "effect": "",
+      "healing": ""
     }
   }
 }

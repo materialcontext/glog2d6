@@ -1,0 +1,41 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'GLOG.Name'}}"/>
+      </h1>
+    </div>
+  </header>
+
+  <!-- Sheet Body -->
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>{{localize "GLOG.Quantity"}}</label>
+      <div class="form-fields">
+        <input type="text" name="system.quantity" value="{{system.quantity}}" data-dtype="Number"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Slots"}}</label>
+      <div class="form-fields">
+        <input type="text" name="system.slots" value="{{system.slots}}" data-dtype="Number"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Price"}}</label>
+      <div class="form-fields">
+        <input type="text" name="system.price" value="{{system.price}}" data-dtype="Number"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Description"}}</label>
+      <div class="form-fields">
+        <textarea name="system.description">{{system.description}}</textarea>
+      </div>
+    </div>
+  </section>
+</form>

@@ -1,0 +1,71 @@
+classDiagram
+    class GlogActor {
+        +prepareData()
+        +prepareBaseData()
+        +prepareDerivedData()
+        -_prepareCharacterData()
+        -_prepareNpcData()
+        -_calculateAttributeModifiers()
+        -_calculateDerivedStats()
+        -_calculateMovement()
+    }
+
+    class GlogItem {
+        +prepareData()
+        +roll()
+        -_rollWeapon()
+        -_showAttackDialog()
+        -_rollAttack()
+        -_rollSpell()
+        -_rollFeature()
+    }
+
+    class GlogActorSheet {
+        +getData()
+        -_prepareCharacterItems()
+        +activateListeners()
+        -_onItemCreate()
+        -_onItemQuantityChange()
+        -_onQuirkAdd()
+        -_onQuirkDelete()
+        -_onWoundAdd()
+        -_onWoundEdit()
+        -_onWoundDelete()
+        -_onSpellCast()
+        -_castSpell()
+        -_onRoll()
+        -_showCheckDialog()
+        -_rollCheck()
+    }
+
+    class GlogItemSheet {
+        +getData()
+        +activateListeners()
+        -_onFeatureAdd()
+        -_onFeatureDelete()
+    }
+
+    class GLOG {
+        +attributes
+        +wounds
+        +weaponTypes
+        +armorTypes
+        +classes
+        +templateLevels
+        +wizardSchools
+        +checkDifficulties
+        +saveDC
+    }
+
+    GlogActor --|> Actor
+    GlogItem --|> Item
+    GlogActorSheet --|> ActorSheet
+    GlogItemSheet --|> ItemSheet
+
+    GlogActor ..> GLOG
+    GlogItem ..> GLOG
+    GlogActorSheet ..> GLOG
+    GlogItemSheet ..> GLOG
+
+    GlogActorSheet ..> GlogActor
+    GlogItemSheet ..> GlogItem

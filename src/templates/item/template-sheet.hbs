@@ -1,0 +1,61 @@
+<form class="{{cssClass}}" autocomplete="off">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="{{localize 'GLOG.Name'}}"/>
+      </h1>
+    </div>
+  </header>
+
+  <!-- Sheet Body -->
+  <section class="sheet-body">
+    <div class="form-group">
+      <label>{{localize "GLOG.Class"}}</label>
+      <div class="form-fields">
+        <select name="system.class">
+          {{#select system.class}}
+          {{#each config.classes as |name key|}}
+          <option value="{{key}}">{{localize name}}</option>
+          {{/each}}
+          {{/select}}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Level"}}</label>
+      <div class="form-fields">
+        <select name="system.level">
+          {{#select system.level}}
+          {{#each config.templateLevels as |name key|}}
+          <option value="{{key}}">{{localize name}}</option>
+          {{/each}}
+          {{/select}}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Features"}}</label>
+      <div class="form-fields feature-list">
+        {{#each system.features as |feature i|}}
+        <div class="feature-entry flexrow">
+          <input type="text" name="system.features.{{i}}" value="{{feature}}"/>
+          <a class="feature-delete" data-index="{{i}}"><i class="fas fa-trash"></i></a>
+        </div>
+        {{/each}}
+        <div class="feature-controls flexrow">
+          <a class="feature-add"><i class="fas fa-plus"></i> {{localize "GLOG.Add"}} {{localize "GLOG.Feature"}}</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "GLOG.Description"}}</label>
+      <div class="form-fields">
+        <textarea name="system.description">{{system.description}}</textarea>
+      </div>
+    </div>
+  </section>
+</form>
