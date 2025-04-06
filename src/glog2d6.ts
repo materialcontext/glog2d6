@@ -1,15 +1,15 @@
-// Import document classes
-import { GlogActor } from "./module/documents/actor";
-import { GlogItem } from "./module/documents/item";
+// Import document classes == .js extension MUST be declared
+import { GlogActor } from "./module/documents/actor.js";
+import { GlogItem } from "./module/documents/item.js";
 
 // Import sheet classes
-import { GlogActorSheet } from "./module/sheets/actor-sheet";
-import { GlogItemSheet } from "./module/sheets/item-sheet";
+import { GlogActorSheet } from "./module/sheets/actor-sheet.js";
+import { GlogItemSheet } from "./module/sheets/item-sheet.js";
 
 // Import helper/utility classes and constants
-import { registerSettings } from "./module/helpers/settings";
-import { preloadHandlebarsTemplates } from "./module/helpers/templates";
-import { GLOG } from "./module/helpers/config";
+import { registerSettings } from "./module/helpers/settings.js";
+import { preloadHandlebarsTemplates } from "./module/helpers/templates.js";
+import { GLOG } from "./module/helpers/config.js";
 
 /**
  * Initialize system

@@ -1,4 +1,4 @@
-import { GLOG } from "../helpers/config";
+import { GLOG } from "../helpers/config.js";
 
 /**
  * Extend the basic ActorSheet with system-specific functionality
@@ -9,7 +9,7 @@ export class GlogActorSheet extends ActorSheet {
   static get defaultOptions() {
     return mergeObject(super.defaultOptions, {
       classes: ["glog2d6", "sheet", "actor"],
-      template: "templates/actor/character-sheet.hbs",
+      template: "systems/glog2d6/templates/actor/character-sheet.hbs",
       width: 720,
       height: 680,
       tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "attributes" }]
@@ -17,8 +17,8 @@ export class GlogActorSheet extends ActorSheet {
   }
 
   /** @override */
-  get template() {
-    return `templates/actor/${this.actor.type}-sheet.hbs`;
+  get template(): string {
+    return `systems/glog2d6/templates/actor/${this.actor.type}-sheet.hbs`;
   }
 
   /** @override */

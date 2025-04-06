@@ -2,8 +2,8 @@
  * Global type definitions for GLOG 2d6 System
  */
 
-import { GlogActor } from "./documents/actor";
-import { GlogItem } from "./documents/item";
+import { GlogActor } from "./documents/actor.js";
+import { GlogItem } from "./documents/item.js";
 
 declare global {
   interface Game {

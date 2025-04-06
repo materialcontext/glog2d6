@@ -1,4 +1,4 @@
-$SourcePath = Join-Path -Path $PWD -ChildPath "dist\glog2d6"
+$SourcePath = Join-Path -Path $PWD -ChildPath "dist"
 $FoundryDataPath = Join-Path -Path $env:LOCALAPPDATA -ChildPath "FoundryVTT\Data\systems\glog2d6"
 
 # Check if the destination already exists

@@ -1,4 +1,4 @@
-import { GLOG } from "../helpers/config";
+import { GLOG } from "../helpers/config.js";
 
 /**
  * Extend the base Actor document to implement system-specific logic

@@ -1,4 +1,4 @@
-import { GLOG } from "../helpers/config";
+import { GLOG } from "../helpers/config.js";
 
 /**
  * Extend the basic ItemSheet with system-specific features
@@ -16,8 +16,8 @@ export class GlogItemSheet extends ItemSheet {
   }
 
   /** @override */
-  get template() {
-    return `templates/item/${this.item.type}-sheet.hbs`;
+  get template(): string {
+    return `systems/glog2d6/templates/item/${this.item.type}-sheet.hbs`;
   }
 
   /** @override */
