@@ -24,7 +24,7 @@ A custom Foundry VTT system implementation for the 2d6 variant of the Goblin Law
 
 ### Method 2: Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/yourusername/glog2d6/releases)
+1. Download the latest release from the [releases page](https://github.com/materialcontext/glog2d6/releases)
 2. Extract the ZIP file
 3. Place the extracted folder in your Foundry VTT systems directory
 4. Restart Foundry VTT
