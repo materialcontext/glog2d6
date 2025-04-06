@@ -9,8 +9,7 @@
   },
   "authors": [
     {
-      "name": "Your Name",
-      "url": "https://yourwebsite.com"
+      "name": "materialcontext",
     }
   ],
   "esmodules": ["glog2d6.js"],
@@ -26,11 +25,11 @@
   "gridUnits": "ft",
   "primaryTokenAttribute": "hp.value",
   "secondaryTokenAttribute": "derived.initiative.value",
-  "url": "https://github.com/yourusername/glog2d6",
-  "manifest": "https://raw.githubusercontent.com/yourusername/glog2d6/main/src/system.json",
-  "download": "https://github.com/yourusername/glog2d6/releases/download/0.1.0/glog2d6-v0.1.0.zip",
+  "url": "https://github.com/materialcontext/glog2d6",
+  "manifest": "https://raw.githubusercontent.com/materialcontext/glog2d6/main/src/system.json",
+  "download": "https://github.com/materialcontext/glog2d6/releases/download/0.1.0/glog2d6-v0.1.0.zip",
   "license": "MIT",
   "readme": "README.md",
-  "bugs": "https://github.com/yourusername/glog2d6/issues",
+  "bugs": "https://github.com/materialcontext/glog2d6/issues",
   "changelog": "CHANGELOG.md"
 }
