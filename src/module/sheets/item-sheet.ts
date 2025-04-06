@@ -1,5 +1,9 @@
 import { GLOG } from "../helpers/config";
 
+/**
+ * Extend the basic ItemSheet with system-specific features
+ * @extends {ItemSheet}
+ */
 export class GlogItemSheet extends ItemSheet {
   /** @override */
   static get defaultOptions() {
@@ -12,13 +16,13 @@ export class GlogItemSheet extends ItemSheet {
   }
 
   /** @override */
-  get template() {
+  get template(): string {
     return `systems/glog2d6/templates/item/${this.item.type}-sheet.hbs`;
   }
 
   /** @override */
-  getData() {
-    const context = super.getData();
+  getData(): object {
+    const context = super.getData() as any;
 
     // Add item data
     const itemData = context.item.toObject(false);
@@ -36,7 +40,7 @@ export class GlogItemSheet extends ItemSheet {
   }
 
   /** @override */
-  activateListeners(html) {
+  activateListeners(html: JQuery): void {
     super.activateListeners(html);
 
     // Everything below here is only needed if the sheet is editable
@@ -53,11 +57,11 @@ export class GlogItemSheet extends ItemSheet {
    * Handle adding a feature to a template
    * @private
    */
-  async _onFeatureAdd(event) {
+  async _onFeatureAdd(event: Event): Promise<void> {
     event.preventDefault();
 
     // Get existing features
-    const features = duplicate(this.item.system.features || []);
+    const features = duplicate(this.item.system.features || []) as string[];
 
     // Add a new empty feature
     features.push("");
@@ -70,19 +74,20 @@ export class GlogItemSheet extends ItemSheet {
 
   /**
    * Handle deleting a feature from a template
-   * @param {Event} event   The originating click event
+   * @param {Event} event The originating click event
    * @private
    */
-  async _onFeatureDelete(event) {
+  async _onFeatureDelete(event: Event): Promise<void> {
     event.preventDefault();
-    const button = event.currentTarget;
+    const button = event.currentTarget as HTMLElement;
     const index = button.dataset.index;
+    if (!index) return;
 
     // Get existing features
-    const features = duplicate(this.item.system.features || []);
+    const features = duplicate(this.item.system.features || []) as string[];
 
     // Remove the feature
-    features.splice(index, 1);
+    features.splice(parseInt(index), 1);
 
     // Update the item
     await this.item.update({

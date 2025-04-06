@@ -1,0 +1,50 @@
+flowchart TD
+    subgraph Core
+        glog2d6[glog2d6.ts\nMain Entry Point]
+        config[config.ts\nSystem Constants]
+        settings[settings.ts\nSystem Settings]
+        templates[templates.ts\nHandlebars Templates]
+    end
+
+    subgraph Documents
+        gloactor[actor.ts\nGlogActor Class]
+        glogitem[item.ts\nGlogItem Class]
+    end
+
+    subgraph UI
+        actorsheet[actor-sheet.ts\nGlogActorSheet Class]
+        itemsheet[item-sheet.ts\nGlogItemSheet Class]
+    end
+
+    subgraph Templates
+        actor_tpl[Actor Templates\n.hbs files]
+        item_tpl[Item Templates\n.hbs files]
+        partials[Partial Templates\n.hbs files]
+    end
+
+    subgraph Types
+        typedefs[glog2d6.d.ts\nType Definitions]
+    end
+
+    glog2d6 --> config
+    glog2d6 --> settings
+    glog2d6 --> templates
+    glog2d6 --> gloactor
+    glog2d6 --> glogitem
+    glog2d6 --> actorsheet
+    glog2d6 --> itemsheet
+
+    gloactor --> config
+    glogitem --> config
+
+    actorsheet --> gloactor
+    actorsheet --> config
+    itemsheet --> glogitem
+    itemsheet --> config
+
+    templates --> actor_tpl
+    templates --> item_tpl
+    templates --> partials
+
+    typedefs --> gloactor
+    typedefs --> glogitem

@@ -1,5 +1,8 @@
-export async function preloadHandlebarsTemplates() {
-  const templatePaths = [
+/**
+ * Preload Handlebars templates
+ */
+export async function preloadHandlebarsTemplates(): Promise<void> {
+  const templatePaths: string[] = [
     // Actor Sheets
     "systems/glog2d6/templates/actor/character-sheet.hbs",
     "systems/glog2d6/templates/actor/npc-sheet.hbs",

@@ -1,6 +1,9 @@
-export function registerSettings() {
+/**
+ * Register system settings
+ */
+export function registerSettings(): void {
   // Register any system settings here
-  game.settings.register("my-foundry-system", "macroShorthand", {
+  game.settings.register("glog2d6", "macroShorthand", {
     name: "SETTINGS.MacroShorthandName",
     hint: "SETTINGS.MacroShorthandHint",
     scope: "world",

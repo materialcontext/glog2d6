@@ -1,0 +1,106 @@
+classDiagram
+    class Actor {
+        <<Foundry VTT Base Class>>
+    }
+
+    class Item {
+        <<Foundry VTT Base Class>>
+    }
+
+    class ActorSheet {
+        <<Foundry VTT Base Class>>
+    }
+
+    class ItemSheet {
+        <<Foundry VTT Base Class>>
+    }
+
+    class GlogActor {
+        +prepareData() void
+        +prepareBaseData() void
+        +prepareDerivedData() void
+        -_prepareCharacterData(actorData) void
+        -_prepareNpcData(actorData) void
+        -_calculateAttributeModifiers(actorData) void
+        -_calculateDerivedStats(actorData) void
+        -_calculateMovement(actorData) void
+    }
+
+    class GlogItem {
+        +prepareData() void
+        +roll() Promise~void~
+        -_rollWeapon(item) Promise~void~
+        -_showAttackDialog(item, attackRoll) void
+        -_rollAttack(item, attackRoll, defenseTarget) Promise~void~
+        -_rollSpell(item) Promise~void~
+        -_rollFeature(item) Promise~void~
+    }
+
+    class GlogActorSheet {
+        +getData() object
+        -_prepareCharacterItems(context) void
+        +activateListeners(html) void
+        -_onItemCreate(event) Promise~Item~
+        -_onItemQuantityChange(event) void
+        -_onQuirkAdd(event) Promise~void~
+        -_onQuirkDelete(event) Promise~void~
+        -_onWoundAdd(event) Promise~Item~
+        -_onWoundEdit(event) void
+        -_onWoundDelete(event) void
+        -_onSpellCast(item) void
+        -_castSpell(item, diceAmount) Promise~void~
+        -_onRoll(event) void
+        -_showCheckDialog(roll, label) void
+        -_rollCheck(roll, label, difficulty) Promise~void~
+    }
+
+    class GlogItemSheet {
+        +getData() object
+        +activateListeners(html) void
+        -_onFeatureAdd(event) Promise~void~
+        -_onFeatureDelete(event) Promise~void~
+    }
+
+    class GlogActorDataSource {
+        +hp: {value: number, max: number, temp: number}
+        +wounds: Array
+        +attributes: {strength: GlogAttribute, ...}
+        +derived: {...}
+        +details: {...}
+    }
+
+    class GlogItemDataSource {
+        +description: string
+        +source: string
+        +quantity?: number
+        +weaponType?: string
+        +damage?: string
+        +...
+    }
+
+    class GLOG {
+        <<Constants>>
+        +attributes
+        +wounds
+        +weaponTypes
+        +armorTypes
+        +classes
+        +templateLevels
+        +wizardSchools
+    }
+
+    Actor <|-- GlogActor
+    Item <|-- GlogItem
+    ActorSheet <|-- GlogActorSheet
+    ItemSheet <|-- GlogItemSheet
+
+    GlogActor --> GlogActorDataSource: uses
+    GlogItem --> GlogItemDataSource: uses
+
+    GlogActorSheet --> GlogActor: manages
+    GlogItemSheet --> GlogItem: manages
+
+    GlogActor --> GLOG: references
+    GlogItem --> GLOG: references
+    GlogActorSheet --> GLOG: references
+    GlogItemSheet --> GLOG: references

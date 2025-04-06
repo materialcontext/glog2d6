@@ -11,11 +11,14 @@ import { registerSettings } from "./module/helpers/settings";
 import { preloadHandlebarsTemplates } from "./module/helpers/templates";
 import { GLOG } from "./module/helpers/config";
 
-// Initialize system
+/**
+ * Initialize system
+ */
 Hooks.once('init', async function() {
   console.log("GLOG2D6 | Initializing GLOG 2d6 System");
 
   // Add utility classes to the global game object
+  // @ts-ignore
   game.glog2d6 = {
     GlogActor,
     GlogItem,
@@ -53,17 +56,23 @@ Hooks.once('init', async function() {
   await preloadHandlebarsTemplates();
 });
 
-// Setup system
+/**
+ * Setup system
+ */
 Hooks.once('setup', function() {
   // Do anything after initialization but before ready
 });
 
-// When ready
+/**
+ * When ready
+ */
 Hooks.once('ready', async function() {
   // Do anything once the system is ready
 });
 
-// Register Handlebars helpers
+/**
+ * Register Handlebars helpers
+ */
 function registerHandlebarsHelpers() {
   // Example helper
   Handlebars.registerHelper('concat', function() {
@@ -86,16 +95,15 @@ function registerHandlebarsHelpers() {
   Handlebars.registerHelper('eq', function(arg1, arg2) {
     return arg1 === arg2;
   });
-
 }
 
 /**
  * Create a Macro from an Item drop.
- * @param {Object} data     The dropped data
- * @param {number} slot     The hotbar slot to use
+ * @param {Object} data The dropped data
+ * @param {number} slot The hotbar slot to use
  * @returns {Promise}
  */
-async function createGlogMacro(data, slot) {
+async function createGlogMacro(data: any, slot: number) {
   // First, determine if this is a valid owned item.
   if (data.type !== "Item") return;
   if (!data.uuid.includes('Actor.') && !data.uuid.includes('Token.')) {
@@ -128,7 +136,7 @@ async function createGlogMacro(data, slot) {
  * @param {string} itemName
  * @return {Promise}
  */
-function rollItemMacro(itemName) {
+function rollItemMacro(itemName: string) {
   const speaker = ChatMessage.getSpeaker();
   let actor;
 

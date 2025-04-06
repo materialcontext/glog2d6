@@ -1,19 +1,24 @@
 import { GLOG } from "../helpers/config";
 
+/**
+ * Extend the base Actor document to implement system-specific logic
+ * @extends {Actor}
+ */
 export class GlogActor extends Actor {
   /**
    * Augment the basic actor data with additional dynamic data.
    */
-  prepareData() {
+  prepareData(): void {
     super.prepareData();
   }
 
   /**
    * Prepare base data for an Actor
+   * @override
    */
-  prepareBaseData() {
+  prepareBaseData(): void {
     super.prepareBaseData();
-    const actorData = this.system;
+    const actorData = this.system as GlogActorDataSource;
 
     // Reset derived values that will be calculated in prepareDerivedData
     if (actorData.derived) {
@@ -24,9 +29,10 @@ export class GlogActor extends Actor {
 
   /**
    * Prepare derived data that depends on other attributes
+   * @override
    */
-  prepareDerivedData() {
-    const actorData = this.system;
+  prepareDerivedData(): void {
+    const actorData = this.system as GlogActorDataSource;
 
     this._prepareCharacterData(actorData);
     this._prepareNpcData(actorData);
@@ -34,8 +40,10 @@ export class GlogActor extends Actor {
 
   /**
    * Prepare Character type specific data
+   * @param {GlogActorDataSource} actorData The actor data being prepared
+   * @private
    */
-  _prepareCharacterData(actorData) {
+  _prepareCharacterData(actorData: GlogActorDataSource): void {
     if (this.type !== 'character') return;
 
     // Calculate attribute modifiers using the GLOG 2d6 table
@@ -47,8 +55,10 @@ export class GlogActor extends Actor {
 
   /**
    * Prepare NPC type specific data
+   * @param {GlogActorDataSource} actorData The actor data being prepared
+   * @private
    */
-  _prepareNpcData(actorData) {
+  _prepareNpcData(actorData: GlogActorDataSource): void {
     if (this.type !== 'npc') return;
 
     // Calculate attribute modifiers
@@ -60,10 +70,12 @@ export class GlogActor extends Actor {
 
   /**
    * Calculate attribute modifiers based on GLOG 2d6 rules
+   * @param {GlogActorDataSource} actorData The actor data being prepared
+   * @private
    */
-  _calculateAttributeModifiers(actorData) {
+  _calculateAttributeModifiers(actorData: GlogActorDataSource): void {
     // Loop through all attributes
-    for (let [key, attribute] of Object.entries(actorData.attributes)) {
+    for (const [key, attribute] of Object.entries(actorData.attributes)) {
       // Calculate the modifier using the GLOG 2d6 attribute table
       const value = attribute.value;
 
@@ -88,8 +100,10 @@ export class GlogActor extends Actor {
 
   /**
    * Calculate all derived statistics
+   * @param {GlogActorDataSource} actorData The actor data being prepared
+   * @private
    */
-  _calculateDerivedStats(actorData) {
+  _calculateDerivedStats(actorData: GlogActorDataSource): void {
     // Skip if no derived data exists
     if (!actorData.derived) return;
 
@@ -97,12 +111,12 @@ export class GlogActor extends Actor {
     const dexMod = actorData.attributes.dexterity.mod;
     actorData.derived.defense.dexterity = dexMod > 0 ? dexMod : 0;
     actorData.derived.defense.value = actorData.derived.defense.armor +
-                                      actorData.derived.defense.dexterity -
-                                      actorData.derived.encumbrance.value;
+                                     actorData.derived.defense.dexterity -
+                                     actorData.derived.encumbrance.value;
 
     // Calculate initiative (based on Wisdom)
     actorData.derived.initiative.value = actorData.attributes.wisdom.mod +
-                                         actorData.derived.initiative.bonus;
+                                        actorData.derived.initiative.bonus;
 
     // Calculate movement based on base value and modifiers
     this._calculateMovement(actorData);
@@ -110,8 +124,10 @@ export class GlogActor extends Actor {
 
   /**
    * Calculate movement values
+   * @param {GlogActorDataSource} actorData The actor data being prepared
+   * @private
    */
-  _calculateMovement(actorData) {
+  _calculateMovement(actorData: GlogActorDataSource): void {
     // Base movement calculations
     const base = actorData.derived.movement.value;
 
