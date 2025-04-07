@@ -9,6 +9,13 @@
     "AttributeWis": "Wisdom",
     "AttributeCha": "Charisma",
 
+    "AttributeTooltipStrength": "Strength determines your melee attack damage, ability to lift heavy objects, and other feats of physical power",
+    "AttributeTooltipDexterity": "Dexterity affects your defense, manual dexterity, and ability to move quickly or silently",
+    "AttributeTooltipConstitution": "Constitution improves your hit points and ability to resist physical trauma, disease, and poison",
+    "AttributeTooltipIntelligence": "Intelligence affects investigation skills, crafting, spell creation, and your ability to understand complex ideas",
+    "AttributeTooltipWisdom": "Wisdom determines your initiative, perception, and ability to resist mental effects",
+    "AttributeTooltipCharisma": "Charisma affects your interactions with NPCs, reactions, and ability to resist strange magic",
+
     "HP": "HP",
     "HitPoints": "Hit Points",
     "Movement": "Movement",
@@ -19,6 +26,23 @@
     "Level": "Level",
     "XP": "XP",
     "Templates": "Templates",
+
+    "HPTooltip": "Hit Protection represents your ability to avoid serious harm. When reduced to 0, you must make Trauma saves to avoid wounds",
+    "XPTooltip": "Experience Points are gained from gold. When you reach the required amount, you can level up",
+    "LevelTooltip": "Your character level determines your maximum templates, attack bonus, and hit dice",
+    "TemplatesCountTooltip": "Templates represent your character classes. You can have up to 4 templates at maximum level",
+    "AttackTooltip": "Your attack bonus is added to attack rolls. It increases with your level",
+    "DefenseTooltip": "Defense makes you harder to hit. It's calculated from armor, Dexterity bonus, and encumbrance",
+    "InitiativeTooltip": "Initiative determines your turn order in combat. It's based on your Wisdom",
+    "MovementTooltip": "Movement determines how far you can travel in combat and exploration",
+    "EncumbranceTooltip": "Encumbrance represents how much you're carrying. It reduces your defense when too high",
+    "SpellDiceTooltip": "Magic Dice are used to cast spells. They're refreshed after a rest, but some are exhausted when used",
+    "SpellSlotsTooltip": "Spell Slots are the number of different spells you can memorize at once",
+
+    "CombatMovementTooltip": "How far you can move in one combat round",
+    "ExplorationMovementTooltip": "How far you can move in one exploration turn (10 minutes)",
+    "RunningMovementTooltip": "How far you can run in a round when not in combat",
+    "MilesPerDayTooltip": "How many miles you can travel in a day of normal travel",
 
     "WeaponLight": "Light Weapon",
     "WeaponMedium": "Medium Weapon",
@@ -53,9 +77,13 @@
     "SchoolAlloy": "Alloy Wizard",
 
     "Wounds": "Wounds",
-    "Loyality": "Loyalty",
+    "Loyalty": "Loyalty",
     "Morale": "Morale",
     "Reaction": "Reaction",
+    "Broken": "Condition",
+    "Undamaged": "Undamaged",
+    "Damaged": "Damaged",
+    "Broken": "Broken",
 
     "TabAttributes": "Attributes",
     "TabInventory": "Inventory",
@@ -74,9 +102,22 @@
     "Damage": "Damage",
     "Range": "Range",
     "Description": "Description",
+    "Requirements": "Requirements",
+    "Effect": "Effect",
+    "Duration": "Duration",
+    "Target": "Target",
+    "School": "School",
+    "Biography": "Biography",
+    "Background": "Background",
+    "Reputation": "Reputation",
+    "Quirks": "Quirks",
+    "Quirk": "Quirk",
+    "Severity": "Severity",
+    "Healing": "Healing",
+    "Type": "Type",
 
     "Roll": "Roll",
-    "RollCheck": "Check",
+    "RollCheck": "Check: {name}",
     "RollSave": "Save",
     "RollAttack": "Attack",
     "RollDamage": "Damage",
@@ -88,6 +129,17 @@
     "CheckNormal": "Normal (7+)",
     "CheckHard": "Hard (8+)",
     "Save": "Save (10+)",
+    "Difficulty": "Difficulty",
+    "DifficultyTarget": "Target: {target}+",
+
+    "Success": "Success!",
+    "Failure": "Failure",
+    "CriticalSuccess": "Critical Success!",
+    "CriticalFailure": "Critical Failure!",
+    "Hit": "Hit!",
+    "Miss": "Miss",
+    "CriticalHit": "Critical Hit!",
+    "CriticalMiss": "Weapon Fumble!",
 
     "Rest": "Rest",
     "ShortRest": "Short Rest",
@@ -98,10 +150,53 @@
     "HirelingShare": "Share",
 
     "SpellCast": "Cast Spell",
-    "SpellDice": "Casting Dice",
+    "Cast": "Cast",
+    "SpellDice": "Spell Dice",
     "SpellSlots": "Spell Slots",
+    "DiceRolled": "Dice Rolled",
+    "DiceReturned": "Dice Returned",
+    "DiceConsumed": "Dice Consumed",
+    "SpellEffect": "Effect",
+    "Total": "Total",
+    "MishapTriggered": "{school} Mishap Triggered!",
+    "DoomTriggered": "{school} Doom Triggered!",
+    "NoSpellDiceLeft": "You have no spell dice left!",
+    "CastSpellName": "Cast {name}",
 
-    "SettingsMacroShorthand": "Macro Shorthand",
-    "SettingsMacroShorthandHint": "Enable macro shorthand syntax for inline rolls"
+    "LevelUp": "Level Up",
+    "NotEnoughXP": "Not enough XP to level up!",
+    "GenerateCharacter": "Generate Character",
+    "NewCharacter": "New Character",
+
+    "AddWound": "Add Wound",
+    "DeleteWound": "Delete Wound",
+    "DeleteWoundPrompt": "Are you sure you want to remove this wound?",
+    "NewWound": "New Wound",
+    "CreateNew": "Create New",
+
+    "Yes": "Yes",
+    "No": "No",
+    "Cancel": "Cancel",
+
+    "NewWeapon": "New Weapon",
+    "NewArmor": "New Armor",
+    "NewGear": "New Gear",
+    "NewFeature": "New Feature",
+    "NewSpell": "New Spell",
+    "NewTemplateWithLevel": "{class} {level}",
+
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+
+    "SheetLabels": {
+      "Actor": "GLOG 2d6 Actor Sheet",
+      "Item": "GLOG 2d6 Item Sheet"
+    },
+
+    "SETTINGS": {
+      "MacroShorthandName": "Macro Shorthand",
+      "MacroShorthandHint": "Enable macro shorthand syntax for inline rolls"
+    }
   }
 }

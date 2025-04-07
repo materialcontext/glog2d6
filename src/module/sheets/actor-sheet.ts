@@ -1,6 +1,6 @@
 import { GLOG } from "../helpers/config.js";
-import { CharacterGeneratorDialog } from "../applications/character-generator-dialog.js";
-import { LevelUpDialog } from "../applications/level-up-dialog.js";
+import { CharacterGenerator } from "../generators/character-generator.js";
+import { LevelUp } from "../generators/level-up.js";
 
 /**
  * Extend the basic ActorSheet with system-specific functionality
@@ -14,7 +14,8 @@ export class GlogActorSheet extends ActorSheet {
       template: "systems/glog2d6/templates/actor/character-sheet.hbs",
       width: 720,
       height: 680,
-      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "attributes" }]
+      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".tab-content", initial: "attributes" }],
+      dragDrop: [{ dragSelector: ".item-list .item", dropSelector: null }]
     });
   }
 
@@ -37,11 +38,11 @@ export class GlogActorSheet extends ActorSheet {
     // Add config data
     context.config = GLOG;
 
-    // Make sure localization is working
-    // This ensures proper attribute names are shown
-    Object.entries(context.config.attributes).forEach(([key, value]) => {
-      context.config.attributes[key] = game.i18n.localize(value as string);
-    });
+    // Check if actor can level up
+    context.canLevelUp = this._checkCanLevelUp();
+
+    // Check if actor is a wizard
+    context.isWizard = this._hasWizardClass();
 
     // Prepare items
     if (actorData.type == 'character' || actorData.type == 'npc') {
@@ -49,6 +50,31 @@ export class GlogActorSheet extends ActorSheet {
     }
 
     return context;
+  }
+
+  /**
+   * Check if character can level up based on XP
+   * @private
+   */
+  _checkCanLevelUp(): boolean {
+    const actorData = this.actor.system;
+    const currentLevel = actorData.details.level;
+    const currentXP = actorData.details.xp.value;
+
+    // XP requirements for each level
+    const xpRequirements = [0, 1, 2000, 7000, 12000, 24000, 42000, 60000, 80000];
+
+    // Check if character has enough XP and is below max level
+    return currentLevel < 8 && currentXP >= xpRequirements[currentLevel + 1];
+  }
+
+  /**
+   * Check if the character has a wizard class template
+   * @private
+   */
+  _hasWizardClass(): boolean {
+    const items = this.actor.items;
+    return items.some(i => i.type === 'template' && i.system.class === 'wizard');
   }
 
   /**
@@ -94,6 +120,21 @@ export class GlogActorSheet extends ActorSheet {
       }
     }
 
+    // Sort items by name
+    const sorter = (a, b) => a.name.localeCompare(b.name);
+    weapons.sort(sorter);
+    armor.sort(sorter);
+    gear.sort(sorter);
+    templates.sort((a, b) => {
+      // Sort templates by level first, then by name
+      const levelOrder = { A: 1, B: 2, C: 3, D: 4 };
+      const levelDiff = levelOrder[a.system.level] - levelOrder[b.system.level];
+      return levelDiff !== 0 ? levelDiff : a.name.localeCompare(b.name);
+    });
+    features.sort(sorter);
+    spells.sort(sorter);
+    wounds.sort((a, b) => a.system.severity - b.system.severity);
+
     // Assign items to context
     context.weapons = weapons;
     context.armor = armor;
@@ -111,70 +152,56 @@ export class GlogActorSheet extends ActorSheet {
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return;
 
-    // Add Generate Character button listener
-    html.find('.generate-character').click(this._onGenerateCharacter.bind(this));
-
     // Add Level Up button listener
-    html.find('.level-up').click(this._onLevelUp.bind(this));
+    html.find('.level-up-btn').click(this._onLevelUp.bind(this));
 
     // Add Inventory Item
     html.find('.item-create').click(this._onItemCreate.bind(this));
 
     // Update Inventory Item
-    html.find('.item-edit').click(ev => {
-      const li = $(ev.currentTarget).parents(".item");
+    html.find('.edit-btn').click(ev => {
+      const li = $(ev.currentTarget).closest(".item");
       const item = this.actor.items.get(li.data("itemId") as string);
       if (item) item.sheet.render(true);
     });
 
     // Delete Inventory Item
-    html.find('.item-delete').click(ev => {
-      const li = $(ev.currentTarget).parents(".item");
-      const itemId = li.data("itemId") as string;
-      const item = this.actor.items.get(itemId);
-
-      if (!item) return;
-
-      // Show confirmation dialog
-      new Dialog({
-        title: `Delete ${item.name}`,
-        content: `<p>Are you sure you want to delete ${item.name}?</p>`,
-        buttons: {
-          yes: {
-            icon: '<i class="fas fa-trash"></i>',
-            label: "Yes",
-            callback: () => this.actor.deleteEmbeddedDocuments("Item", [itemId])
-          },
-          no: {
-            icon: '<i class="fas fa-times"></i>',
-            label: "No"
-          }
-        },
-        default: "no"
-      }).render(true);
-    });
+    html.find('.delete-btn').click(this._onItemDelete.bind(this));
 
     // Cast Spell
-    html.find('.spell-cast').click(ev => {
-      const li = $(ev.currentTarget).parents(".item");
+    html.find('.cast-btn').click(ev => {
+      const li = $(ev.currentTarget).closest(".item");
       const item = this.actor.items.get(li.data("itemId") as string);
       if (item) this._onSpellCast(item);
     });
 
     // Handle Wound controls
-    html.find('.wound-add').click(this._onWoundAdd.bind(this));
+    html.find('.add-wound-btn').click(this._onWoundAdd.bind(this));
     html.find('.wound-edit').click(this._onWoundEdit.bind(this));
     html.find('.wound-delete').click(this._onWoundDelete.bind(this));
 
     // Handle Quirk controls
-    html.find('.quirk-add').click(this._onQuirkAdd.bind(this));
+    html.find('.add-quirk-btn').click(this._onQuirkAdd.bind(this));
     html.find('.quirk-delete').click(this._onQuirkDelete.bind(this));
 
     // Rollable elements
-    html.find('.rollable').click(this._onRoll.bind(this));
+    html.find('.rollable, .attribute-modifier').click(this._onRoll.bind(this));
 
     // Item quantity changes
     html.find('input[data-item-id]').change(this._onItemQuantityChange.bind(this));
+
+    // Setup tooltips
+    this._setupTooltips(html);
+  }
+
+  /**
+   * Setup tooltips for the sheet
+   * @param {JQuery} html The sheet's rendered HTML
+   * @private
+   */
+  _setupTooltips(html: JQuery): void {
+    // The tooltips are handled through CSS, no additional setup required
+    // But we could add more advanced tooltip handling here if needed
   }
 
   /**
@@ -194,6 +221,7 @@ export class GlogActorSheet extends ActorSheet {
     if (type === "spell") img = "icons/svg/book.svg";
     if (type === "feature") img = "icons/svg/aura.svg";
     if (type === "template") img = "icons/svg/statue.svg";
+    if (type === "wound") img = "icons/svg/blood.svg";
 
     // Create the item
     const itemData: any = {
@@ -217,6 +245,38 @@ export class GlogActorSheet extends ActorSheet {
     }
 
     return await Item.create(itemData, {parent: this.actor});
+  }
+
+  /**
+   * Handle deleting an item
+   * @param {Event} event The originating click event
+   * @private
+   */
+  _onItemDelete(event: Event): void {
+    event.preventDefault();
+    const li = $(event.currentTarget).closest(".item");
+    const itemId = li.data("itemId") as string;
+    const item = this.actor.items.get(itemId);
+
+    if (!item) return;
+
+    // Show confirmation dialog
+    new Dialog({
+      title: `Delete ${item.name}`,
+      content: `<p>Are you sure you want to delete ${item.name}?</p>`,
+      buttons: {
+        yes: {
+          icon: '<i class="fas fa-trash"></i>',
+          label: "Yes",
+          callback: () => this.actor.deleteEmbeddedDocuments("Item", [itemId])
+        },
+        no: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "No"
+        }
+      },
+      default: "no"
+    }).render(true);
   }
 
   /**
@@ -291,19 +351,66 @@ export class GlogActorSheet extends ActorSheet {
   async _onWoundAdd(event: Event): Promise<Item | undefined> {
     event.preventDefault();
 
-    // Create a new wound item
-    const itemData = {
-      name: game.i18n.localize("GLOG.NewWound"),
-      type: "wound",
-      img: "icons/svg/blood.svg",
-      system: {
-        severity: 1,
-        effect: "",
-        healing: ""
-      }
-    };
+    // Create a dialog to select existing wound or create new
+    const woundPack = game.packs.get("glog2d6.wounds");
+    let woundOptions = "";
 
-    return await Item.create(itemData, {parent: this.actor});
+    if (woundPack) {
+      const wounds = await woundPack.getDocuments();
+      woundOptions = wounds.map(w => `<option value="${w.id}">${w.name}</option>`).join("");
+    }
+
+    new Dialog({
+      title: game.i18n.localize("GLOG.AddWound"),
+      content: `
+        <form>
+          <div class="form-group">
+            <label>Select a wound:</label>
+            <select id="wound-select">
+              <option value="new">${game.i18n.localize("GLOG.CreateNew")}</option>
+              ${woundOptions}
+            </select>
+          </div>
+        </form>
+      `,
+      buttons: {
+        add: {
+          icon: '<i class="fas fa-plus"></i>',
+          label: game.i18n.localize("GLOG.Add"),
+          callback: async (html) => {
+            const select = html.find('#wound-select')[0] as HTMLSelectElement;
+            const woundId = select.value;
+
+            if (woundId === "new") {
+              // Create a new wound
+              const itemData = {
+                name: game.i18n.localize("GLOG.NewWound"),
+                type: "wound",
+                img: "icons/svg/blood.svg",
+                system: {
+                  severity: 1,
+                  effect: "",
+                  healing: ""
+                }
+              };
+              return await Item.create(itemData, {parent: this.actor});
+            } else if (woundPack) {
+              // Get the wound from the compendium
+              const wound = await woundPack.getDocument(woundId);
+              if (wound) {
+                const woundData = wound.toObject();
+                return await Item.create(woundData, {parent: this.actor});
+              }
+            }
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: game.i18n.localize("GLOG.Cancel")
+        }
+      },
+      default: "add"
+    }).render(true);
   }
 
   /**
@@ -350,21 +457,6 @@ export class GlogActorSheet extends ActorSheet {
   }
 
   /**
-   * Handle generating a character
-   * @param {Event} event The originating click event
-   * @private
-   */
-  _onGenerateCharacter(event: Event): void {
-    event.preventDefault();
-
-    // Only for character actors
-    if (this.actor.type !== 'character') return;
-
-    // Show the character generator dialog
-    CharacterGeneratorDialog.show(this.actor);
-  }
-
-  /**
    * Handle leveling up
    * @param {Event} event The originating click event
    * @private
@@ -375,8 +467,14 @@ export class GlogActorSheet extends ActorSheet {
     // Only for character actors
     if (this.actor.type !== 'character') return;
 
-    // Show the level up dialog
-    LevelUpDialog.show(this.actor);
+    // Only allow level up if there's enough XP
+    if (!this._checkCanLevelUp()) {
+      ui.notifications.warn(game.i18n.localize("GLOG.NotEnoughXP"));
+      return;
+    }
+
+    // Perform level up
+    LevelUp.levelUp(this.actor);
   }
 
   /**
@@ -402,7 +500,7 @@ export class GlogActorSheet extends ActorSheet {
     new Dialog({
       title: game.i18n.format("GLOG.CastSpellName", {name: item.name}),
       content: `
-        <form>
+        <form class="glog2d6">
           <div class="form-group">
             <label>${game.i18n.localize("GLOG.SpellDice")}</label>
             <select id="dice-amount">
@@ -410,6 +508,27 @@ export class GlogActorSheet extends ActorSheet {
                 `<option value="${i+1}">${i+1}</option>`
               ).join('')}
             </select>
+          </div>
+          <div class="spell-details">
+            <div class="spell-property">
+              <span class="property-label">${game.i18n.localize("GLOG.School")}:</span>
+              <span class="property-value">${item.system.school || "—"}</span>
+            </div>
+            <div class="spell-property">
+              <span class="property-label">${game.i18n.localize("GLOG.Range")}:</span>
+              <span class="property-value">${item.system.range || "—"}</span>
+            </div>
+            <div class="spell-property">
+              <span class="property-label">${game.i18n.localize("GLOG.Target")}:</span>
+              <span class="property-value">${item.system.target || "—"}</span>
+            </div>
+            <div class="spell-property">
+              <span class="property-label">${game.i18n.localize("GLOG.Duration")}:</span>
+              <span class="property-value">${item.system.duration || "—"}</span>
+            </div>
+            <div class="spell-effect">
+              <p>${item.system.effect || ""}</p>
+            </div>
           </div>
         </form>
       `,
@@ -485,13 +604,27 @@ export class GlogActorSheet extends ActorSheet {
       <div class="glog2d6 spell-cast">
         <h2>${spell}</h2>
         <div class="spell-result">
-          <p><strong>${game.i18n.localize("GLOG.DiceRolled")}:</strong> ${diceAmount}</p>
-          <p><strong>${game.i18n.localize("GLOG.DiceReturned")}:</strong> ${returnedDice}</p>
-          <p><strong>${game.i18n.localize("GLOG.DiceConsumed")}:</strong> ${usedDice}</p>
-          <p><strong>${game.i18n.localize("GLOG.SpellEffect")}:</strong> ${item.system.effect}</p>
-          <p><strong>${game.i18n.localize("GLOG.Total")}:</strong> ${rollTotal}</p>
-          ${mishapText ? `<p class="mishap">${mishapText}</p>` : ''}
-          ${doomText ? `<p class="doom">${doomText}</p>` : ''}
+          <div class="dice-roll">
+            <div class="dice-result">
+              <div class="dice-formula">${diceAmount}d6</div>
+              <div class="dice-tooltip">
+                <div class="dice">
+                  <ol class="dice-rolls">
+                    ${results.map(r => `<li class="roll die d6">${r}</li>`).join('')}
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="spell-details">
+            <p><strong>${game.i18n.localize("GLOG.DiceRolled")}:</strong> ${diceAmount}</p>
+            <p><strong>${game.i18n.localize("GLOG.DiceReturned")}:</strong> ${returnedDice}</p>
+            <p><strong>${game.i18n.localize("GLOG.DiceConsumed")}:</strong> ${usedDice}</p>
+            <p><strong>${game.i18n.localize("GLOG.SpellEffect")}:</strong> ${item.system.effect}</p>
+            <p><strong>${game.i18n.localize("GLOG.Total")}:</strong> ${rollTotal}</p>
+            ${mishapText ? `<p class="mishap">${mishapText}</p>` : ''}
+            ${doomText ? `<p class="doom">${doomText}</p>` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -554,7 +687,7 @@ export class GlogActorSheet extends ActorSheet {
     new Dialog({
       title: game.i18n.format("GLOG.RollCheck", {name: label}),
       content: `
-        <form>
+        <form class="glog2d6">
           <div class="form-group">
             <label>${game.i18n.localize("GLOG.Difficulty")}</label>
             <select id="difficulty">

@@ -1,5 +1,689 @@
+// Updated _actor.scss file for GLOG 2d6 System
+@use '../utils/variables' as vars;
 @use '../utils/mixins' as mix;
 
-.actor-sheet {
-  @include mix.flex-col;
-}
+.glog2d6 {
+  /* Base Styles */
+  font-family: 'Roboto', sans-serif;
+  color: vars.$c-text;
+
+  /* Dark Theme Colors */
+  --color-background: #2a2a2a;
+  --color-foreground: #3a3a3a;
+  --color-border: #4a4a4a;
+  --color-text: #e0e0e0;
+  --color-text-secondary: #b0b0b0;
+  --color-accent: #7986cb;
+  --color-accent-secondary: #5c6bc0;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-danger: #f44336;
+  --color-info: #2196f3;
+
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Element Styling */
+  --border-radius: 4px;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  background: var(--color-background);
+
+  .window-content {
+    background: var(--color-background);
+    color: var(--color-text);
+    padding: var(--space-md);
+  }
+
+  /* Tooltip Styles */
+  [data-tooltip] {
+    position: relative;
+    cursor: help;
+
+    &::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: var(--space-xs) var(--space-sm);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-size: var(--font-size-xs);
+      border-radius: var(--border-radius);
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    &:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  /* Form Elements */
+  input, select, textarea {
+    background: var(--color-foreground);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--space-xs) var(--space-sm);
+
+    &:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px rgba(121, 134, 203, 0.3);
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  textarea {
+    min-height: 5rem;
+    resize: vertical;
+  }
+
+  /* Buttons */
+  button, .button {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--space-xs) var(--space-md);
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: var(--color-accent-secondary);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &.button-success {
+      background: var(--color-success);
+      &:hover { background: var(--color-success-dark); }
+    }
+
+    &.button-danger {
+      background: var(--color-danger);
+      &:hover { background: var(--color-danger-dark); }
+    }
+    }
+  }
+
+  /* Character Sheet Header */
+  .sheet-header {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+
+    .profile-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 2px solid var(--color-accent);
+      object-fit: cover;
+    }
+
+    .header-details {
+      display: flex;
+      flex-direction: column;
+
+      .character-name {
+        font-size: var(--font-size-xl);
+        font-weight: bold;
+        margin-bottom: var(--space-sm);
+        color: var(--color-text);
+
+        input {
+          width: 100%;
+          font-size: inherit;
+          font-weight: inherit;
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid var(--color-border);
+          padding: var(--space-xs) 0;
+
+          &:focus {
+            border-bottom-color: var(--color-accent);
+          }
+        }
+      }
+
+      .character-meta {
+        display: flex;
+        gap: var(--space-md);
+        margin-bottom: var(--space-sm);
+
+        .character-level {
+          display: flex;
+          align-items: center;
+          gap: var(--space-xs);
+
+          .level-indicator {
+            font-size: var(--font-size-lg);
+            font-weight: bold;
+          }
+
+          .level-up-btn {
+            color: var(--color-success);
+            cursor: pointer;
+
+            &:hover {
+              color: var(--color-success-light);
+            }
+
+            &:disabled {
+              color: var(--color-text-secondary);
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Primary Resources Bar */
+  .resources-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+
+    .resource {
+      background: var(--color-foreground);
+      border-radius: var(--border-radius);
+      padding: var(--space-sm);
+      text-align: center;
+      box-shadow: var(--box-shadow);
+
+      .resource-label {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-xs);
+      }
+
+      .resource-value {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--space-xs);
+
+        input {
+          width: 40px;
+          text-align: center;
+          font-weight: bold;
+        }
+
+        .separator {
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+
+    .hp-resource {
+      border-top: 3px solid var(--color-danger);
+    }
+
+    .xp-resource {
+      border-top: 3px solid var(--color-info);
+    }
+  }
+
+  /* Character Attributes */
+  .attributes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+
+    .attribute {
+      background: var(--color-foreground);
+      border-radius: var(--border-radius);
+      padding: var(--space-sm);
+      box-shadow: var(--box-shadow);
+
+      .attribute-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-xs);
+
+        .attribute-label {
+          font-weight: bold;
+          color: var(--color-text);
+        }
+      }
+
+      .attribute-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .attribute-value {
+          input {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+          }
+        }
+
+        .attribute-modifier {
+          background: var(--color-accent);
+          color: white;
+          border-radius: 50%;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background: var(--color-accent-secondary);
+          }
+        }
+      }
+    }
+  }
+
+  /* Derived Stats */
+  .derived-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+
+    .derived-stat {
+      background: var(--color-foreground);
+      border-radius: var(--border-radius);
+      padding: var(--space-sm);
+      box-shadow: var(--box-shadow);
+      text-align: center;
+
+      .stat-label {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-xs);
+      }
+
+      .stat-value {
+        font-size: var(--font-size-lg);
+        font-weight: bold;
+      }
+
+      &[data-tooltip] {
+        cursor: help;
+      }
+    }
+  }
+
+  /* Tabs Navigation */
+  .sheet-tabs {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+
+    .tab {
+      padding: var(--space-sm) var(--space-md);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+
+      &:hover {
+        color: var(--color-text);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &.active {
+        color: var(--color-accent);
+        border-bottom-color: var(--color-accent);
+      }
+    }
+  }
+
+  /* Tab Content */
+  .sheet-body {
+    background: var(--color-foreground);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+
+    .tab-content {
+      padding: var(--space-md);
+      display: none;
+
+      &.active {
+        display: block;
+      }
+
+      h3 {
+        font-size: var(--font-size-lg);
+        margin-top: 0;
+        margin-bottom: var(--space-md);
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: var(--space-xs);
+      }
+    }
+  }
+
+  /* Items Lists */
+  .items-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    .items-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-xs);
+      padding: var(--space-xs);
+      font-weight: bold;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border);
+
+      &.weapons-header {
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 80px;
+      }
+
+      &.armor-header {
+        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+      }
+
+      &.gear-header {
+        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+      }
+
+      &.spells-header {
+        grid-template-columns: 2fr 1fr 1fr 100px;
+      }
+
+      &.features-header {
+        grid-template-columns: 2fr 2fr 80px;
+      }
+
+      &.templates-header {
+        grid-template-columns: 2fr 1fr 80px;
+      }
+
+      &.wounds-header {
+        grid-template-columns: 2fr 1fr 80px;
+      }
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-xs);
+      padding: var(--space-xs);
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &.weapons-item {
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 80px;
+      }
+
+      &.armor-item {
+        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+      }
+
+      &.gear-item {
+        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+      }
+
+      &.spells-item {
+        grid-template-columns: 2fr 1fr 1fr 100px;
+      }
+
+      &.features-item {
+        grid-template-columns: 2fr 2fr 80px;
+      }
+
+      &.templates-item {
+        grid-template-columns: 2fr 1fr 80px;
+      }
+
+      &.wounds-item {
+        grid-template-columns: 2fr 1fr 80px;
+      }
+
+      .item-name {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+
+        .item-image {
+          width: 24px;
+          height: 24px;
+          border-radius: var(--border-radius);
+        }
+      }
+
+      .item-controls {
+        display: flex;
+        gap: var(--space-xs);
+        justify-content: flex-end;
+
+        .item-control {
+          color: var(--color-text-secondary);
+          cursor: pointer;
+
+          &:hover {
+            color: var(--color-text);
+          }
+
+          &.edit-btn:hover {
+            color: var(--color-info-light);
+          }
+
+          &.delete-btn:hover {
+            color: var(--color-danger-light);
+          }
+
+          &.cast-btn:hover {
+            color: var(--color-accent-light);
+          }
+        }
+      }
+    }
+
+    .items-footer {
+      padding: var(--space-sm) 0;
+
+      .add-item-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+
+        &:hover {
+          color: var(--color-accent);
+        }
+
+        i {
+          font-size: var(--font-size-sm);
+        }
+      }
+    }
+  }
+
+  /* Spells Tab */
+  .spell-resources {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+
+    .spell-resource {
+      background: var(--color-foreground);
+      border-radius: var(--border-radius);
+      padding: var(--space-sm);
+      box-shadow: var(--box-shadow);
+      flex: 1;
+
+      .resource-label {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-xs);
+      }
+
+      .resource-value {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+
+        input {
+          width: 40px;
+          text-align: center;
+        }
+
+        .separator {
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+  }
+
+  /* Wounds */
+  .wounds-list {
+    .wound {
+      background: var(--color-foreground);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--space-sm);
+      overflow: hidden;
+
+      .wound-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-sm);
+        background: rgba(0, 0, 0, 0.1);
+
+        .wound-title {
+          font-weight: bold;
+        }
+
+        .wound-controls {
+          display: flex;
+          gap: var(--space-xs);
+        }
+      }
+
+      .wound-body {
+        padding: var(--space-sm);
+        font-size: var(--font-size-sm);
+      }
+    }
+  }
+
+  /* Biography Tab */
+  .biography {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+
+    .bio-section {
+      margin-bottom: var(--space-md);
+
+      h3 {
+        margin-top: 0;
+        margin-bottom: var(--space-sm);
+      }
+    }
+
+    .quirks-list {
+      .quirk {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-xs);
+
+        input {
+          flex: 1;
+        }
+
+        .quirk-delete {
+          color: var(--color-danger);
+          cursor: pointer;
+
+          &:hover {
+            color: var(--color-danger-light);
+          }
+        }
+      }
+    }
+  }
+
+  /* Responsive adjustments for smaller screens */
+  @media (max-width: 768px) {
+    .attributes-grid,
+    .derived-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .items-list {
+      .items-header, .item {
+        &.weapons-header, &.weapons-item {
+          grid-template-columns: 2fr 1fr 1fr 80px;
+        }
+
+        &.armor-header, &.armor-item {
+          grid-template-columns: 2fr 1fr 80px;
+        }
+
+        &.gear-header, &.gear-item {
+          grid-template-columns: 2fr 1fr 80px;
+        }
+
+        &.spells-header, &.spells-item {
+          grid-template-columns: 2fr 1fr 80px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sheet-header {
+      grid-template-columns: 1fr;
+
+      .profile-img {
+        margin: 0 auto;
+      }
+    }
+
+    .attributes-grid,
+    .derived-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+

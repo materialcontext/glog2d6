@@ -1,0 +1,173 @@
+// src/styles/utils/_theme-variables.scss
+
+// Theme variables for different character sheet styles
+
+// Default theme (slightly darker than current)
+.theme-default {
+  --color-background: #2a2a2a;
+  --color-foreground: #3a3a3a;
+  --color-border: #4a4a4a;
+  --color-text: #e0e0e0;
+  --color-text-secondary: #b0b0b0;
+  --color-accent: #7986cb;
+  --color-accent-secondary: #5c6bc0;
+  --color-accent-dark: #4a5ba6;
+  --color-success: #4caf50;
+  --color-success-dark: #3d8b40;
+  --color-warning: #ff9800;
+  --color-warning-dark: #e68900;
+  --color-danger: #f44336;
+  --color-danger-dark: #d32f2f;
+  --color-info: #2196f3;
+  --color-info-dark: #1976d2;
+
+  // Section highlights
+  --color-hp-highlight: #f44336;
+  --color-xp-highlight: #2196f3;
+  --color-spell-highlight: #9c27b0;
+
+
+  // Wound colors
+  --color-wound-minor: #8bc34a;
+  --color-wound-moderate: #ffc107;
+  --color-wound-severe: #ff9800;
+  --color-wound-deadly: #f44336;
+
+  // Item quality colors
+  --color-quality-good: #8bc34a;
+  --color-quality-damaged: #ffc107;
+  --color-quality-broken: #f44336;
+}
+
+// Dark theme (even darker for night mode)
+.theme-dark {
+  --color-background: #121212;
+  --color-foreground: #1e1e1e;
+  --color-border: #333333;
+  --color-text: #e0e0e0;
+  --color-text-secondary: #9e9e9e;
+  --color-accent: #bb86fc;
+  --color-accent-secondary: #a370f7;
+  --color-accent-dark: #8f5bd6;
+  --color-success: #03dac6;
+  --color-success-dark: #00b3a3;
+  --color-warning: #ffb74d;
+  --color-warning-dark: #f3a02a;
+  --color-danger: #cf6679;
+  --color-danger-dark: #b34d5d;
+  --color-info: #64b5f6;
+  --color-info-dark: #4a9bed;
+
+  // Section highlights
+  --color-hp-highlight: #cf6679;
+  --color-xp-highlight: #64b5f6;
+  --color-spell-highlight: #bb86fc;
+
+  // Wound colors
+  --color-wound-minor: #03dac6;
+  --color-wound-moderate: #ffb74d;
+  --color-wound-severe: #ff9800;
+  --color-wound-deadly: #cf6679;
+
+  // Item quality colors
+  --color-quality-good: #03dac6;
+  --color-quality-damaged: #ffb74d;
+  --color-quality-broken: #cf6679;
+}
+
+// Parchment theme (old school RPG feel)
+.theme-parchment {
+  --color-background: #f5e8c9;
+  --color-foreground: #ecdab9;
+  --color-border: #c4b59c;
+  --color-text: #5c4b28;
+  --color-text-secondary: #876e4b;
+  --color-accent: #8b4513;
+  --color-accent-secondary: #a0522d;
+  --color-accent-dark: #6f3810;
+  --color-success: #556b2f;
+  --color-success-dark: #3f5022;
+  --color-warning: #cd853f;
+  --color-warning-dark: #a06931;
+  --color-danger: #8b0000;
+  --color-danger-dark: #6b0000;
+  --color-info: #4682b4;
+  --color-info-dark: #336699;
+
+  // Section highlights
+  --color-hp-highlight: #8b0000;
+  --color-xp-highlight: #4682b4;
+  --color-spell-highlight: #800080;
+
+  // Wound colors
+  --color-wound-minor: #556b2f;
+  --color-wound-moderate: #cd853f;
+  --color-wound-severe: #b8860b;
+  --color-wound-deadly: #8b0000;
+
+  // Item quality colors
+  --color-quality-good: #556b2f;
+  --color-quality-damaged: #cd853f;
+  --color-quality-broken: #8b0000;
+}
+
+// Retro theme (80s/90s digital feel)
+.theme-retro {
+  --color-background: #0c093c;
+  --color-foreground: #1e1753;
+  --color-border: #301a79;
+  --color-text: #01ffc3;
+  --color-text-secondary: #01c3a5;
+  --color-accent: #fe5d9f;
+  --color-accent-secondary: #ff1d8e;
+  --color-accent-dark: #f00077;
+  --color-success: #01ffc3;
+  --color-success-dark: #00d1a0;
+  --color-warning: #ffdf2b;
+  --color-warning-dark: #ffd100;
+  --color-danger: #fe5d9f;
+  --color-danger-dark: #fe2d8a;
+  --color-info: #25aae1;
+  --color-info-dark: #1b8dbd;
+
+  // Section highlights
+  --color-hp-highlight: #fe5d9f;
+  --color-xp-highlight: #25aae1;
+  --color-spell-highlight: #a742ea;
+
+  // Wound colors
+  --color-wound-minor: #01ffc3;
+  --color-wound-moderate: #ffdf2b;
+  --color-wound-severe: #fe8a39;
+  --color-wound-deadly: #fe5d9f;
+
+  // Item quality colors
+  --color-quality-good: #01ffc3;
+  --color-quality-damaged: #ffdf2b;
+  --color-quality-broken: #fe5d9f;
+
+  // Retro specific - add these to make it more 80s/cyberpunk
+  --retro-glow: 0 0 10px rgba(1, 255, 195, 0.5);
+  --retro-text-shadow: 0 0 5px currentColor;
+  --retro-border-glow: 0 0 5px var(--color-accent);
+}
+
+// Apply retro-specific effects
+.theme-retro {
+  .character-name input {
+    text-shadow: var(--retro-text-shadow);
+  }
+
+  .attribute-modifier {
+    box-shadow: var(--retro-glow);
+  }
+
+  .resource, .derived-stat {
+    border: 1px solid var(--color-accent);
+    box-shadow: var(--retro-border-glow);
+  }
+
+  .sheet-tabs .tab.active {
+    text-shadow: var(--retro-text-shadow);
+  }
+}

@@ -102,6 +102,175 @@ function registerHandlebarsHelpers() {
 }
 
 /**
+ * Add character generator button to the actors directory
+ */
+Hooks.on("renderActorDirectory", (app, html, data) => {
+  // Create the button
+  const generateButton = $(`
+    <button class="generate-character-button">
+      <i class="fas fa-dice"></i> ${game.i18n.localize("GLOG.GenerateCharacter")}
+    </button>
+  `);
+
+  // Insert it into the directory header
+  html.find(".directory-header").append(generateButton);
+
+  // Add click event
+  generateButton.click(ev => {
+    ev.preventDefault();
+    _onGenerateCharacter();
+  });
+
+  // Add custom styles
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    .generate-character-button {
+      margin-top: 5px;
+      width: 100%;
+      background: var(--color-accent);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .generate-character-button:hover {
+      background: var(--color-accent-secondary);
+    }
+  `;
+  html.find(".directory-header").append(styleElement);
+});
+
+/**
+ * Handle character generation from the directory
+ */
+function _onGenerateCharacter() {
+  // Create prompt for new character name and class
+  new Dialog({
+    title: game.i18n.localize("GLOG.NewCharacter"),
+    content: `
+      <form class="glog2d6">
+        <div class="form-group">
+          <label for="character-name">${game.i18n.localize("GLOG.Name")}</label>
+          <input type="text" id="character-name" placeholder="${game.i18n.localize("GLOG.Name")}" value="New Character">
+        </div>
+        <div class="form-group">
+          <label for="character-class">${game.i18n.localize("GLOG.Class")}</label>
+          <select id="character-class">
+            <option value="">Random</option>
+            ${Object.entries(CONFIG.GLOG.classes).map(([key, value]) =>
+              `<option value="${key}">${game.i18n.localize(value)}</option>`
+            ).join('')}
+          </select>
+        </div>
+      </form>
+    `,
+    buttons: {
+      generate: {
+        icon: '<i class="fas fa-dice"></i>',
+        label: game.i18n.localize("GLOG.GenerateCharacter"),
+        callback: (html) => {
+          const name = html.find('#character-name').val();
+          const classType = html.find('#character-class').val() as string;
+
+          // Create new actor
+          Actor.create({
+            name: name,
+            type: "character",
+            img: _getRandomPortrait()
+          }).then(actor => {
+            // Generate character
+            if (actor) {
+              game.glog2d6.CharacterGenerator.generateCharacter(classType, actor);
+            }
+          });
+        }
+      },
+      cancel: {
+        icon: '<i class="fas fa-times"></i>',
+        label: game.i18n.localize("GLOG.Cancel")
+      }
+    },
+    default: "generate"
+  }).render(true);
+}
+
+/**
+ * Get a random portrait for the character
+ */
+function _getRandomPortrait(): string {
+  // Default list of portrait paths - could be expanded or made configurable
+  const portraits = [
+    "icons/svg/mystery-man.svg",
+    "systems/glog2d6/assets/portraits/fighter.webp",
+    "systems/glog2d6/assets/portraits/wizard.webp",
+    "systems/glog2d6/assets/portraits/thief.webp",
+    "systems/glog2d6/assets/portraits/barbarian.webp"
+  ];
+
+  // Select a random portrait
+  return portraits[Math.floor(Math.random() * portraits.length)];
+}
+
+/**
+ * Customize the actors directory list items
+ */
+Hooks.on("renderActorDirectory", (app, html, data) => {
+  // Add custom styling to actor list items
+  html.find(".directory-item").each((i, item) => {
+    const actorId = item.dataset.documentId;
+    if (!actorId) return;
+
+    const actor = game.actors?.get(actorId);
+    if (!actor) return;
+
+    // Add actor type as a class
+    $(item).addClass(`actor-${actor.type}`);
+
+    // Add level badge for characters
+    if (actor.type === 'character') {
+      const level = actor.system.details?.level || 0;
+      const levelBadge = $(`<div class="level-badge">Lvl ${level}</div>`);
+      $(item).find('.document-name').append(levelBadge);
+    }
+  });
+
+  // Add styling
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    .directory-item {
+      border-radius: var(--border-radius);
+      margin-bottom: 3px;
+      transition: background-color 0.2s;
+    }
+
+    .directory-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .actor-character .document-name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .level-badge {
+      font-size: 0.8em;
+      background-color: var(--color-accent);
+      color: white;
+      padding: 2px 5px;
+      border-radius: 10px;
+    }
+  `;
+  html.append(styleElement);
+});
+
+/**
  * Create a Macro from an Item drop.
  * @param {Object} data The dropped data
  * @param {number} slot The hotbar slot to use
