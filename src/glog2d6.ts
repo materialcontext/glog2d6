@@ -107,43 +107,48 @@ function registerHandlebarsHelpers() {
 Hooks.on("renderActorDirectory", (app, html, data) => {
   // Create the button
   const generateButton = $(`
-    <button class="generate-character-button">
+    <button class="generate-character">
       <i class="fas fa-dice"></i> ${game.i18n.localize("GLOG.GenerateCharacter")}
     </button>
   `);
 
-  // Insert it into the directory header
-  html.find(".directory-header").append(generateButton);
+  // Insert the button in the header-actions area instead of the directory-header
+  const headerActions = html.find(".header-actions");
+  headerActions.append(generateButton);
 
   // Add click event
   generateButton.click(ev => {
     ev.preventDefault();
     _onGenerateCharacter();
   });
+});
 
-  // Add custom styles
-  const styleElement = document.createElement('style');
-  styleElement.textContent = `
-    .generate-character-button {
-      margin-top: 5px;
-      width: 100%;
-      background: var(--color-accent);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      padding: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-    }
+Hooks.on("renderActorSheet", (app, html, data) => {
+  // Ensure proper tab activation
+  const tabs = html.find('.sheet-tabs .item');
+  const tabContents = html.find('.tab');
 
-    .generate-character-button:hover {
-      background: var(--color-accent-secondary);
-    }
-  `;
-  html.find(".directory-header").append(styleElement);
+  // Set first tab as active by default if none are active
+  if (!tabs.hasClass('active')) {
+    tabs.first().addClass('active');
+    tabContents.hide();
+    tabContents.first().show();
+  }
+
+  // Fix tab click behavior
+  tabs.click(ev => {
+    const tab = $(ev.currentTarget);
+    const tabGroup = tab.parents('.tabs').data('group');
+    const tabTarget = tab.data('tab');
+
+    // Update tabs
+    tabs.removeClass('active');
+    tab.addClass('active');
+
+    // Update tab content
+    tabContents.hide();
+    html.find(`.tab[data-tab="${tabTarget}"][data-group="${tabGroup}"]`).show();
+  });
 });
 
 /**

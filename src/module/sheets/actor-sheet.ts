@@ -14,7 +14,7 @@ export class GlogActorSheet extends ActorSheet {
       template: "systems/glog2d6/templates/actor/character-sheet.hbs",
       width: 720,
       height: 680,
-      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".tab-content", initial: "attributes" }],
+      tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "attributes" }],
       dragDrop: [{ dragSelector: ".item-list .item", dropSelector: null }]
     });
   }
@@ -152,56 +152,69 @@ export class GlogActorSheet extends ActorSheet {
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return;
 
-    // Add Level Up button listener
+    // Fix tabs functionality
+    const tabs = html.find('.sheet-tabs .item');
+    const tabContents = html.find('.tab');
+
+    // Ensure first tab is active by default
+    if (!tabs.hasClass('active')) {
+      tabs.first().addClass('active');
+      tabContents.hide();
+      tabContents.first().show();
+    }
+
+    // Handle tab clicks
+    tabs.click(ev => {
+      const tab = $(ev.currentTarget);
+      const tabGroup = tab.parents('.tabs').data('group');
+      const tabTarget = tab.data('tab');
+
+      // Update tabs
+      tabs.removeClass('active');
+      tab.addClass('active');
+
+      // Update tab content
+      tabContents.hide();
+      html.find(`.tab[data-tab="${tabTarget}"][data-group="${tabGroup}"]`).show();
+    });
+
+    // Add Level Up button listener (small button next to level)
     html.find('.level-up-btn').click(this._onLevelUp.bind(this));
 
     // Add Inventory Item
     html.find('.item-create').click(this._onItemCreate.bind(this));
 
     // Update Inventory Item
-    html.find('.edit-btn').click(ev => {
+    html.find('.item-edit').click(ev => {
       const li = $(ev.currentTarget).closest(".item");
       const item = this.actor.items.get(li.data("itemId") as string);
       if (item) item.sheet.render(true);
     });
 
     // Delete Inventory Item
-    html.find('.delete-btn').click(this._onItemDelete.bind(this));
+    html.find('.item-delete').click(this._onItemDelete.bind(this));
 
     // Cast Spell
-    html.find('.cast-btn').click(ev => {
+    html.find('.spell-cast').click(ev => {
       const li = $(ev.currentTarget).closest(".item");
       const item = this.actor.items.get(li.data("itemId") as string);
       if (item) this._onSpellCast(item);
     });
 
     // Handle Wound controls
-    html.find('.add-wound-btn').click(this._onWoundAdd.bind(this));
+    html.find('.wound-add').click(this._onWoundAdd.bind(this));
     html.find('.wound-edit').click(this._onWoundEdit.bind(this));
     html.find('.wound-delete').click(this._onWoundDelete.bind(this));
 
     // Handle Quirk controls
-    html.find('.add-quirk-btn').click(this._onQuirkAdd.bind(this));
+    html.find('.quirk-add').click(this._onQuirkAdd.bind(this));
     html.find('.quirk-delete').click(this._onQuirkDelete.bind(this));
 
     // Rollable elements
-    html.find('.rollable, .attribute-modifier').click(this._onRoll.bind(this));
+    html.find('.rollable, .attribute-mod').click(this._onRoll.bind(this));
 
     // Item quantity changes
     html.find('input[data-item-id]').change(this._onItemQuantityChange.bind(this));
-
-    // Setup tooltips
-    this._setupTooltips(html);
-  }
-
-  /**
-   * Setup tooltips for the sheet
-   * @param {JQuery} html The sheet's rendered HTML
-   * @private
-   */
-  _setupTooltips(html: JQuery): void {
-    // The tooltips are handled through CSS, no additional setup required
-    // But we could add more advanced tooltip handling here if needed
   }
 
   /**

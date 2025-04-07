@@ -15,11 +15,14 @@
             <input name="system.hp.max" type="text" value="{{system.hp.max}}" data-dtype="Number"/>
           </div>
         </div>
-        <!-- Level -->
+        <!-- Level with Level Up button next to it -->
         <div class="resource">
           <label>{{localize "GLOG.Level"}}</label>
-          <div class="resource-value">
+          <div class="resource-value level-container">
             <input name="system.details.level" type="text" value="{{system.details.level}}" data-dtype="Number"/>
+            {{#if canLevelUp}}
+            <a class="level-up-btn" title="{{localize 'GLOG.LevelUp'}}"><i class="fas fa-arrow-up"></i></a>
+            {{/if}}
           </div>
         </div>
         <!-- XP -->

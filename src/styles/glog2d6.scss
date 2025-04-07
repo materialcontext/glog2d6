@@ -14,11 +14,19 @@
 
 /* Global styles */
 .glog2d6 {
+  // Use Foundry's default styling variables instead of custom themes
+  --color-text: var(--color-text-dark-primary);
+  --color-text-secondary: var(--color-text-dark-secondary);
+  --color-border: var(--color-border-dark);
+  --color-shadow: var(--color-shadow-primary);
+  --color-bg-btn: var(--color-button);
+  --color-bg-btn-hover: var(--color-button-hover);
+
   .window-content {
-    background: vars.$c-bg;
+    background: var(--color-bg);
     padding: 5px;
-    color: vars.$c-text;
-    font-family: "Roboto", sans-serif;
+    color: var(--color-text);
+    font-family: var(--font-primary);
   }
 
   .grid {
@@ -29,25 +37,9 @@
     padding: 0;
   }
 
-  .grid-2col {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .grid-3col {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .grid-4col {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .grid-5col {
-    grid-template-columns: repeat(5, 1fr);
-  }
-
-  .grid-6col {
-    grid-template-columns: repeat(6, 1fr);
-  }
+  .grid-2col { grid-template-columns: repeat(2, 1fr); }
+  .grid-3col { grid-template-columns: repeat(3, 1fr); }
+  .grid-4col { grid-template-columns: repeat(4, 1fr); }
 
   .flexrow {
     display: flex;
@@ -65,6 +57,7 @@
     font-weight: bold;
   }
 
+  /* Sheet Header */
   .sheet-header {
     @include mix.flex-row;
     margin-bottom: 10px;
@@ -73,7 +66,7 @@
       flex: 0 0 100px;
       height: 100px;
       margin-right: 10px;
-      border: 2px solid vars.$c-tertiary;
+      border: 2px solid var(--color-border);
     }
 
     .header-fields {
@@ -83,7 +76,7 @@
         height: 50px;
         padding: 0px;
         margin: 5px 0;
-        border-bottom: 2px solid vars.$c-tertiary;
+        border-bottom: 2px solid var(--color-border);
 
         input {
           width: 100%;
@@ -98,11 +91,31 @@
     }
   }
 
-  /* Tabs */
-  .tabs {
+  /* Fixed Level Up Button */
+  .level-container {
+    display: flex;
+    align-items: center;
+
+    input {
+      flex: 1;
+    }
+
+    .level-up-btn {
+      margin-left: 5px;
+      color: var(--color-text-hyperlink);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--color-text-hyperlink-hover);
+      }
+    }
+  }
+
+  /* Tabs - Fixed to ensure content displays */
+  .sheet-tabs {
     @include mix.flex-row;
     margin: 5px 0;
-    border-bottom: 2px solid vars.$c-tertiary;
+    border-bottom: 2px solid var(--color-border);
 
     .item {
       padding: 5px 10px;
@@ -111,14 +124,14 @@
       cursor: pointer;
 
       &.active {
-        background: vars.$c-tertiary;
-        color: vars.$c-white;
+        background: var(--color-border);
+        color: var(--color-text-light-highlight);
         font-weight: bold;
       }
     }
   }
 
-  /* Sheet Body */
+  /* Sheet Body - Fixed to ensure tab content displays */
   .sheet-body {
     overflow: hidden;
 
@@ -126,6 +139,11 @@
       height: 100%;
       padding: 0 5px;
       overflow-y: auto;
+      display: none; /* Hide all tabs by default */
+
+      &.active {
+        display: block; /* Show active tab */
+      }
     }
   }
 
@@ -133,7 +151,7 @@
   .attributes {
     .attribute {
       background: rgba(0, 0, 0, 0.05);
-      border: 2px solid vars.$c-tertiary;
+      border: 2px solid var(--color-border);
       border-radius: 5px;
       padding: 5px;
       margin-bottom: 5px;
@@ -159,7 +177,7 @@
         cursor: pointer;
 
         &:hover {
-          text-shadow: 0 0 5px vars.$c-primary;
+          text-shadow: 0 0 5px var(--color-text-hyperlink);
         }
       }
     }
@@ -167,12 +185,8 @@
 
   /* Resources */
   .resources {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-
     .resource {
-      border: 2px solid vars.$c-tertiary;
+      border: 2px solid var(--color-border);
       border-radius: 5px;
       padding: 5px;
       text-align: center;
@@ -192,7 +206,7 @@
           width: 40px;
           height: 24px;
           text-align: center;
-          border: 1px solid vars.$c-tertiary;
+          border: 1px solid var(--color-border);
           border-radius: 3px;
           margin: 0 2px;
         }
@@ -204,356 +218,18 @@
     }
   }
 
-  /* Derived Stats */
-  .derived-stats {
-    margin-top: 10px;
-
-    .stat {
-      border: 2px solid vars.$c-tertiary;
-      border-radius: 5px;
-      padding: 5px;
-      text-align: center;
-
-      label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-
-      .stat-value {
-        input {
-          width: 40px;
-          height: 24px;
-          text-align: center;
-          border: 1px solid vars.$c-tertiary;
-          border-radius: 3px;
-        }
-      }
-    }
-  }
-
-  /* Movement Details */
-  .movement-details {
-    margin-top: 20px;
-    border: 2px solid vars.$c-tertiary;
-    border-radius: 5px;
-    padding: 10px;
-
-    h3 {
-      margin-top: 0;
-      border-bottom: 1px solid vars.$c-tertiary;
-      padding-bottom: 5px;
-    }
-
-    .movement-value {
-      text-align: center;
-
-      label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-
-      span {
-        font-size: 1.2em;
-      }
-    }
-  }
-
-  /* Wounds */
-  .wounds {
-    margin-top: 20px;
-
-    h3 {
-      border-bottom: 1px solid vars.$c-tertiary;
-      padding-bottom: 5px;
-    }
-
-    .wounds-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-
-      .wound {
-        margin-bottom: 5px;
-        padding: 5px;
-        border: 1px solid vars.$c-tertiary;
-        border-radius: 5px;
-
-        .wound-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-
-          h4 {
-            margin: 0;
-          }
-
-          .wound-controls {
-            a {
-              margin-left: 5px;
-              cursor: pointer;
-            }
-          }
-        }
-
-        .wound-description {
-          margin-top: 5px;
-
-          p {
-            margin: 0;
-          }
-        }
-      }
-    }
-
-    .wound-controls {
-      margin-top: 5px;
-
-      a {
-        cursor: pointer;
-      }
-    }
-  }
-
-  /* Inventory & Items */
-  .inventory-filters {
-    margin-bottom: 10px;
-    padding: 5px;
-    border: 1px solid vars.$c-tertiary;
-    border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-
-  .items-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-
-    .item-header {
-      font-weight: bold;
-      border-bottom: 2px solid vars.$c-tertiary;
-      padding: 5px;
-    }
-
-    .item {
-      padding: 5px;
-      border-bottom: 1px solid vars.$c-tertiary;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .item-name {
-        display: flex;
-        align-items: center;
-
-        .item-image {
-          margin-right: 5px;
-        }
-
-        h4 {
-          margin: 0;
-        }
-      }
-
-      .item-controls {
-        display: flex;
-
-        a {
-          margin-left: 5px;
-          cursor: pointer;
-        }
-      }
-    }
-  }
-
-  .item-name {
-    flex: 2;
-  }
-
-  .item-damage, .item-range, .item-defense, .item-type, .item-quantity, .item-slots, .item-school, .item-level {
-    flex: 1;
-    text-align: center;
-  }
-
-  .item-controls {
-    flex: 0 0 60px;
-    text-align: right;
-  }
-
-  /* Spells */
-  .spell-slots, .spell-dice {
-    display: flex;
-    margin-bottom: 10px;
-    padding: 5px;
-
-    label {
-      flex: 1;
-      font-weight: bold;
-    }
-
-    .spell-slot-value, .spell-dice-value {
-      flex: 1;
-
-      input {
-        width: 40px;
-        text-align: center;
-        border: 1px solid vars.$c-tertiary;
-        border-radius: 3px;
-      }
-    }
-  }
-
-  /* Biography */
-  .bio-editor, .traits {
-    margin-bottom: 20px;
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 100px;
-      resize: vertical;
-      border: 1px solid vars.$c-tertiary;
-      border-radius: 3px;
-    }
-  }
-
-  .trait {
-    margin-bottom: 10px;
-  }
-
-  /* Quirks */
-  .quirks-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
-    .quirk {
-      margin-bottom: 5px;
-
-      .quirk-header {
-        display: flex;
-        align-items: center;
-
-        input {
-          flex: 1;
-          margin-right: 5px;
-        }
-
-        .quirk-controls {
-          a {
-            cursor: pointer;
-          }
-        }
-      }
-    }
-  }
-
-  .quirk-controls {
-    margin-top: 5px;
-
-    a {
-      cursor: pointer;
-    }
-  }
-
-  /* Features in Template */
-  .feature-list {
-    .feature-entry {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-
-      input {
-        flex: 1;
-        margin-right: 5px;
-      }
-
-      a {
-        cursor: pointer;
-      }
-    }
-
-    .feature-controls {
-      margin-top: 5px;
-
-      a {
-        cursor: pointer;
-      }
-    }
-  }
-
-  /* Character Header Actions */
-  .character-header-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px; /* Add spacing between buttons */
-  margin-bottom: 10px;
-
-  button {
-    background: var(--c-secondary);
-    color: var(--c-white);
+  /* Character Generator Button - For the actors directory */
+  .generate-character {
+    background: var(--color-bg-btn);
+    color: var(--color-text-light-highlight);
     border: none;
     border-radius: 3px;
-    padding: 5px 10px;
+    padding: 3px 6px;
+    margin-left: 5px;
     cursor: pointer;
-    font-weight: bold;
 
     &:hover {
-      background: var(--c-primary);
-    }
-
-    i {
-      margin-right: 5px;
-    }
-  }
-
-  .level-up {
-    background: #4CAF50; /* Green for level up */
-
-    &:hover {
-      background: #388E3C;
-    }
-  }
-}
-
-  /* Chat Messages */
-  .chat-message {
-    .spell-cast {
-      h2 {
-        margin-top: 0;
-        border-bottom: 1px solid vars.$c-tertiary;
-      }
-
-      .spell-result {
-        p {
-          margin: 5px 0;
-        }
-
-        .mishap {
-          color: #d08000;
-          font-weight: bold;
-        }
-
-        .doom {
-          color: #c00000;
-          font-weight: bold;
-        }
-      }
-    }
-
-    .success {
-      color: #008000;
-    }
-
-    .failure {
-      color: #c00000;
+      background: var(--color-bg-btn-hover);
     }
   }
 }
