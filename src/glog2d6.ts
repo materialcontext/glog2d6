@@ -1,4 +1,6 @@
-// Import document classes == .js extension MUST be declared
+// src/glog2d6.ts
+
+// Import document classes
 import { GlogActor } from "./module/documents/actor.js";
 import { GlogItem } from "./module/documents/item.js";
 
@@ -10,6 +12,7 @@ import { GlogItemSheet } from "./module/sheets/item-sheet.js";
 import { registerSettings } from "./module/helpers/settings.js";
 import { preloadHandlebarsTemplates } from "./module/helpers/templates.js";
 import { GLOG } from "./module/helpers/config.js";
+import { ContentPacks } from "./module/helpers/content-packs.js";
 
 /**
  * Initialize system
@@ -67,7 +70,8 @@ Hooks.once('setup', function() {
  * When ready
  */
 Hooks.once('ready', async function() {
-  // Do anything once the system is ready
+  // Initialize content packs
+  await ContentPacks.createInitialPacks();
 });
 
 /**

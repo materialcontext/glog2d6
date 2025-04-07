@@ -489,6 +489,40 @@
     }
   }
 
+  /* Character Header Actions */
+  .character-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px; /* Add spacing between buttons */
+  margin-bottom: 10px;
+
+  button {
+    background: var(--c-secondary);
+    color: var(--c-white);
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+
+    &:hover {
+      background: var(--c-primary);
+    }
+
+    i {
+      margin-right: 5px;
+    }
+  }
+
+  .level-up {
+    background: #4CAF50; /* Green for level up */
+
+    &:hover {
+      background: #388E3C;
+    }
+  }
+}
+
   /* Chat Messages */
   .chat-message {
     .spell-cast {

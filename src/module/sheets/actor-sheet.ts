@@ -1,4 +1,6 @@
 import { GLOG } from "../helpers/config.js";
+import { CharacterGeneratorDialog } from "../applications/character-generator-dialog.js";
+import { LevelUpDialog } from "../applications/level-up-dialog.js";
 
 /**
  * Extend the basic ActorSheet with system-specific functionality
@@ -34,6 +36,12 @@ export class GlogActorSheet extends ActorSheet {
 
     // Add config data
     context.config = GLOG;
+
+    // Make sure localization is working
+    // This ensures proper attribute names are shown
+    Object.entries(context.config.attributes).forEach(([key, value]) => {
+      context.config.attributes[key] = game.i18n.localize(value as string);
+    });
 
     // Prepare items
     if (actorData.type == 'character' || actorData.type == 'npc') {
@@ -102,6 +110,12 @@ export class GlogActorSheet extends ActorSheet {
 
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return;
+
+    // Add Generate Character button listener
+    html.find('.generate-character').click(this._onGenerateCharacter.bind(this));
+
+    // Add Level Up button listener
+    html.find('.level-up').click(this._onLevelUp.bind(this));
 
     // Add Inventory Item
     html.find('.item-create').click(this._onItemCreate.bind(this));
@@ -336,6 +350,36 @@ export class GlogActorSheet extends ActorSheet {
   }
 
   /**
+   * Handle generating a character
+   * @param {Event} event The originating click event
+   * @private
+   */
+  _onGenerateCharacter(event: Event): void {
+    event.preventDefault();
+
+    // Only for character actors
+    if (this.actor.type !== 'character') return;
+
+    // Show the character generator dialog
+    CharacterGeneratorDialog.show(this.actor);
+  }
+
+  /**
+   * Handle leveling up
+   * @param {Event} event The originating click event
+   * @private
+   */
+  _onLevelUp(event: Event): void {
+    event.preventDefault();
+
+    // Only for character actors
+    if (this.actor.type !== 'character') return;
+
+    // Show the level up dialog
+    LevelUpDialog.show(this.actor);
+  }
+
+  /**
    * Handle spell casting
    * @param {Item} item The spell item being cast
    * @private
@@ -479,12 +523,12 @@ export class GlogActorSheet extends ActorSheet {
 
       // Determine if this is a check, save, or other roll
       let rollType = "other";
-      if (label.includes(game.i18n.localize("GLOG.AttributeStr"))) rollType = "check";
-      if (label.includes(game.i18n.localize("GLOG.AttributeDex"))) rollType = "check";
-      if (label.includes(game.i18n.localize("GLOG.AttributeCon"))) rollType = "check";
-      if (label.includes(game.i18n.localize("GLOG.AttributeInt"))) rollType = "check";
-      if (label.includes(game.i18n.localize("GLOG.AttributeWis"))) rollType = "check";
-      if (label.includes(game.i18n.localize("GLOG.AttributeCha"))) rollType = "check";
+      if (label.includes(game.i18n.localize("GLOG.AttributeStrength"))) rollType = "check";
+      if (label.includes(game.i18n.localize("GLOG.AttributeDexterity"))) rollType = "check";
+      if (label.includes(game.i18n.localize("GLOG.AttributeConstitution"))) rollType = "check";
+      if (label.includes(game.i18n.localize("GLOG.AttributeIntelligence"))) rollType = "check";
+      if (label.includes(game.i18n.localize("GLOG.AttributeWisdom"))) rollType = "check";
+      if (label.includes(game.i18n.localize("GLOG.AttributeCharisma"))) rollType = "check";
 
       // For GLOG 2d6 checks, open a dialog for difficulty
       if (rollType === "check") {

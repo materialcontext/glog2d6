@@ -33,11 +33,11 @@
         </div>
       </div>
       <div class="derived-stats grid grid-4col">
-        <!-- Attack -->
+        <!-- Attack - Now read-only -->
         <div class="stat">
           <label>{{localize "GLOG.Attack"}}</label>
           <div class="stat-value">
-            <input name="system.derived.attack.value" type="text" value="{{system.derived.attack.value}}" data-dtype="Number"/>
+            <input name="system.derived.attack.value" type="text" value="{{system.derived.attack.value}}" data-dtype="Number" disabled/>
           </div>
         </div>
         <!-- Defense -->
@@ -54,16 +54,26 @@
             <input name="system.derived.initiative.value" type="text" value="{{system.derived.initiative.value}}" data-dtype="Number" disabled/>
           </div>
         </div>
-        <!-- Movement -->
+        <!-- Movement - Now read-only -->
         <div class="stat">
           <label>{{localize "GLOG.Movement"}}</label>
           <div class="stat-value">
-            <input name="system.derived.movement.value" type="text" value="{{system.derived.movement.value}}" data-dtype="Number"/>
+            <input name="system.derived.movement.value" type="text" value="{{system.derived.movement.value}}" data-dtype="Number" disabled/>
           </div>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- Character Actions Buttons -->
+  <div class="character-header-actions">
+    <button class="level-up" type="button">
+      <i class="fas fa-arrow-up"></i> {{localize "GLOG.LevelUp"}}
+    </button>
+    <button class="generate-character" type="button">
+      <i class="fas fa-dice"></i> {{localize "GLOG.GenerateCharacter"}}
+    </button>
+  </div>
 
   <!-- Sheet Tab Navigation -->
   <nav class="sheet-tabs tabs" data-group="primary">
@@ -115,8 +125,8 @@
       <div class="wounds">
         <h3>{{localize "GLOG.Wounds"}}</h3>
         <ol class="wounds-list">
-        {{#each system.wounds as |wound id|}}
-          <li class="wound" data-wound-id="{{id}}">
+        {{#each wounds as |wound id|}}
+          <li class="wound" data-wound-id="{{wound._id}}">
             <div class="wound-header flexrow">
               <h4 class="wound-name">{{wound.name}}</h4>
               <div class="wound-controls">
@@ -125,7 +135,7 @@
               </div>
             </div>
             <div class="wound-description">
-              <p>{{wound.description}}</p>
+              <p>{{wound.system.effect}}</p>
             </div>
           </li>
         {{/each}}
