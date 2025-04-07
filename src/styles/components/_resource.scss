@@ -1,0 +1,286 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+.glog2d6 {
+  /* Resource Group */
+  .resource-group {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$space-xs;
+    margin-bottom: vars.$space-md;
+
+    + .resource-group {
+      margin-top: vars.$space-md;
+    }
+  }
+
+  /* Base Resource */
+  .resource {
+    @include mix.card;
+    padding: vars.$space-sm;
+    text-align: center;
+
+    label {
+      font-family: vars.$font-condensed;
+      font-weight: bold;
+      font-size: vars.$font-size-sm;
+      color: vars.$c-secondary;
+      margin-bottom: vars.$space-xs;
+      display: block;
+    }
+
+    .resource-value {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      input {
+        width: 40px;
+        text-align: center;
+        font-weight: bold;
+        border: none;
+        background: rgba(0, 0, 0, 0.05);
+
+        &:hover, &:focus {
+          box-shadow: 0 0 6px vars.$c-gold;
+        }
+      }
+
+      span {
+        font-weight: bold;
+        margin: 0 vars.$space-xs;
+      }
+    }
+
+    &.hp {
+      border-top: 3px solid vars.$c-hp;
+    }
+
+    &.magic {
+      border-top: 3px solid vars.$c-magic;
+    }
+
+    &.xp {
+      border-top: 3px solid vars.$c-gold;
+    }
+  }
+
+  /* Resource meters */
+  .meter {
+    @include mix.meter;
+    height: 32px;
+
+    .label {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: vars.$space-xs;
+      padding: 0 vars.$space-sm;
+      color: white;
+      position: relative;
+      z-index: 1;
+
+      .value, .max {
+        text-shadow: 0 0 4px vars.$c-gold;
+      }
+
+      .separator {
+        color: vars.$c-gold;
+      }
+
+      .bonus {
+        margin-left: auto;
+        font-size: vars.$font-size-lg;
+        opacity: 0.8;
+      }
+    }
+
+    &.hp-meter {
+      @include mix.progress(vars.$c-hp-dark, vars.$c-hp, darken(vars.$c-hp, 10%));
+    }
+
+    &.magic-meter {
+      @include mix.progress(vars.$c-magic-dark, vars.$c-magic, darken(vars.$c-magic, 10%));
+    }
+
+    &.xp-meter {
+      @include mix.progress(darken(vars.$c-gold, 20%), vars.$c-gold, darken(vars.$c-gold, 10%));
+      height: 20px;
+      font-size: vars.$font-size-sm;
+    }
+
+    &.encumbrance-meter {
+      --bar-color-2: mix(vars.$c-hp, vars.$c-failure, var(--bar-percentage, 50%));
+      --bar-color-1: mix(var(--bar-color-2), black, 67%);
+      --bar-color-3: mix(var(--bar-color-2), black, 80%);
+
+      @include mix.progress(var(--bar-color-1), var(--bar-color-2), var(--bar-color-3));
+      height: 20px;
+      font-size: vars.$font-size-sm;
+
+      .breakpoint {
+        display: block;
+        position: absolute;
+        height: 0;
+        width: 0;
+        border-inline: 3px solid transparent;
+        z-index: 1;
+        transform: translateX(-50%);
+
+        &.encumbrance-low {
+          left: 33%;
+        }
+
+        &.encumbrance-high {
+          left: 66%;
+        }
+
+        &.arrow-up {
+          bottom: 0;
+          border-bottom: 3px solid vars.$c-gold;
+        }
+
+        &.arrow-down {
+          top: 0;
+          border-top: 3px solid vars.$c-gold;
+        }
+      }
+    }
+  }
+
+  /* Split meter for HP + Temp HP */
+  .meter.split {
+    display: flex;
+
+    > div {
+      height: 100%;
+      position: relative;
+    }
+
+    .hit-points {
+      flex: 1;
+
+      input {
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        border: none;
+        font-weight: bold;
+        background: none;
+        color: white;
+
+        &:hover, &:focus {
+          box-shadow: 0 0 8px vars.$c-gold;
+        }
+      }
+    }
+
+    .temp, .tempmax {
+      flex: none;
+      width: 40px;
+      border-left: 1px dashed vars.$c-gold;
+
+      input {
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        border: none;
+        font-weight: bold;
+        background: none;
+
+        &::placeholder {
+          text-transform: uppercase;
+        }
+      }
+    }
+
+    .temp input {
+      color: lighten(vars.$c-magic, 20%);
+    }
+
+    .tempmax input {
+      color: lighten(vars.$c-magic-dark, 40%);
+    }
+  }
+
+  /* Derived stats display */
+  .derived-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: vars.$space-sm;
+    margin-bottom: vars.$space-md;
+
+    .stat {
+      @include mix.card;
+      padding: vars.$space-sm;
+      text-align: center;
+
+      label {
+        font-family: vars.$font-condensed;
+        font-weight: bold;
+        font-size: vars.$font-size-sm;
+        color: vars.$c-secondary;
+        margin-bottom: vars.$space-xs;
+        display: block;
+      }
+
+      .stat-value {
+        font-weight: bold;
+
+        input {
+          width: 40px;
+          text-align: center;
+          font-weight: bold;
+          border: none;
+          background: rgba(0, 0, 0, 0.05);
+
+          &:hover, &:focus {
+            box-shadow: 0 0 6px vars.$c-gold;
+          }
+
+          &:disabled {
+            color: vars.$c-text;
+            background: transparent;
+
+            &:hover, &:focus {
+              box-shadow: none;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Movement details */
+  .movement-details {
+    margin: vars.$space-md 0;
+
+    h3 {
+      @include mix.section-title;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: vars.$space-sm;
+
+      .movement-value {
+        @include mix.card;
+        padding: vars.$space-sm;
+        text-align: center;
+
+        label {
+          font-family: vars.$font-condensed;
+          font-weight: bold;
+          font-size: vars.$font-size-sm;
+          color: vars.$c-secondary;
+          margin-bottom: vars.$space-xs;
+          display: block;
+        }
+
+        span {
+          font-weight: bold;
+        }
+      }
+    }
+  }

@@ -1,0 +1,249 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+.glog2d6 {
+  /* Form group */
+  .form-group {
+    margin: 0 0 vars.$space-sm 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+
+    > label {
+      flex: 2;
+      font-family: vars.$font-slab;
+      font-weight: bold;
+      font-size: vars.$font-size-sm;
+      color: vars.$c-primary;
+    }
+
+    .form-fields {
+      flex: 3;
+      display: flex;
+    }
+
+    &.label-top {
+      flex-direction: column;
+      align-items: flex-start;
+
+      > label {
+        margin-bottom: vars.$space-xs;
+        font-family: vars.$font-condensed;
+        text-transform: uppercase;
+        font-size: vars.$font-size-xs;
+        font-weight: bold;
+        color: vars.$c-secondary;
+      }
+
+      .form-fields {
+        width: 100%;
+      }
+    }
+
+    &.stacked {
+      display: flex;
+      flex-direction: column;
+
+      > label {
+        margin-bottom: vars.$space-xs;
+      }
+    }
+  }
+
+  /* Input elements */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"] {
+    height: vars.$form-field-height;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 0 vars.$space-sm;
+    transition: all 250ms ease;
+
+    &:hover, &:focus {
+      border: 1px solid vars.$c-gold;
+      box-shadow: 0 0 6px vars.$c-gold;
+      outline: none;
+    }
+
+    &:disabled {
+      color: vars.$c-inactive;
+      border-color: transparent;
+      background: rgba(0, 0, 0, 0.05);
+
+      &:hover, &:focus {
+        border-color: transparent;
+        box-shadow: none;
+      }
+    }
+  }
+
+  /* Number input */
+  input[type="number"] {
+    text-align: center;
+  }
+
+  /* Select dropdown */
+  select {
+    height: vars.$form-field-height;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 0 vars.$space-sm;
+    cursor: pointer;
+
+    &:hover, &:focus {
+      border: 1px solid vars.$c-gold;
+      box-shadow: 0 0 6px vars.$c-gold;
+      outline: none;
+    }
+
+    option {
+      background-color: vars.$c-parchment;
+      color: vars.$c-text;
+    }
+  }
+
+  /* Text areas */
+  textarea {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: vars.$space-sm;
+    font-family: vars.$font-primary;
+    font-size: vars.$font-size-sm;
+    resize: vertical;
+    transition: all 250ms ease;
+
+    &:hover, &:focus {
+      border: 1px solid vars.$c-gold;
+      box-shadow: 0 0 6px vars.$c-gold;
+      outline: none;
+    }
+
+    &.editor {
+      min-height: 200px;
+    }
+  }
+
+  /* Buttons */
+  button, .button {
+    background: vars.$c-card;
+    color: vars.$c-text;
+    font-family: vars.$font-condensed;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: vars.$font-size-sm;
+    border: 1px solid vars.$c-secondary;
+    border-radius: 3px;
+    padding: vars.$space-xs vars.$space-sm;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$space-xs;
+    transition: all 250ms ease;
+
+    i {
+      margin-right: vars.$space-xs;
+    }
+
+    &:hover, &:focus {
+      border-color: vars.$c-gold;
+      box-shadow: 0 0 5px vars.$c-gold;
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: default;
+      color: vars.$c-inactive;
+
+      &:hover, &:focus {
+        border-color: vars.$c-secondary;
+        box-shadow: none;
+      }
+    }
+
+    &.primary-button {
+      background: vars.$c-gold;
+      color: vars.$c-white;
+      border-color: darken(vars.$c-gold, 10%);
+
+      &:hover, &:focus {
+        background: lighten(vars.$c-gold, 5%);
+        box-shadow: 0 0 8px vars.$c-gold;
+      }
+    }
+
+    &.danger-button {
+      background: vars.$c-failure;
+      color: vars.$c-white;
+      border-color: darken(vars.$c-failure, 10%);
+
+      &:hover, &:focus {
+        background: lighten(vars.$c-failure, 10%);
+        box-shadow: 0 0 8px vars.$c-failure;
+      }
+    }
+
+    &.small-button {
+      padding: 2px 6px;
+      font-size: vars.$font-size-xs;
+    }
+  }
+
+  /* Checkboxes */
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: vars.$space-xs;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    &.disabled {
+      cursor: default;
+      color: vars.$c-inactive;
+
+      input[type="checkbox"] {
+        cursor: default;
+      }
+    }
+  }
+
+  /* Radio buttons */
+  .radio-group {
+    display: flex;
+    gap: vars.$space-md;
+
+    .radio {
+      display: flex;
+      align-items: center;
+      gap: vars.$space-xs;
+      cursor: pointer;
+
+      input[type="radio"] {
+        cursor: pointer;
+      }
+    }
+  }
+
+  /* Form hints */
+  .hint {
+    font-size: vars.$font-size-xs;
+    color: vars.$c-secondary;
+    margin-top: vars.$space-xs;
+
+    &.error {
+      color: vars.$c-failure;
+    }
+  }
+}

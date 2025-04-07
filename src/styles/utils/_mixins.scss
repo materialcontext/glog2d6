@@ -1,3 +1,6 @@
+@use 'variables' as vars;
+
+// Flex layouts
 @mixin flex-row {
   display: flex;
   flex-direction: row;
@@ -13,4 +16,113 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+// Card styling
+@mixin card {
+  background: vars.$c-card;
+  border: vars.$border-gold;
+  border-radius: 3px;
+  box-shadow: 0 0 6px vars.$shadow-dark;
+}
+
+@mixin card-header {
+  background: linear-gradient(to right, vars.$c-red, darken(vars.$c-red, 5%));
+  color: white;
+  border-radius: 3px 3px 0 0;
+  border-bottom: vars.$border-gold;
+  padding: 0.5rem;
+  font-family: vars.$font-slab;
+  font-size: vars.$font-size-md;
+  font-weight: bold;
+}
+
+// Text element styling
+@mixin fancy-title {
+  font-family: vars.$font-fancy;
+  font-weight: bold;
+  text-shadow: 0 0 1px vars.$c-black;
+}
+
+@mixin section-title {
+  font-family: vars.$font-slab;
+  font-weight: bold;
+  font-size: vars.$font-size-lg;
+  border-bottom: 1px solid vars.$c-gold;
+  margin-bottom: vars.$space-sm;
+  padding-bottom: vars.$space-xs;
+}
+
+// Form elements
+@mixin form-input {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: vars.$space-xs vars.$space-sm;
+  transition: all 250ms ease;
+
+  &:hover, &:focus {
+    border: 1px solid vars.$c-gold;
+    box-shadow: 0 0 6px vars.$c-gold;
+  }
+}
+
+@mixin fancy-button {
+  background: vars.$c-card;
+  border: 1px solid vars.$c-secondary;
+  border-radius: 3px;
+  padding: vars.$space-xs vars.$space-sm;
+  font-family: vars.$font-condensed;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 250ms ease;
+
+  &:hover {
+    border-color: vars.$c-gold;
+    box-shadow: 0 0 5px vars.$c-gold;
+  }
+}
+
+// Resource bars
+@mixin hp-bar {
+  &::before {
+    background: linear-gradient(to right, vars.$c-hp-dark, vars.$c-hp);
+    border-right: 3px solid darken(vars.$c-hp, 10%);
+  }
+}
+
+@mixin magic-bar {
+  &::before {
+    background: linear-gradient(to right, vars.$c-magic-dark, vars.$c-magic);
+    border-right: 3px solid darken(vars.$c-magic, 10%);
+  }
+}
+
+// Progress meters
+@mixin meter {
+  border: 1px solid vars.$c-gold;
+  border-radius: 4px;
+  background: vars.$c-dark-light-gray;
+  font-family: vars.$font-primary;
+  font-weight: bold;
+  box-shadow: inset 0 0 16px vars.$shadow-medium;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+@mixin progress($color-start, $color-end, $border-color) {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: var(--bar-percentage, 0%);
+    background: linear-gradient(to right, $color-start, $color-end);
+    border-right: 3px solid $border-color;
+    box-shadow: 0 0 6px vars.$shadow-dark;
+  }
 }

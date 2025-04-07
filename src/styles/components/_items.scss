@@ -1,0 +1,304 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+.glog2d6 {
+  /* Items Container */
+  .items-container {
+    margin-bottom: vars.$space-md;
+  }
+
+  /* Items List */
+  .items-list {
+    list-style: none;
+    padding: 0;
+    margin: vars.$space-xs 0 vars.$space-md;
+
+    /* Header */
+    .item-header {
+      display: flex;
+      align-items: center;
+      padding: vars.$space-xs vars.$space-xs;
+      font-family: vars.$font-condensed;
+      font-weight: bold;
+      font-size: vars.$font-size-xs;
+      text-transform: uppercase;
+      color: vars.$c-secondary;
+      border-bottom: 1px solid vars.$c-gold;
+      margin-bottom: vars.$space-xs;
+
+      .item-name {
+        flex: 2;
+      }
+
+      .item-damage,
+      .item-range,
+      .item-defense,
+      .item-type,
+      .item-level,
+      .item-school,
+      .item-quantity,
+      .item-slots {
+        flex: 1;
+        text-align: center;
+      }
+
+      .item-controls {
+        flex: 0 0 80px;
+        text-align: right;
+        justify-content: flex-end;
+      }
+    }
+
+    /* Item Row */
+    .item {
+      display: flex;
+      align-items: center;
+      padding: vars.$space-xs;
+      border-bottom: 1px dotted vars.$c-secondary;
+      margin-bottom: vars.$space-xs;
+      transition: background-color 250ms ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+
+      .item-name {
+        flex: 2;
+        display: flex;
+        align-items: center;
+        gap: vars.$space-xs;
+
+        .item-image {
+          flex: 0 0 24px;
+          width: 24px;
+          height: 24px;
+          object-fit: cover;
+          border: 1px solid vars.$c-gold;
+          border-radius: 3px;
+        }
+
+        h4 {
+          margin: 0;
+          font-weight: bold;
+          font-size: vars.$font-size-md;
+        }
+      }
+
+      .item-damage,
+      .item-range,
+      .item-defense,
+      .item-type,
+      .item-level,
+      .item-school,
+      .item-slots {
+        flex: 1;
+        text-align: center;
+      }
+
+      .item-quantity {
+        flex: 1;
+        text-align: center;
+
+        input {
+          width: 40px;
+          text-align: center;
+        }
+      }
+
+      .item-controls {
+        flex: 0 0 80px;
+        display: flex;
+        justify-content: flex-end;
+        gap: vars.$space-xs;
+
+        .item-control {
+          color: vars.$c-secondary;
+          cursor: pointer;
+
+          &:hover {
+            color: vars.$c-gold;
+            text-shadow: 0 0 4px rgba(159, 146, 117, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  /* Wounds Section */
+  .wounds {
+    margin-bottom: vars.$space-md;
+
+    h3 {
+      @include mix.section-title;
+    }
+
+    .wounds-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      .wound {
+        @include mix.card;
+        margin-bottom: vars.$space-sm;
+
+        .wound-header {
+          @include mix.card-header;
+          display: flex;
+          justify-content: space-between;
+
+          h4 {
+            margin: 0;
+            font-family: vars.$font-slab;
+            font-size: vars.$font-size-md;
+            font-weight: bold;
+            color: white;
+          }
+
+          .wound-controls {
+            display: flex;
+            gap: vars.$space-xs;
+
+            .wound-control {
+              color: white;
+              cursor: pointer;
+
+              &:hover {
+                text-shadow: 0 0 4px white;
+              }
+            }
+          }
+        }
+
+        .wound-description {
+          padding: vars.$space-sm;
+          font-size: vars.$font-size-sm;
+
+          p {
+            margin: 0;
+          }
+        }
+      }
+    }
+
+    .wound-controls {
+      margin-top: vars.$space-sm;
+
+      .wound-control {
+        @include mix.fancy-button;
+        cursor: pointer;
+      }
+    }
+  }
+
+  /* Quirks Section */
+  .quirks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .quirk {
+      display: flex;
+      align-items: center;
+      padding: vars.$space-xs 0;
+      border-bottom: 1px dotted vars.$c-secondary;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      input {
+        flex: 1;
+        margin-right: vars.$space-sm;
+      }
+
+      .quirk-controls {
+        .quirk-delete {
+          color: vars.$c-secondary;
+          cursor: pointer;
+
+          &:hover {
+            color: vars.$c-failure;
+          }
+        }
+      }
+    }
+  }
+
+  .quirk-controls {
+    margin-top: vars.$space-sm;
+
+    .quirk-add {
+      @include mix.fancy-button;
+      cursor: pointer;
+    }
+  }
+
+  /* Spell Casting */
+  .spell-slots {
+    display: flex;
+    gap: vars.$space-sm;
+    margin-bottom: vars.$space-md;
+
+    .spell-slot, .spell-dice {
+      @include mix.card;
+      padding: vars.$space-sm;
+      flex: 1;
+      text-align: center;
+
+      label {
+        display: block;
+        font-family: vars.$font-condensed;
+        font-weight: bold;
+        font-size: vars.$font-size-sm;
+        color: vars.$c-secondary;
+        margin-bottom: vars.$space-xs;
+      }
+
+      .spell-slot-value, .spell-dice-value {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: vars.$space-xs;
+
+        input {
+          width: 40px;
+          text-align: center;
+          font-weight: bold;
+        }
+
+        span {
+          font-weight: bold;
+        }
+      }
+    }
+
+    .spell-dice {
+      border-top: 3px solid vars.$c-magic;
+    }
+  }
+
+  /* Level with Level Up Button */
+  .level-container {
+    display: flex;
+    align-items: center;
+
+    input {
+      flex: 1;
+    }
+
+    .level-up-btn {
+      margin-left: vars.$space-xs;
+      color: vars.$c-gold;
+      cursor: pointer;
+
+      &:hover {
+        text-shadow: 0 0 4px vars.$c-gold;
+      }
+    }
+  }
+}

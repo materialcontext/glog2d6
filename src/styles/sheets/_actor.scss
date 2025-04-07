@@ -1,25 +1,267 @@
-// Updated _actor.scss file for GLOG 2d6 System
 @use '../utils/variables' as vars;
 @use '../utils/mixins' as mix;
 
-.glog2d6 {
-  /* Base Styles */
-  font-family: 'Roboto', sans-serif;
-  color: vars.$c-text;
-
-  /* Element Styling */
-  --border-radius: 4px;
-  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-  background: var(--color-background);
+.glog2d6.sheet.actor {
+  min-width: 720px;
+  min-height: 680px;
 
   .window-content {
-    background: var(--color-background);
-    color: var(--color-text);
-    padding: var(--space-md);
+    background: url("../assets/images/parchment.jpg") repeat;
+    padding: vars.$space-sm;
+    font-family: vars.$font-primary;
+    color: vars.$c-text;
   }
 
-  /* Tooltip Styles */
+  /* Sheet Header */
+  .sheet-header {
+    @include mix.flex-row;
+    margin-bottom: vars.$space-md;
+    position: relative;
+
+    /* Portrait */
+    .profile-img {
+      flex: 0 0 100px;
+      height: 100px;
+      margin-right: vars.$space-md;
+      border: 2px solid vars.$c-gold;
+      border-radius: 5px;
+      box-shadow: 0 0 8px vars.$shadow-medium;
+      object-fit: cover;
+    }
+
+    /* Header Fields */
+    .header-fields {
+      flex: 1;
+
+      h1.charname {
+        height: 50px;
+        padding: 0;
+        margin: vars.$space-xs 0;
+        border-bottom: 2px solid vars.$c-gold;
+
+        input {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          border: 0;
+          background: transparent;
+          font-family: vars.$font-fancy;
+          font-size: 2em;
+          font-weight: bold;
+
+          &:focus, &:hover {
+            box-shadow: none;
+            border-bottom: 1px solid vars.$c-gold;
+          }
+        }
+      }
+
+      /* Resources Grid (HP, Level, XP) */
+      .resources {
+        margin-bottom: vars.$space-sm;
+      }
+
+      /* Derived Stats Grid */
+      .derived-stats {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  /* Sheet Body & Tabs */
+  .sheet-body {
+    height: calc(100% - 200px);
+    overflow: hidden;
+
+    .tab {
+      height: 100%;
+      overflow-y: auto;
+      padding: 0 vars.$space-xs;
+
+      /* Default hide all tabs */
+      display: none;
+
+      /* Show active tab */
+      &.active {
+        display: block;
+      }
+    }
+
+    /* Attributes Tab */
+    .attributes {
+      .attribute {
+        position: relative;
+        background: rgba(0, 0, 0, 0.05);
+        border: 2px solid vars.$c-gold;
+        border-radius: 5px;
+        padding: vars.$space-sm;
+        margin-bottom: vars.$space-xs;
+        display: flex;
+        align-items: center;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: url('../assets/images/attribute-bg.png') no-repeat center center / contain;
+          opacity: 0.1;
+          z-index: -1;
+        }
+
+        label {
+          flex: 1;
+          font-family: vars.$font-slab;
+          font-weight: bold;
+          font-size: vars.$font-size-md;
+          color: vars.$c-primary;
+        }
+
+        input {
+          flex: 0 0 35px;
+          text-align: center;
+          font-weight: bold;
+          font-size: vars.$font-size-md;
+          border: 1px solid transparent;
+          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.6);
+
+          &:hover, &:focus {
+            border-color: vars.$c-gold;
+            box-shadow: 0 0 4px vars.$c-gold;
+          }
+        }
+
+        .attribute-mod {
+          flex: 0 0 35px;
+          text-align: center;
+          font-weight: bold;
+          font-size: vars.$font-size-md;
+          color: vars.$c-primary;
+          border-radius: 50%;
+          padding: vars.$space-xs;
+          cursor: pointer;
+          text-shadow: 0 0 1px vars.$c-black;
+          transition: all 250ms ease;
+
+          &:hover {
+            background-color: vars.$c-gold;
+            color: white;
+            text-shadow: 0 0 2px vars.$c-black;
+          }
+
+          &.rollable {
+            position: relative;
+
+            &::after {
+              content: '\f6cf'; /* dice icon */
+              font-family: 'Font Awesome 5 Free';
+              font-weight: 900;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              opacity: 0;
+              transition: opacity 250ms ease;
+            }
+
+            &:hover::after {
+              opacity: 0.7;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Inventory Styling */
+  .inventory {
+    .inventory-filters {
+      margin-bottom: vars.$space-sm;
+      padding: vars.$space-xs vars.$space-sm;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.05);
+
+      .inventory-filter {
+        font-family: vars.$font-condensed;
+        font-weight: bold;
+
+        span {
+          font-weight: normal;
+        }
+      }
+    }
+  }
+
+  /* Biography Tab */
+  .bio {
+    .bio-editor {
+      margin-bottom: vars.$space-md;
+
+      label {
+        @include mix.section-title;
+      }
+
+      textarea {
+        min-height: 200px;
+        font-family: vars.$font-primary;
+        font-size: vars.$font-size-md;
+        line-height: 1.4;
+        border: 1px solid vars.$c-secondary;
+        border-radius: 5px;
+        padding: vars.$space-sm;
+        background: rgba(255, 255, 255, 0.6);
+
+        &:focus {
+          border-color: vars.$c-gold;
+          box-shadow: 0 0 8px vars.$c-gold;
+        }
+      }
+    }
+
+    .traits {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: vars.$space-md;
+      margin-bottom: vars.$space-md;
+
+      .trait {
+        label {
+          @include mix.section-title;
+          margin-top: 0;
+        }
+
+        textarea {
+          height: 100px;
+          font-family: vars.$font-primary;
+          font-size: vars.$font-size-sm;
+          line-height: 1.4;
+          border: 1px solid vars.$c-secondary;
+          border-radius: 5px;
+          padding: vars.$space-sm;
+          background: rgba(255, 255, 255, 0.6);
+
+          &:focus {
+            border-color: vars.$c-gold;
+            box-shadow: 0 0 8px vars.$c-gold;
+          }
+        }
+      }
+    }
+  }
+
+  /* Spells Tab */
+  .spells {
+    .spell-slots {
+      margin-bottom: vars.$space-md;
+      border-bottom: 1px solid vars.$c-gold;
+      padding-bottom: vars.$space-md;
+    }
+  }
+
+  /* Tooltips */
   [data-tooltip] {
     position: relative;
     cursor: help;
@@ -30,633 +272,37 @@
       bottom: 125%;
       left: 50%;
       transform: translateX(-50%);
-      padding: var(--space-xs) var(--space-sm);
-      background: rgba(0, 0, 0, 0.8);
+      padding: vars.$space-xs vars.$space-sm;
+      background-color: vars.$c-black;
       color: white;
-      font-size: var(--font-size-xs);
-      border-radius: var(--border-radius);
+      font-size: vars.$font-size-xs;
       white-space: nowrap;
+      border-radius: 3px;
       opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s, visibility 0.2s;
-      z-index: 100;
       pointer-events: none;
+      transition: opacity 250ms ease;
+      z-index: 1000;
     }
 
     &:hover::after {
       opacity: 1;
-      visibility: visible;
     }
   }
 
-  /* Form Elements */
-  input, select, textarea {
-    background: var(--color-foreground);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    padding: var(--space-xs) var(--space-sm);
+  /* Limited View */
+  &.limited {
+    min-width: 600px;
+    min-height: 600px;
 
-    &:focus {
-      border-color: var(--color-accent);
-      box-shadow: 0 0 0 2px rgba(121, 134, 203, 0.3);
-      outline: none;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  textarea {
-    min-height: 5rem;
-    resize: vertical;
-  }
-
-  /* Buttons */
-  button, .button {
-    background: var(--color-accent);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius);
-    padding: var(--space-xs) var(--space-md);
-    cursor: pointer;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background: var(--color-accent-secondary);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    &.button-success {
-      background: var(--color-success);
-      &:hover { background: var(--color-success-dark); }
-    }
-
-    &.button-danger {
-      background: var(--color-danger);
-      &:hover { background: var(--color-danger-dark); }
-    }
-    }
-  }
-
-  /* Character Sheet Header */
-  .sheet-header {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-
-    .profile-img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 2px solid var(--color-accent);
-      object-fit: cover;
-    }
-
-    .header-details {
-      display: flex;
-      flex-direction: column;
-
-      .character-name {
-        font-size: var(--font-size-xl);
-        font-weight: bold;
-        margin-bottom: var(--space-sm);
-        color: var(--color-text);
-
-        input {
-          width: 100%;
-          font-size: inherit;
-          font-weight: inherit;
-          background: transparent;
-          border: none;
-          border-bottom: 1px solid var(--color-border);
-          padding: var(--space-xs) 0;
-
-          &:focus {
-            border-bottom-color: var(--color-accent);
-          }
-        }
-      }
-
-      .character-meta {
-        display: flex;
-        gap: var(--space-md);
-        margin-bottom: var(--space-sm);
-
-        .character-level {
-          display: flex;
-          align-items: center;
-          gap: var(--space-xs);
-
-          .level-indicator {
-            font-size: var(--font-size-lg);
-            font-weight: bold;
-          }
-
-          .level-up-btn {
-            color: var(--color-success);
-            cursor: pointer;
-
-            &:hover {
-              color: var(--color-success-light);
-            }
-
-            &:disabled {
-              color: var(--color-text-secondary);
-              cursor: not-allowed;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /* Primary Resources Bar */
-  .resources-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-
-    .resource {
-      background: var(--color-foreground);
-      border-radius: var(--border-radius);
-      padding: var(--space-sm);
-      text-align: center;
-      box-shadow: var(--box-shadow);
-
-      .resource-label {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-xs);
-      }
-
-      .resource-value {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: var(--space-xs);
-
-        input {
-          width: 40px;
-          text-align: center;
-          font-weight: bold;
-        }
-
-        .separator {
-          color: var(--color-text-secondary);
-        }
-      }
-    }
-
-    .hp-resource {
-      border-top: 3px solid var(--color-danger);
-    }
-
-    .xp-resource {
-      border-top: 3px solid var(--color-info);
-    }
-  }
-
-  /* Character Attributes */
-  .attributes-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-
-    .attribute {
-      background: var(--color-foreground);
-      border-radius: var(--border-radius);
-      padding: var(--space-sm);
-      box-shadow: var(--box-shadow);
-
-      .attribute-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-xs);
-
-        .attribute-label {
-          font-weight: bold;
-          color: var(--color-text);
-        }
-      }
-
-      .attribute-body {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .attribute-value {
-          input {
-            width: 40px;
-            text-align: center;
-            font-weight: bold;
-          }
-        }
-
-        .attribute-modifier {
-          background: var(--color-accent);
-          color: white;
-          border-radius: 50%;
-          width: 28px;
-          height: 28px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-weight: bold;
-          cursor: pointer;
-          transition: background-color 0.2s;
-
-          &:hover {
-            background: var(--color-accent-secondary);
-          }
-        }
-      }
-    }
-  }
-
-  /* Derived Stats */
-  .derived-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-
-    .derived-stat {
-      background: var(--color-foreground);
-      border-radius: var(--border-radius);
-      padding: var(--space-sm);
-      box-shadow: var(--box-shadow);
-      text-align: center;
-
-      .stat-label {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-xs);
-      }
-
-      .stat-value {
-        font-size: var(--font-size-lg);
-        font-weight: bold;
-      }
-
-      &[data-tooltip] {
-        cursor: help;
-      }
-    }
-  }
-
-  /* Tabs Navigation */
-  .sheet-tabs {
-    display: flex;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-md);
-    border-bottom: 1px solid var(--color-border);
-
-    .tab {
-      padding: var(--space-sm) var(--space-md);
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-
-      &:hover {
-        color: var(--color-text);
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      &.active {
-        color: var(--color-accent);
-        border-bottom-color: var(--color-accent);
-      }
-    }
-  }
-
-  /* Tab Content */
-  .sheet-body {
-    background: var(--color-foreground);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-
-    .tab-content {
-      padding: var(--space-md);
-      display: none;
-
-      &.active {
-        display: block;
-      }
-
-      h3 {
-        font-size: var(--font-size-lg);
-        margin-top: 0;
-        margin-bottom: var(--space-md);
-        border-bottom: 1px solid var(--color-border);
-        padding-bottom: var(--space-xs);
-      }
-    }
-  }
-
-  /* Items Lists */
-  .items-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    .items-header {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: var(--space-xs);
-      padding: var(--space-xs);
-      font-weight: bold;
-      color: var(--color-text-secondary);
-      border-bottom: 1px solid var(--color-border);
-
-      &.weapons-header {
-        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 80px;
-      }
-
-      &.armor-header {
-        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-      }
-
-      &.gear-header {
-        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-      }
-
-      &.spells-header {
-        grid-template-columns: 2fr 1fr 1fr 100px;
-      }
-
-      &.features-header {
-        grid-template-columns: 2fr 2fr 80px;
-      }
-
-      &.templates-header {
-        grid-template-columns: 2fr 1fr 80px;
-      }
-
-      &.wounds-header {
-        grid-template-columns: 2fr 1fr 80px;
-      }
-    }
-
-    .item {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: var(--space-xs);
-      padding: var(--space-xs);
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      transition: background-color 0.2s;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      &.weapons-item {
-        grid-template-columns: 2fr 1fr 1fr 1fr 1fr 80px;
-      }
-
-      &.armor-item {
-        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-      }
-
-      &.gear-item {
-        grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-      }
-
-      &.spells-item {
-        grid-template-columns: 2fr 1fr 1fr 100px;
-      }
-
-      &.features-item {
-        grid-template-columns: 2fr 2fr 80px;
-      }
-
-      &.templates-item {
-        grid-template-columns: 2fr 1fr 80px;
-      }
-
-      &.wounds-item {
-        grid-template-columns: 2fr 1fr 80px;
-      }
-
-      .item-name {
-        display: flex;
-        align-items: center;
-        gap: var(--space-xs);
-
-        .item-image {
-          width: 24px;
-          height: 24px;
-          border-radius: var(--border-radius);
-        }
-      }
-
-      .item-controls {
-        display: flex;
-        gap: var(--space-xs);
-        justify-content: flex-end;
-
-        .item-control {
-          color: var(--color-text-secondary);
-          cursor: pointer;
-
-          &:hover {
-            color: var(--color-text);
-          }
-
-          &.edit-btn:hover {
-            color: var(--color-info-light);
-          }
-
-          &.delete-btn:hover {
-            color: var(--color-danger-light);
-          }
-
-          &.cast-btn:hover {
-            color: var(--color-accent-light);
-          }
-        }
-      }
-    }
-
-    .items-footer {
-      padding: var(--space-sm) 0;
-
-      .add-item-btn {
-        display: flex;
-        align-items: center;
-        gap: var(--space-xs);
-        color: var(--color-text-secondary);
-        cursor: pointer;
-
-        &:hover {
-          color: var(--color-accent);
-        }
-
-        i {
-          font-size: var(--font-size-sm);
-        }
-      }
-    }
-  }
-
-  /* Spells Tab */
-  .spell-resources {
-    display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-md);
-
-    .spell-resource {
-      background: var(--color-foreground);
-      border-radius: var(--border-radius);
-      padding: var(--space-sm);
-      box-shadow: var(--box-shadow);
-      flex: 1;
-
-      .resource-label {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-xs);
-      }
-
-      .resource-value {
-        display: flex;
-        align-items: center;
-        gap: var(--space-xs);
-
-        input {
-          width: 40px;
-          text-align: center;
-        }
-
-        .separator {
-          color: var(--color-text-secondary);
-        }
-      }
-    }
-  }
-
-  /* Wounds */
-  .wounds-list {
-    .wound {
-      background: var(--color-foreground);
-      border-radius: var(--border-radius);
-      margin-bottom: var(--space-sm);
-      overflow: hidden;
-
-      .wound-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: var(--space-sm);
-        background: rgba(0, 0, 0, 0.1);
-
-        .wound-title {
-          font-weight: bold;
-        }
-
-        .wound-controls {
-          display: flex;
-          gap: var(--space-xs);
-        }
-      }
-
-      .wound-body {
-        padding: var(--space-sm);
-        font-size: var(--font-size-sm);
-      }
-    }
-  }
-
-  /* Biography Tab */
-  .biography {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-
-    .bio-section {
-      margin-bottom: var(--space-md);
-
-      h3 {
-        margin-top: 0;
-        margin-bottom: var(--space-sm);
-      }
-    }
-
-    .quirks-list {
-      .quirk {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        margin-bottom: var(--space-xs);
-
-        input {
-          flex: 1;
-        }
-
-        .quirk-delete {
-          color: var(--color-danger);
-          cursor: pointer;
-
-          &:hover {
-            color: var(--color-danger-light);
-          }
-        }
-      }
-    }
-  }
-
-  /* Responsive adjustments for smaller screens */
-  @media (max-width: 768px) {
-    .attributes-grid,
-    .derived-stats {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .items-list {
-      .items-header, .item {
-        &.weapons-header, &.weapons-item {
-          grid-template-columns: 2fr 1fr 1fr 80px;
-        }
-
-        &.armor-header, &.armor-item {
-          grid-template-columns: 2fr 1fr 80px;
-        }
-
-        &.gear-header, &.gear-item {
-          grid-template-columns: 2fr 1fr 80px;
-        }
-
-        &.spells-header, &.spells-item {
-          grid-template-columns: 2fr 1fr 80px;
-        }
-      }
-    }
-  }
-
-  @media (max-width: 480px) {
     .sheet-header {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
 
       .profile-img {
-        margin: 0 auto;
+        margin-right: 0;
+        margin-bottom: vars.$space-sm;
       }
     }
-
-    .attributes-grid,
-    .derived-stats {
-      grid-template-columns: 1fr;
-    }
   }
-
+}

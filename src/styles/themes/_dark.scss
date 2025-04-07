@@ -1,0 +1,276 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+/* Dark Theme Styling for GLOG 2d6 */
+.glog2d6.theme-dark {
+  --color-text: vars.$c-dark-text;
+  --color-text-secondary: lighten(vars.$c-dark-text, 10%);
+  --color-border: vars.$c-dark-blue-gray-3;
+
+  .window-content {
+    background: vars.$c-dark-bg url("../assets/images/dark-bg.jpg") repeat;
+    color: vars.$c-dark-text;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5 {
+    color: vars.$c-dark-text;
+    border-color: vars.$c-dark-blue-gray-3;
+  }
+
+  .name-stacked {
+    .title {
+      color: vars.$c-dark-text;
+    }
+
+    .subtitle {
+      color: darken(vars.$c-dark-text, 15%);
+    }
+  }
+
+  /* Forms */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"],
+  select,
+  textarea {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid transparent;
+    color: vars.$c-dark-text;
+
+    &:focus, &:hover {
+      border-color: vars.$c-gold;
+      box-shadow: 0 0 6px rgba(159, 146, 117, 0.5);
+    }
+
+    &::placeholder {
+      color: rgba(207, 210, 218, 0.5);
+    }
+  }
+
+  select option {
+    background-color: vars.$c-dark-card;
+    color: vars.$c-dark-text;
+  }
+
+  /* Buttons */
+  button, .button {
+    background: vars.$c-dark-card;
+    color: vars.$c-dark-text;
+    border-color: vars.$c-dark-blue-gray-3;
+
+    &:hover, &:focus {
+      border-color: vars.$c-gold;
+      box-shadow: 0 0 5px rgba(159, 146, 117, 0.5);
+    }
+  }
+
+  /* Cards and Containers */
+  .card {
+    background: vars.$c-dark-card;
+    border-color: vars.$c-dark-blue-gray-3;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+
+    .card-header {
+      background: linear-gradient(to right, darken(vars.$c-red, 5%), darken(vars.$c-red, 10%));
+    }
+  }
+
+  /* Form Groups */
+  .form-group {
+    label {
+      color: vars.$c-dark-text;
+    }
+
+    .hint {
+      color: darken(vars.$c-dark-text, 15%);
+    }
+  }
+
+  /* Tabs */
+  .sheet-tabs {
+    border-bottom-color: vars.$c-dark-blue-gray-3;
+
+    .item {
+      color: darken(vars.$c-dark-text, 15%);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: vars.$c-dark-text;
+      }
+
+      &.active {
+        background: vars.$c-dark-blue-gray-3;
+        color: vars.$c-gold;
+        text-shadow: 0 0 2px black;
+      }
+    }
+  }
+
+  /* Resources */
+  .resource {
+    background: vars.$c-dark-card;
+    border-color: vars.$c-dark-blue-gray-3;
+
+    label {
+      color: darken(vars.$c-dark-text, 15%);
+    }
+
+    &.hp {
+      border-top-color: darken(vars.$c-hp, 10%);
+    }
+
+    &.magic {
+      border-top-color: darken(vars.$c-magic, 10%);
+    }
+
+    &.xp {
+      border-top-color: darken(vars.$c-gold, 10%);
+    }
+  }
+
+  /* Meters */
+  .meter {
+    background: rgba(0, 0, 0, 0.5);
+
+    .label {
+      text-shadow: 0 0 3px black;
+    }
+  }
+
+  /* Items List */
+  .items-list {
+    .item-header {
+      color: darken(vars.$c-dark-text, 15%);
+      border-bottom-color: vars.$c-dark-blue-gray-3;
+    }
+
+    .item {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      .item-name {
+        .item-image {
+          border-color: vars.$c-dark-blue-gray-3;
+        }
+      }
+
+      .item-controls {
+        .item-control {
+          color: darken(vars.$c-dark-text, 15%);
+
+          &:hover {
+            color: vars.$c-gold;
+          }
+        }
+      }
+    }
+  }
+
+  /* Wounds */
+  .wounds-list {
+    .wound {
+      background: vars.$c-dark-card;
+      border-color: vars.$c-dark-blue-gray-3;
+    }
+  }
+
+  /* Quirks */
+  .quirks-list {
+    .quirk {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  /* Attributes */
+  .attributes {
+    .attribute {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: vars.$c-dark-blue-gray-3;
+
+      label {
+        color: vars.$c-dark-text;
+      }
+
+      input {
+        background: rgba(0, 0, 0, 0.3);
+        color: vars.$c-dark-text;
+      }
+
+      .attribute-mod {
+        color: vars.$c-gold;
+
+        &:hover {
+          background-color: rgba(159, 146, 117, 0.3);
+        }
+      }
+    }
+  }
+
+  /* Actor-Specific Dark Styles */
+  &.sheet.actor {
+    .sheet-header {
+      h1.charname {
+        border-bottom-color: vars.$c-dark-blue-gray-3;
+
+        input {
+          color: vars.$c-dark-text;
+        }
+      }
+    }
+
+    /* NPC Dark Styles */
+    &.npc {
+      .ability-scores {
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+
+        .ability-score {
+          border-right-color: vars.$c-dark-blue-gray-3;
+
+          .save-tab {
+            background: vars.$c-dark-blue-gray-2;
+            border-color: vars.$c-dark-blue-gray-3;
+          }
+        }
+      }
+
+      .legendary {
+        .pips {
+          .pip {
+            filter: brightness(0.8);
+          }
+        }
+      }
+    }
+  }
+
+  /* Item-Specific Dark Styles */
+  &.sheet.item {
+    .sheet-header {
+      border-bottom-color: vars.$c-dark-blue-gray-3;
+    }
+  }
+
+  /* Pills */
+  .pills {
+    .pill {
+      background: rgba(0, 0, 0, 0.3);
+      border-color: vars.$c-dark-blue-gray-3;
+
+      &.green {
+        background: rgba(0, 108, 0, 0.6);
+      }
+
+      &.red {
+        background: rgba(110, 0, 0, 0.6);
+      }
+    }
+  }
+}

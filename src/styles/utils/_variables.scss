@@ -1,4 +1,4 @@
-// Colors
+// Base Colors
 $c-white: #fff;
 $c-black: #000;
 $c-primary: #4b4a44;
@@ -6,3 +6,77 @@ $c-secondary: #7a7971;
 $c-tertiary: #d9d8d4;
 $c-bg: #f0f0e0;
 $c-text: #191813;
+
+// Theme Colors
+$c-gold: #9f9275;
+$c-red: #44191A;
+$c-parchment: #f1ebe8;
+$c-card: #f8f4f1;
+$c-groove: #eeede0;
+
+// System-specific colors
+$c-hp: #3ba55d;
+$c-hp-dark: #1b4b29;
+$c-magic: #776493;
+$c-magic-dark: #433754;
+
+// UI Elements
+$c-success: #006c00;
+$c-failure: #6e0000;
+$c-inactive: #7a7971;
+$c-info: #5c87b9;
+$c-warn: #9b6903;
+
+// Dark mode colors
+$c-dark-bg: #0d0b0b;
+$c-dark-card: #252830;
+$c-dark-text: #cfd2da;
+$c-dark-gray: #313131;
+$c-dark-light-gray: #3d3d3d;
+$c-dark-blue-gray-1: #242731;
+$c-dark-blue-gray-3: #434857;
+
+// Borders
+$border-gold: 1px solid $c-gold;
+$border-light: 1px solid #CCC;
+$border-groove: 2px groove $c-groove;
+$border-dotted: 1px dotted #bbb;
+
+// Typography
+$font-primary: "Roboto", sans-serif;
+$font-fancy: "Modesto Condensed", "Palatino Linotype", serif;
+$font-condensed: "Roboto Condensed", sans-serif;
+$font-slab: "Roboto Slab", serif;
+
+// Font sizes
+$font-size-xxs: 0.5625rem;   // 9px
+$font-size-xs: 0.625rem;     // 10px
+$font-size-sm: 0.75rem;      // 12px
+$font-size-md: 0.875rem;     // 14px
+$font-size-lg: 1rem;         // 16px
+$font-size-xl: 1.125rem;     // 18px
+$font-size-xxl: 1.25rem;     // 20px
+$font-size-h3: 1.5rem;       // 24px
+$font-size-h2: 1.75rem;      // 28px
+$font-size-h1: 2rem;         // 32px
+
+// Sizing
+$form-field-height: 26px;
+$sheet-header-height: 170px;
+$sidebar-width: 230px;
+
+// Spacing
+$space-xxs: 0.125rem;   // 2px
+$space-xs: 0.25rem;     // 4px
+$space-sm: 0.5rem;      // 8px
+$space-md: 1rem;        // 16px
+$space-lg: 1.5rem;      // 24px
+$space-xl: 2rem;        // 32px
+
+// Effects
+$shadow-light: rgba(0, 0, 0, 0.15);
+$shadow-medium: rgba(0, 0, 0, 0.25);
+$shadow-dark: rgba(0, 0, 0, 0.45);
+$highlight-light: rgba(255, 255, 255, 0.1);
+$highlight-medium: rgba(255, 255, 255, 0.25);
+$highlight-strong: rgba(255, 255, 255, 0.45);

@@ -1,0 +1,165 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+/* Font Imports */
+@font-face {
+  font-family: 'Modesto Condensed';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../../assets/fonts/modesto-condensed/modesto-condensed.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Modesto Condensed';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../../assets/fonts/modesto-condensed/modesto-condensed-bold.woff2') format('woff2');
+}
+
+.glog2d6 {
+  font-family: vars.$font-primary;
+  color: vars.$c-text;
+
+  h1, h2, h3 {
+    font-family: vars.$font-fancy;
+    font-weight: bold;
+    margin: 0 0 vars.$space-sm 0;
+  }
+
+  h1 {
+    font-size: vars.$font-size-h1;
+  }
+
+  h2 {
+    font-size: vars.$font-size-h2;
+  }
+
+  h3 {
+    font-size: vars.$font-size-h3;
+    padding-bottom: vars.$space-xs;
+    margin-bottom: vars.$space-sm;
+    border-bottom: 1px solid vars.$c-black;
+
+    &.icon {
+      display: flex;
+      align-items: center;
+      gap: vars.$space-xs;
+
+      > i {
+        font-size: vars.$font-size-lg;
+      }
+
+      > span {
+        font-size: vars.$font-size-md;
+
+        &.counter {
+          margin-left: auto;
+          line-height: 1;
+        }
+      }
+    }
+  }
+
+  /* Text Styling */
+  .fancy-title {
+    @include mix.fancy-title;
+  }
+
+  .section-title {
+    @include mix.section-title;
+  }
+
+  /* Name and Label Styling */
+  .name-stacked {
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      font-family: vars.$font-slab;
+      font-size: vars.$font-size-lg;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      font-family: vars.$font-primary;
+      font-size: vars.$font-size-xs;
+      color: vars.$c-secondary;
+    }
+
+    &.rollable {
+      cursor: pointer;
+      &:hover .title {
+        text-shadow: 0 0 8px red;
+      }
+    }
+  }
+
+  /* Content links and rolls */
+  .content-link, .roll-link {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+
+    > i {
+      margin-right: vars.$space-xs;
+      opacity: 0.75;
+    }
+
+    &:hover {
+      text-shadow: 0 0 8px vars.$c-gold;
+
+      > i {
+        opacity: 1;
+      }
+    }
+  }
+
+  .inline-roll {
+    background: transparent;
+    border: none;
+    padding: 0;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+
+    &:hover {
+      text-shadow: 0 0 8px vars.$c-gold;
+    }
+  }
+
+  /* Tables */
+  table {
+    border-color: vars.$c-gold;
+    border-radius: 0;
+    margin: 0.5em 0;
+
+    thead {
+      background: linear-gradient(
+        to right,
+        vars.$c-red,
+        lighten(vars.$c-red, 10%)
+      );
+      color: white;
+      text-align: center;
+      font-family: vars.$font-slab;
+      font-weight: bold;
+
+      th {
+        line-height: normal;
+        font-size: vars.$font-size-lg;
+      }
+    }
+
+    tr:nth-child(even) {
+      background-color: vars.$c-card;
+    }
+
+    tr:nth-child(odd) {
+      background-color: vars.$c-parchment;
+    }
+
+    td {
+      padding: 0.375em;
+    }
+  }
+}

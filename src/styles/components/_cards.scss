@@ -1,0 +1,317 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+.glog2d6 {
+  /* Card Component */
+  .card {
+    @include mix.card;
+    margin-bottom: vars.$space-md;
+
+    .card-header {
+      @include mix.card-header;
+
+      h3 {
+        border: none;
+        margin: 0;
+        padding: 0;
+        color: white;
+      }
+    }
+
+    .card-content {
+      padding: vars.$space-sm;
+    }
+
+    .card-footer {
+      padding: 0 vars.$space-sm vars.$space-sm;
+      text-align: right;
+    }
+  }
+
+  /* Character Card */
+  .character-card {
+    @include mix.card;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: vars.$space-md;
+
+    .portrait {
+      position: relative;
+
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 2px solid vars.$c-gold;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 6px 6px 8px;
+        border: 2px solid vars.$c-gold;
+        pointer-events: none;
+        z-index: 1;
+      }
+    }
+
+    .character-details {
+      padding: vars.$space-sm;
+      display: flex;
+      flex-direction: column;
+      gap: vars.$space-xs;
+
+      .character-name {
+        font-family: vars.$font-fancy;
+        font-size: vars.$font-size-xl;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: vars.$space-xs;
+      }
+
+      .character-class {
+        font-family: vars.$font-condensed;
+        font-size: vars.$font-size-sm;
+        color: vars.$c-secondary;
+        text-align: center;
+        margin-bottom: vars.$space-sm;
+      }
+
+      .attributes-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: vars.$space-xs;
+
+        .attribute {
+          text-align: center;
+
+          .attribute-label {
+            font-family: vars.$font-condensed;
+            font-size: vars.$font-size-xs;
+            color: vars.$c-secondary;
+          }
+
+          .attribute-value {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+
+  /* Stats Card */
+  .stats-card {
+    @include mix.card;
+    margin-bottom: vars.$space-md;
+
+    .stats-header {
+      @include mix.card-header;
+
+      h3 {
+        border: none;
+        margin: 0;
+        padding: 0;
+        color: white;
+      }
+    }
+
+    .stats-content {
+      padding: vars.$space-sm;
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: vars.$space-sm;
+
+        .stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          .stat-label {
+            font-family: vars.$font-condensed;
+            font-size: vars.$font-size-xs;
+            color: vars.$c-secondary;
+          }
+
+          .stat-value {
+            font-weight: bold;
+            font-size: vars.$font-size-lg;
+          }
+        }
+      }
+    }
+  }
+
+  /* Template Card */
+  .template-card {
+    @include mix.card;
+    display: flex;
+    margin-bottom: vars.$space-sm;
+
+    .template-info {
+      flex: 3;
+      padding: vars.$space-sm;
+      display: flex;
+      flex-direction: column;
+
+      .template-header {
+        display: flex;
+        align-items: center;
+        gap: vars.$space-xs;
+        margin-bottom: vars.$space-xs;
+
+        img {
+          width: 32px;
+          height: 32px;
+          border: 1px solid vars.$c-gold;
+          border-radius: 3px;
+        }
+
+        .template-name {
+          flex: 1;
+          font-family: vars.$font-slab;
+          font-size: vars.$font-size-lg;
+          font-weight: bold;
+        }
+
+        .template-level {
+          font-family: vars.$font-fancy;
+          font-size: vars.$font-size-lg;
+          font-weight: bold;
+          color: vars.$c-gold;
+        }
+      }
+
+      .template-features {
+        flex: 1;
+        font-size: vars.$font-size-sm;
+
+        ul {
+          list-style: disc;
+          padding-left: 1.5em;
+          margin: 0;
+        }
+      }
+    }
+
+    .template-controls {
+      flex: 0 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: vars.$space-sm;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-left: 1px solid rgba(0, 0, 0, 0.1);
+
+      .template-control {
+        color: vars.$c-secondary;
+        cursor: pointer;
+
+        &:hover {
+          color: vars.$c-gold;
+          text-shadow: 0 0 4px rgba(159, 146, 117, 0.4);
+        }
+      }
+    }
+  }
+
+  /* Spell Card */
+  .spell-card {
+    @include mix.card;
+    margin-bottom: vars.$space-sm;
+
+    .spell-header {
+      @include mix.card-header;
+      display: flex;
+      justify-content: space-between;
+
+      .spell-name {
+        font-family: vars.$font-slab;
+        font-size: vars.$font-size-md;
+        font-weight: bold;
+        color: white;
+      }
+
+      .spell-school {
+        font-family: vars.$font-condensed;
+        font-size: vars.$font-size-sm;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+
+    .spell-details {
+      padding: vars.$space-sm;
+      display: flex;
+      flex-direction: column;
+      gap: vars.$space-xs;
+
+      .spell-property {
+        display: flex;
+
+        .property-label {
+          flex: 0 0 80px;
+          font-weight: bold;
+        }
+
+        .property-value {
+          flex: 1;
+        }
+      }
+
+      .spell-effect {
+        margin-top: vars.$space-xs;
+        font-size: vars.$font-size-sm;
+
+        p {
+          margin: 0;
+        }
+      }
+    }
+
+    .spell-footer {
+      padding: 0 vars.$space-sm vars.$space-sm;
+      display: flex;
+      justify-content: flex-end;
+      gap: vars.$space-xs;
+
+      button {
+        @include mix.fancy-button;
+      }
+    }
+  }
+
+  /* Dialog Cards */
+  .dialog-card {
+    @include mix.card;
+    width: 100%;
+
+    .dialog-header {
+      @include mix.card-header;
+
+      h3 {
+        border: none;
+        margin: 0;
+        padding: 0;
+        color: white;
+      }
+    }
+
+    .dialog-content {
+      padding: vars.$space-md;
+    }
+
+    .dialog-footer {
+      padding: vars.$space-sm;
+      display: flex;
+      justify-content: flex-end;
+      gap: vars.$space-sm;
+
+      button {
+        @include mix.fancy-button;
+      }
+    }
+  }
+}

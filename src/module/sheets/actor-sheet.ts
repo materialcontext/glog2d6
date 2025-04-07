@@ -15,7 +15,8 @@ export class GlogActorSheet extends ActorSheet {
       width: 720,
       height: 680,
       tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "attributes" }],
-      dragDrop: [{ dragSelector: ".item-list .item", dropSelector: null }]
+      dragDrop: [{ dragSelector: ".item-list .item", dropSelector: null }],
+      resizable: true
     });
   }
 
@@ -47,6 +48,12 @@ export class GlogActorSheet extends ActorSheet {
     // Prepare items
     if (actorData.type == 'character' || actorData.type == 'npc') {
       this._prepareCharacterItems(context);
+    }
+
+    // Set dark mode class if in local storage
+    const darkMode = localStorage.getItem('glog2d6.darkMode') === 'true';
+    if (darkMode) {
+      this.element?.addClass('theme-dark');
     }
 
     return context;
@@ -152,6 +159,17 @@ export class GlogActorSheet extends ActorSheet {
     // Everything below here is only needed if the sheet is editable
     if (!this.isEditable) return;
 
+    // Add theme toggle button to header
+    const headerButtons = $(`
+      <div class="header-buttons">
+        <button class="theme-toggle" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    `);
+    html.find('.window-header .window-title').after(headerButtons);
+    html.find('.theme-toggle').click(this._onThemeToggle.bind(this));
+
     // Fix tabs functionality
     const tabs = html.find('.sheet-tabs .item');
     const tabContents = html.find('.tab');
@@ -215,6 +233,23 @@ export class GlogActorSheet extends ActorSheet {
 
     // Item quantity changes
     html.find('input[data-item-id]').change(this._onItemQuantityChange.bind(this));
+  }
+
+  /**
+   * Toggle dark mode
+   * @private
+   */
+  _onThemeToggle(event: Event): void {
+    event.preventDefault();
+    const isDark = this.element.hasClass('theme-dark');
+
+    if (isDark) {
+      this.element.removeClass('theme-dark');
+      localStorage.setItem('glog2d6.darkMode', 'false');
+    } else {
+      this.element.addClass('theme-dark');
+      localStorage.setItem('glog2d6.darkMode', 'true');
+    }
   }
 
   /**
@@ -376,7 +411,7 @@ export class GlogActorSheet extends ActorSheet {
     new Dialog({
       title: game.i18n.localize("GLOG.AddWound"),
       content: `
-        <form>
+        <form class="glog2d6">
           <div class="form-group">
             <label>Select a wound:</label>
             <select id="wound-select">
@@ -406,7 +441,7 @@ export class GlogActorSheet extends ActorSheet {
                   healing: ""
                 }
               };
-              return await Item.create(itemData, {parent: this.actor});
+return await Item.create(itemData, {parent: this.actor});
             } else if (woundPack) {
               // Get the wound from the compendium
               const wound = await woundPack.getDocument(woundId);
@@ -516,11 +551,13 @@ export class GlogActorSheet extends ActorSheet {
         <form class="glog2d6">
           <div class="form-group">
             <label>${game.i18n.localize("GLOG.SpellDice")}</label>
-            <select id="dice-amount">
-              ${Array.from(Array(maxDice).keys()).map(i =>
-                `<option value="${i+1}">${i+1}</option>`
-              ).join('')}
-            </select>
+            <div class="form-fields">
+              <select id="dice-amount">
+                ${Array.from(Array(maxDice).keys()).map(i =>
+                  `<option value="${i+1}">${i+1}</option>`
+                ).join('')}
+              </select>
+            </div>
           </div>
           <div class="spell-details">
             <div class="spell-property">
@@ -703,12 +740,14 @@ export class GlogActorSheet extends ActorSheet {
         <form class="glog2d6">
           <div class="form-group">
             <label>${game.i18n.localize("GLOG.Difficulty")}</label>
-            <select id="difficulty">
-              <option value="6">${game.i18n.localize("GLOG.CheckEasy")}</option>
-              <option value="7" selected>${game.i18n.localize("GLOG.CheckNormal")}</option>
-              <option value="8">${game.i18n.localize("GLOG.CheckHard")}</option>
-              <option value="10">${game.i18n.localize("GLOG.Save")}</option>
-            </select>
+            <div class="form-fields">
+              <select id="difficulty">
+                <option value="6">${game.i18n.localize("GLOG.CheckEasy")}</option>
+                <option value="7" selected>${game.i18n.localize("GLOG.CheckNormal")}</option>
+                <option value="8">${game.i18n.localize("GLOG.CheckHard")}</option>
+                <option value="10">${game.i18n.localize("GLOG.Save")}</option>
+              </select>
+            </div>
           </div>
         </form>
       `,

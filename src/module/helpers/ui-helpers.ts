@@ -323,7 +323,6 @@ Hooks.once('init', () => {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: var(--color-background);
       border-left: 4px solid var(--color-accent);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       padding: 10px 15px;

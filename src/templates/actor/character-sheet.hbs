@@ -7,16 +7,16 @@
       </h1>
       <div class="resources grid grid-3col">
         <!-- HP -->
-        <div class="resource">
+        <div class="resource hp">
           <label>{{localize "GLOG.HP"}}</label>
           <div class="resource-value">
             <input name="system.hp.value" type="text" value="{{system.hp.value}}" data-dtype="Number"/>
-            <span>/</span>
+            <span class="separator">/</span>
             <input name="system.hp.max" type="text" value="{{system.hp.max}}" data-dtype="Number"/>
           </div>
         </div>
         <!-- Level with Level Up button next to it -->
-        <div class="resource">
+        <div class="resource xp">
           <label>{{localize "GLOG.Level"}}</label>
           <div class="resource-value level-container">
             <input name="system.details.level" type="text" value="{{system.details.level}}" data-dtype="Number"/>
@@ -26,11 +26,11 @@
           </div>
         </div>
         <!-- XP -->
-        <div class="resource">
+        <div class="resource xp">
           <label>{{localize "GLOG.XP"}}</label>
           <div class="resource-value">
             <input name="system.details.xp.value" type="text" value="{{system.details.xp.value}}" data-dtype="Number"/>
-            <span>/</span>
+            <span class="separator">/</span>
             <input name="system.details.xp.max" type="text" value="{{system.details.xp.max}}" data-dtype="Number" disabled/>
           </div>
         </div>
@@ -84,7 +84,7 @@
       <div class="attributes grid grid-3col">
         {{#each system.attributes as |attribute key|}}
         <div class="attribute flexrow">
-          <label for="system.attributes.{{key}}.value">{{localize (concat "GLOG.Attribute" (capitalize key))}}</label>
+          <label for="system.attributes.{{key}}.value" data-tooltip="{{localize (concat 'GLOG.AttributeTooltip' (capitalize key))}}">{{localize (concat "GLOG.Attribute" (capitalize key))}}</label>
           <input type="text" name="system.attributes.{{key}}.value" value="{{attribute.value}}" data-dtype="Number"/>
           <span class="attribute-mod rollable" data-roll="2d6+@attributes.{{key}}.mod" data-label="{{localize (concat 'GLOG.Attribute' (capitalize key))}}">
             {{numberFormat attribute.mod decimals=0 sign=true}}
@@ -94,7 +94,7 @@
       </div>
 
       <div class="movement-details">
-        <h3>{{localize "GLOG.Movement"}}</h3>
+        <h3 class="section-title">{{localize "GLOG.Movement"}}</h3>
         <div class="grid grid-4col">
           <div class="movement-value">
             <label>{{localize "GLOG.Combat"}}</label>
@@ -116,11 +116,11 @@
       </div>
 
       <div class="wounds">
-        <h3>{{localize "GLOG.Wounds"}}</h3>
+        <h3 class="section-title">{{localize "GLOG.Wounds"}}</h3>
         <ol class="wounds-list">
         {{#each wounds as |wound id|}}
           <li class="wound" data-wound-id="{{wound._id}}">
-            <div class="wound-header flexrow">
+            <div class="wound-header">
               <h4 class="wound-name">{{wound.name}}</h4>
               <div class="wound-controls">
                 <a class="wound-control wound-edit" title="{{localize 'GLOG.Edit'}}"><i class="fas fa-edit"></i></a>
@@ -133,7 +133,7 @@
           </li>
         {{/each}}
         </ol>
-        <div class="wound-controls flexrow">
+        <div class="wound-controls">
           <a class="wound-control wound-add" title="{{localize 'GLOG.Add'}}"><i class="fas fa-plus"></i> {{localize "GLOG.Add"}} {{localize "GLOG.Wound"}}</a>
         </div>
       </div>
@@ -149,7 +149,7 @@
       </div>
 
       <!-- Weapon List -->
-      <h3>{{localize "GLOG.Weapons"}}</h3>
+      <h3 class="section-title">{{localize "GLOG.Weapons"}}</h3>
       <ol class="items-list">
         <li class="item-header flexrow">
           <div class="item-name">{{localize "GLOG.Name"}}</div>
@@ -178,7 +178,7 @@
       </ol>
 
       <!-- Armor List -->
-      <h3>{{localize "GLOG.Armor"}}</h3>
+      <h3 class="section-title">{{localize "GLOG.Armor"}}</h3>
       <ol class="items-list">
         <li class="item-header flexrow">
           <div class="item-name">{{localize "GLOG.Name"}}</div>
@@ -207,7 +207,7 @@
       </ol>
 
       <!-- Gear List -->
-      <h3>{{localize "GLOG.Gear"}}</h3>
+      <h3 class="section-title">{{localize "GLOG.Gear"}}</h3>
       <ol class="items-list">
         <li class="item-header flexrow">
           <div class="item-name">{{localize "GLOG.Name"}}</div>
@@ -238,7 +238,7 @@
 
     <!-- Features Tab -->
     <div class="tab features" data-group="primary" data-tab="features">
-      <h2>{{localize "GLOG.Templates"}}: {{system.details.templates.list.length}} / {{system.details.templates.max}}</h2>
+      <h2 class="fancy-title">{{localize "GLOG.Templates"}}: {{system.details.templates.list.length}} / {{system.details.templates.max}}</h2>
 
       <!-- Class Templates -->
       <ol class="items-list">
@@ -265,7 +265,7 @@
       </ol>
 
       <!-- Features -->
-      <h3>{{localize "GLOG.Features"}}</h3>
+      <h3 class="section-title">{{localize "GLOG.Features"}}</h3>
       <ol class="items-list">
         <li class="item-header flexrow">
           <div class="item-name">{{localize "GLOG.Name"}}</div>
@@ -290,7 +290,7 @@
 
     <!-- Spells Tab -->
     <div class="tab spells" data-group="primary" data-tab="spells">
-      <div class="spell-slots flexrow">
+      <div class="spell-slots">
         <div class="spell-slot">
           <label>{{localize "GLOG.SpellSlots"}}</label>
           <div class="spell-slot-value">
@@ -301,7 +301,7 @@
           <label>{{localize "GLOG.SpellDice"}}</label>
           <div class="spell-dice-value">
             <input name="system.details.spellDice.value" type="text" value="{{system.details.spellDice.value}}" data-dtype="Number"/>
-            <span>/</span>
+            <span class="separator">/</span>
             <input name="system.details.spellDice.max" type="text" value="{{system.details.spellDice.max}}" data-dtype="Number"/>
           </div>
         </div>
@@ -336,7 +336,7 @@
     <!-- Biography Tab -->
     <div class="tab bio" data-group="primary" data-tab="bio">
       <div class="bio-editor">
-        <label>{{localize "GLOG.Biography"}}</label>
+        <label class="section-title">{{localize "GLOG.Biography"}}</label>
         <div class="form-fields">
           <textarea name="system.biography">{{system.biography}}</textarea>
         </div>
@@ -344,13 +344,13 @@
 
       <div class="traits">
         <div class="trait">
-          <label>{{localize "GLOG.Background"}}</label>
+          <label class="section-title">{{localize "GLOG.Background"}}</label>
           <div class="form-fields">
             <textarea name="system.traits.background">{{system.traits.background}}</textarea>
           </div>
         </div>
         <div class="trait">
-          <label>{{localize "GLOG.Reputation"}}</label>
+          <label class="section-title">{{localize "GLOG.Reputation"}}</label>
           <div class="form-fields">
             <textarea name="system.traits.reputation">{{system.traits.reputation}}</textarea>
           </div>
@@ -358,7 +358,7 @@
       </div>
 
       <!-- Quirks -->
-      <h3>{{localize "GLOG.Quirks"}}</h3>
+      <h3 class="section-title">{{localize "GLOG.Quirks"}}</h3>
       <ol class="quirks-list">
         {{#each system.traits.quirks as |quirk id|}}
         <li class="quirk" data-quirk-id="{{id}}">
@@ -371,7 +371,7 @@
         </li>
         {{/each}}
       </ol>
-      <div class="quirk-controls flexrow">
+      <div class="quirk-controls">
         <a class="quirk-control quirk-add" title="{{localize 'GLOG.Add'}}"><i class="fas fa-plus"></i> {{localize "GLOG.Add"}} {{localize "GLOG.Quirk"}}</a>
       </div>
     </div>

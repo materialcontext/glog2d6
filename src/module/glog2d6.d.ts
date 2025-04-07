@@ -302,6 +302,117 @@ Hooks.on("renderActorSheet", (app, html, data) => {
   });
 });
 
+// Add this interface to your types file (src/module/glog2d6.d.ts or similar)
+interface GlogActorDataSource {
+  details: {
+    level: number;
+    xp: {
+      value: number;
+      max: number;
+    };
+    spellDice?: {
+      value: number;
+      max: number;
+    };
+    spellSlots?: {
+      value: number;
+    };
+    templates: {
+      list: any[];
+      max: number;
+    };
+  };
+  hp: {
+    value: number;
+    max: number;
+    pct?: number;
+    temp?: number;
+  };
+  attributes: Record<string, any>;
+  derived: Record<string, any>;
+  traits?: {
+    quirks?: string[];
+    languages?: {
+      value: string[];
+    };
+    ci?: {
+      value: string[];
+    };
+    dr?: {
+      value: string[];
+    };
+    di?: {
+      value: string[];
+    };
+    dv?: {
+      value: string[];
+    };
+    senses?: string;
+    size?: string;
+  };
+  type?: {
+    label: string;
+  };
+  morale?: {
+    value: number;
+  };
+  reaction?: {
+    value: number;
+  };
+  legendary?: {
+    value: number;
+    max: number;
+    lair: boolean;
+  };
+  deathSaves?: {
+    successes: number;
+    failures: number;
+  };
+}
+
+/**
+ * Default Foundry variables
+ */
+declare const game: Game;
+declare const DEFAULT_TOKEN: string;
+declare interface Game {
+  user: User | null;
+  users: Collection<string, User>;
+  actors: Collection<string, Actor>;
+  packs: Collection<string, CompendiumCollection>;
+  i18n: I18n;
+  settings: any;
+  macros: Collection<string, Macro>;
+}
+
+declare interface User {
+  id: string;
+  assignHotbarMacro(macro: Macro, slot: number): Promise<boolean>;
+}
+
+declare interface I18n {
+  localize(key: string): string;
+  format(key: string, data?: object): string;
+}
+
+// UUID
+declare function fromUuid(uuid: string): Promise<any>;
+
+//Roll interface
+declare class Roll {
+  constructor(formula: string, data?: object);
+  dice: {
+    0: {
+      results: {
+        result: number;
+      }[];
+    };
+  }[];
+  total: number;
+  evaluate(options?: { async: boolean }): Promise<Roll>;
+  toMessage(messageData?: object): Promise<ChatMessage>;
+}
+
 /**
  * Create a Macro from an Item drop.
  * @param {Object} data The dropped data

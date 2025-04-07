@@ -1,0 +1,75 @@
+@use '../utils/variables' as vars;
+@use '../utils/mixins' as mix;
+
+.glog2d6 {
+  /* Tab Navigation */
+  .sheet-tabs {
+    @include mix.flex-row;
+    margin: vars.$space-sm 0;
+    border-bottom: 2px solid vars.$c-secondary;
+
+    .item {
+      padding: vars.$space-xs vars.$space-sm;
+      margin-right: vars.$space-xs;
+      border-radius: 5px 5px 0 0;
+      font-family: vars.$font-condensed;
+      font-weight: bold;
+      font-size: vars.$font-size-sm;
+      text-transform: uppercase;
+      color: vars.$c-secondary;
+      cursor: pointer;
+      transition: all 250ms ease;
+
+      &:hover {
+        color: vars.$c-text;
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      &.active {
+        background: vars.$c-secondary;
+        color: white;
+        box-shadow: 0 0 5px vars.$shadow-medium;
+        text-shadow: 0 0 2px vars.$c-black;
+      }
+    }
+  }
+
+  /* Tab Content */
+  .sheet-body {
+    overflow: hidden;
+
+    .tab {
+      height: 100%;
+      padding: 0 vars.$space-xs;
+      overflow-y: auto;
+
+      /* Default hide all tabs */
+      display: none;
+
+      /* Show active tab */
+      &.active {
+        display: block;
+      }
+
+      /* Section headers */
+      h3 {
+        @include mix.section-title;
+        margin-top: vars.$space-md;
+
+        &:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+  }
+
+  /* Make tabs responsive for smaller screens */
+  @media (max-width: 600px) {
+    .sheet-tabs {
+      .item {
+        font-size: vars.$font-size-xs;
+        padding: vars.$space-xxs vars.$space-xs;
+      }
+    }
+  }
+}

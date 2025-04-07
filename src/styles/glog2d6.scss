@@ -1,34 +1,46 @@
-// Import utilities
+/* GLOG 2d6 System Stylesheet */
+
+/* Import utilities */
 @use 'utils/variables' as vars;
 @use 'utils/mixins' as mix;
 
-// Import components
-@use 'components/forms';
+/* Import base styles */
+@use 'base/typography';
+@use 'base/forms';
+
+/* Import components */
 @use 'components/resource';
 @use 'components/tabs';
 @use 'components/items';
+@use 'components/cards';
 
-// Import sheet styles
+/* Import sheet styles */
 @use 'sheets/actor';
 @use 'sheets/item';
+@use 'sheets/npc';
 
-/* Global styles */
+/* Import themes */
+@use 'themes/dark';
+
+/* Global system styles */
 .glog2d6 {
-  // Use Foundry's default styling variables instead of custom themes
-  --color-text: var(--color-text-dark-primary);
-  --color-text-secondary: var(--color-text-dark-secondary);
-  --color-border: var(--color-border-dark);
-  --color-shadow: var(--color-shadow-primary);
-  --color-bg-btn: var(--color-button);
-  --color-bg-btn-hover: var(--color-button-hover);
-
-  .window-content {
-    background: var(--color-bg);
-    padding: 5px;
-    color: var(--color-text);
-    font-family: var(--font-primary);
+  /* Basic Reset */
+  * {
+    box-sizing: border-box;
   }
 
+  /* Window Styles */
+  &.window-app {
+    font-family: vars.$font-primary;
+
+    .window-content {
+      background: url("../assets/images/parchment.jpg") repeat;
+      color: vars.$c-text;
+      padding: vars.$space-sm;
+    }
+  }
+
+  /* Grid Layouts */
   .grid {
     display: grid;
     grid-column-gap: 10px;
@@ -53,183 +65,164 @@
     flex-direction: column;
   }
 
-  label {
+  /* Utility Classes */
+  .rollable {
+    &:hover, &:focus {
+      cursor: pointer;
+      text-shadow: 0 0 5px vars.$c-gold;
+    }
+  }
+
+  .align-center {
+    text-align: center;
+  }
+
+  .align-right {
+    text-align: right;
+  }
+
+  .bold {
     font-weight: bold;
   }
 
-  /* Sheet Header */
-  .sheet-header {
-    @include mix.flex-row;
-    margin-bottom: 10px;
-
-    .profile-img {
-      flex: 0 0 100px;
-      height: 100px;
-      margin-right: 10px;
-      border: 2px solid var(--color-border);
-    }
-
-    .header-fields {
-      flex: 1;
-
-      h1.charname {
-        height: 50px;
-        padding: 0px;
-        margin: 5px 0;
-        border-bottom: 2px solid var(--color-border);
-
-        input {
-          width: 100%;
-          height: 100%;
-          margin: 0;
-          border: 0;
-          background: transparent;
-          font-size: 2em;
-          font-weight: bold;
-        }
-      }
-    }
+  .italic {
+    font-style: italic;
   }
 
-  /* Fixed Level Up Button */
-  .level-container {
-    display: flex;
-    align-items: center;
-
-    input {
-      flex: 1;
-    }
-
-    .level-up-btn {
-      margin-left: 5px;
-      color: var(--color-text-hyperlink);
-      cursor: pointer;
-
-      &:hover {
-        color: var(--color-text-hyperlink-hover);
-      }
-    }
+  .uppercase {
+    text-transform: uppercase;
   }
 
-  /* Tabs - Fixed to ensure content displays */
-  .sheet-tabs {
-    @include mix.flex-row;
-    margin: 5px 0;
-    border-bottom: 2px solid var(--color-border);
-
-    .item {
-      padding: 5px 10px;
-      margin-right: 5px;
-      border-radius: 5px 5px 0 0;
-      cursor: pointer;
-
-      &.active {
-        background: var(--color-border);
-        color: var(--color-text-light-highlight);
-        font-weight: bold;
-      }
-    }
+  .hidden {
+    display: none !important;
   }
 
-  /* Sheet Body - Fixed to ensure tab content displays */
-  .sheet-body {
-    overflow: hidden;
-
-    .tab {
-      height: 100%;
-      padding: 0 5px;
-      overflow-y: auto;
-      display: none; /* Hide all tabs by default */
-
-      &.active {
-        display: block; /* Show active tab */
-      }
-    }
-  }
-
-  /* Attributes */
-  .attributes {
-    .attribute {
-      background: rgba(0, 0, 0, 0.05);
-      border: 2px solid var(--color-border);
-      border-radius: 5px;
-      padding: 5px;
-      margin-bottom: 5px;
-
-      label {
-        flex: 1;
-        font-weight: bold;
-        text-align: left;
-      }
-
-      input {
-        flex: 0 0 35px;
-        border: 0;
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 3px;
-        text-align: center;
-      }
-
-      .attribute-mod {
-        flex: 0 0 35px;
-        text-align: center;
-        font-weight: bold;
-        cursor: pointer;
-
-        &:hover {
-          text-shadow: 0 0 5px var(--color-text-hyperlink);
-        }
-      }
-    }
-  }
-
-  /* Resources */
-  .resources {
-    .resource {
-      border: 2px solid var(--color-border);
-      border-radius: 5px;
-      padding: 5px;
-      text-align: center;
-
-      label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-
-      .resource-value {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        input {
-          width: 40px;
-          height: 24px;
-          text-align: center;
-          border: 1px solid var(--color-border);
-          border-radius: 3px;
-          margin: 0 2px;
-        }
-
-        span {
-          font-weight: bold;
-        }
-      }
-    }
-  }
-
-  /* Character Generator Button - For the actors directory */
+  /* Character Generator Button for Actors Directory */
   .generate-character {
-    background: var(--color-bg-btn);
-    color: var(--color-text-light-highlight);
+    background: vars.$c-gold;
+    color: white;
     border: none;
     border-radius: 3px;
     padding: 3px 6px;
     margin-left: 5px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+    transition: all 250ms ease;
 
     &:hover {
-      background: var(--color-bg-btn-hover);
+      background: lighten(vars.$c-gold, 5%);
+      box-shadow: 0 0 8px vars.$c-gold;
     }
+
+    i {
+      margin-right: 3px;
+    }
+  }
+
+  /* Chat Message Styling */
+  &.spell-cast {
+    h2 {
+      font-family: vars.$font-fancy;
+      font-size: vars.$font-size-xl;
+      font-weight: bold;
+      color: vars.$c-magic;
+      margin-bottom: vars.$space-sm;
+      padding-bottom: vars.$space-xs;
+      border-bottom: 1px solid vars.$c-magic;
+    }
+
+    .spell-result {
+      display: flex;
+      gap: vars.$space-md;
+
+      .dice-roll {
+        flex: 0 0 auto;
+      }
+
+      .spell-details {
+        flex: 1;
+
+        p {
+          margin: vars.$space-xs 0;
+
+          strong {
+            color: vars.$c-gold;
+          }
+        }
+
+        .mishap {
+          color: vars.$c-failure;
+          font-weight: bold;
+        }
+
+        .doom {
+          color: darken(vars.$c-failure, 10%);
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+
+  /* Dice Roll Styling */
+  .dice-roll {
+    .dice-formula {
+      font-family: vars.$font-fancy;
+      font-size: vars.$font-size-lg;
+      color: vars.$c-gold;
+      margin-bottom: vars.$space-xs;
+    }
+
+    .dice-tooltip {
+      .dice-rolls {
+        display: flex;
+        gap: vars.$space-xs;
+        margin: vars.$space-xs 0;
+
+        .roll {
+          width: 24px;
+          height: 24px;
+          background: vars.$c-white;
+          border: 1px solid vars.$c-secondary;
+          border-radius: 3px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-weight: bold;
+          box-shadow: 0 0 2px vars.$shadow-medium;
+        }
+      }
+    }
+
+    .dice-total {
+      font-family: vars.$font-fancy;
+      font-size: vars.$font-size-h3;
+      font-weight: bold;
+      margin-top: vars.$space-xs;
+      padding: vars.$space-xs;
+      border-top: 1px solid vars.$c-secondary;
+      text-align: center;
+
+      &.success {
+        color: vars.$c-success;
+      }
+
+      &.failure {
+        color: vars.$c-failure;
+      }
+    }
+  }
+
+  /* Check Results */
+  h3.success {
+    color: vars.$c-success;
+  }
+
+  h3.failure {
+    color: vars.$c-failure;
   }
 }
