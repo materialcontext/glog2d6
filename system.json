@@ -1,0 +1,43 @@
+{
+  "id": "glog2d6",
+  "title": "GLOG 2d6",
+  "description": "A minimal 2d6-based system for Foundry VTT",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "authors": [
+    {
+      "name": "System Developer"
+    }
+  ],
+  "esmodules": [
+    "glog2d6.mjs"
+  ],
+  "styles": [
+    "glog2d6.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "character": {},
+      "npc": {}
+    },
+    "Item": {
+      "weapon": {},
+      "armor": {},
+      "gear": {},
+      "shield": {}
+    }
+  },
+  "template": "template.json",
+  "primaryTokenAttribute": "hp",
+  "secondaryTokenAttribute": null
+}

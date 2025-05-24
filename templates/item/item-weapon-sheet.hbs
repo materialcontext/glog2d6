@@ -1,0 +1,66 @@
+<form class="{{cssClass}}" autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="Weapon Name"/>
+      </h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+
+    <div class="weapon-properties">
+      <div class="form-group">
+        <label for="system.weaponType">Weapon Type</label>
+        <select name="system.weaponType">
+          {{#select system.weaponType}}
+          <option value="melee">Melee</option>
+          <option value="ranged">Ranged</option>
+          <option value="thrown">Thrown</option>
+          {{/select}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="system.size">Size</label>
+        <select name="system.size">
+          {{#select system.size}}
+          <option value="light">Light</option>
+          <option value="medium">Medium</option>
+          <option value="heavy">Heavy</option>
+          {{/select}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="system.damage">Damage</label>
+        <input type="text" name="system.damage" value="{{system.damage}}" placeholder="1d6+1"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.slots">Inventory Slots</label>
+        <input type="number" name="system.slots" value="{{system.slots}}" min="0"/>
+      </div>
+    </div>
+
+    <div class="weapon-penalties">
+      <div class="form-group">
+        <label for="system.attackPenalty">Attack Penalty</label>
+        <input type="number" name="system.attackPenalty" value="{{system.attackPenalty}}" min="0"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.encumbrancePenalty">Encumbrance Penalty</label>
+        <input type="number" name="system.encumbrancePenalty" value="{{system.encumbrancePenalty}}" min="0"/>
+      </div>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="system.description">Description</label>
+      <textarea name="system.description" rows="8">{{system.description}}</textarea>
+    </div>
+
+  </section>
+</form>

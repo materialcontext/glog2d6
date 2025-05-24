@@ -1,0 +1,26 @@
+{
+  "GLOG2D6": {
+    "SheetLabels": {
+      "Actor": "GLOG2D6 Actor",
+      "Item": "GLOG2D6 Item"
+    },
+    "ActorSheet": {
+      "Attributes": "Attributes",
+      "Combat": "Combat",
+      "Inventory": "Inventory"
+    },
+    "Attributes": {
+      "Str": "Strength",
+      "Dex": "Dexterity",
+      "Con": "Constitution",
+      "Int": "Intelligence",
+      "Wis": "Wisdom",
+      "Cha": "Charisma"
+    },
+    "ItemTypes": {
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "gear": "Gear"
+    }
+  }
+}

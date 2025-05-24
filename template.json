@@ -1,0 +1,96 @@
+{
+  "Actor": {
+    "types": ["character", "npc"],
+    "templates": {
+      "base": {
+        "hp": {
+          "value": 10,
+          "max": 10
+        },
+        "attributes": {
+          "str": {
+            "value": 7,
+            "mod": 0
+          },
+          "dex": {
+            "value": 7,
+            "mod": 0
+          },
+          "con": {
+            "value": 7,
+            "mod": 0
+          },
+          "int": {
+            "value": 7,
+            "mod": 0
+          },
+          "wis": {
+            "value": 7,
+            "mod": 0
+          },
+          "cha": {
+            "value": 7,
+            "mod": 0
+          }
+        }
+      }
+    },
+    "character": {
+      "templates": ["base"],
+      "details": {
+        "class": "",
+        "level": 1,
+        "xp": 0,
+        "movement": 4
+      },
+      "combat": {
+        "attack": {
+          "value": 0
+        }
+      },
+      "inventory": {
+        "slots": {
+          "max": 6,
+          "used": 0
+        },
+        "encumbrance": 0
+      }
+    },
+    "npc": {
+      "templates": ["base"],
+      "details": {
+        "description": ""
+      }
+    }
+  },
+  "Item": {
+    "types": ["weapon", "armor", "gear"],
+    "templates": {
+      "base": {
+        "description": "",
+        "slots": 1
+      }
+    },
+    "weapon": {
+      "templates": ["base"],
+      "damage": "1d6+1",
+      "weaponType": "melee",
+      "size": "medium",
+      "attackPenalty": 0,
+      "encumbrancePenalty": 0,
+      "properties": ""
+    },
+    "armor": {
+      "description": "",
+      "type": "light",
+      "armorBonus": 1,
+      "encumbrancePenalty": 0
+    },
+    "gear": {
+      "templates": ["base"],
+      "size": "small",
+      "value": 0,
+      "quantity": 1
+    }
+  }
+}

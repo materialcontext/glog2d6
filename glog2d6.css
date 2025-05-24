@@ -1,0 +1,250 @@
+/* GLOG 2d6 Character Sheet Styles - Consolidated */
+
+/* CSS Variables for maintainability */
+:root {
+  --primary-color: #782e22;
+  --primary-hover: #8b3426;
+  --secondary-color: #4b4a44;
+  --secondary-hover: #5a5954;
+  --border-color: #ccc;
+  --background-light: #f8f8f8;
+  --background-section: rgba(0, 0, 0, 0.05);
+  --background-darker: rgba(0, 0, 0, 0.1);
+  --text-muted: #666;
+  --success-color: #4CAF50;
+  --success-hover: #45a049;
+  --danger-color: #d32f2f;
+  --border-radius: 3px;
+  --border-radius-large: 4px;
+  --transition: all 0.2s ease;
+}
+
+/* Global Styles */
+.glog2d6 { font-family: "Roboto", sans-serif; }
+
+/* Base Component Classes */
+.glog2d6 .clickable { cursor: pointer; transition: var(--transition); }
+
+.glog2d6 .btn-base, .glog2d6 .theme-btn, .glog2d6 .item-control, .glog2d6 .weapon-attack-btn, .glog2d6 .trauma-btn, .damage-roll-btn {
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: var(--transition); font-weight: bold; border-radius: var(--border-radius);
+}
+
+.glog2d6 .theme-btn { background: var(--primary-color); color: white; }
+.glog2d6 .theme-btn:hover { background: var(--primary-hover); }
+
+.glog2d6 .input-base, .glog2d6 .name-input, .glog2d6 .class-input, .glog2d6 .level-input, .glog2d6 .wounds-input, .glog2d6 .movement-input, .glog2d6 .hp-max-input, .glog2d6 .attribute-input, .glog2d6 .combat-input {
+  border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 3px; background: white;
+}
+
+.glog2d6 .section-base, .glog2d6 .name-bar, .glog2d6 .hp-section, .glog2d6 .max-section, .glog2d6 .wounds-section, .glog2d6 .trauma-section, .glog2d6 .torch-move-section {
+  background: var(--background-section); border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-large); padding: 8px;
+}
+
+.glog2d6 .label-small, .glog2d6 .hp-label, .glog2d6 .max-label {
+  font-size: 9px; font-weight: bold; text-transform: uppercase; color: var(--secondary-color);
+}
+
+.glog2d6 .label-med { font-size: 10px; font-weight: bold; text-transform: uppercase; color: var(--secondary-color); }
+
+/* Sheet Header Grid - Fixed positioning */
+.glog2d6 .sheet-header {
+  background: var(--background-darker); border-bottom: 2px solid var(--primary-color); padding: 10px;
+  position: static; display: grid; grid-template-columns: 90px 1fr; grid-template-rows: repeat(5, 1fr);
+  gap: 6px; height: 110px; margin-bottom: 10px;
+}
+
+/* Portrait and Name */
+.glog2d6 .character-portrait {
+  grid-column: 1; grid-row: 2 / 6; width: 90px; height: 88px; border: 2px solid var(--primary-color);
+  border-radius: var(--border-radius-large); overflow: hidden; background: #f0f0f0; cursor: pointer;
+}
+.glog2d6 .character-portrait img { width: 100%; height: 100%; object-fit: cover; }
+
+.glog2d6 .name-bar { grid-column: 1; grid-row: 1; padding: 4px 8px; display: flex; align-items: center; }
+.glog2d6 .name-display { font-size: 14px; font-weight: bold; color: var(--primary-color); margin: 0; }
+.glog2d6 .name-input { font-size: 12px; font-weight: bold; width: 100%; padding: 2px 4px; }
+
+/* Info Grid */
+.glog2d6 .info-grid {
+  grid-column: 2; grid-row: 1 / 6; display: grid; grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(5, 1fr); gap: 6px;
+}
+
+/* Class and Level */
+.glog2d6 .class-section { grid-column: 1 / 3; grid-row: 2; display: flex; flex-direction: column; gap: 2px; }
+.glog2d6 .level-section { grid-column: 3 / 5; grid-row: 2; display: flex; flex-direction: column; gap: 2px; text-align: center; }
+.glog2d6 .class-display, .glog2d6 .level-display { font-size: 12px; font-weight: 500; color: #333; }
+.glog2d6 .class-display { font-style: italic; }
+.glog2d6 .class-input, .glog2d6 .level-input { font-size: 11px; text-align: center; }
+
+/* HP and Max sections */
+.glog2d6 .hp-section { grid-column: 1 / 3; grid-row: 3 / 6; display: flex; flex-direction: column; justify-content: space-between; }
+.glog2d6 .max-section { grid-column: 3; grid-row: 3 / 6; display: flex; flex-direction: column; justify-content: space-between; }
+
+.glog2d6 .hp-container, .glog2d6 .max-container { display: flex; align-items: center; justify-content: center; flex: 1; gap: 4px; }
+
+.glog2d6 .hp-current {
+  font-size: 18px; font-weight: bold; width: 50px; text-align: center; padding: 6px;
+  border: 2px solid var(--primary-color); border-radius: var(--border-radius); background: white;
+}
+
+.glog2d6 .hp-separator { font-size: 16px; font-weight: bold; color: #333; }
+.glog2d6 .hp-max { font-size: 16px; font-weight: bold; text-align: center; color: #333; }
+.glog2d6 .hp-max-input { font-size: 14px; width: 40px; text-align: center; padding: 4px; }
+.glog2d6 .hp-label, .glog2d6 .max-label { color: var(--primary-color); text-align: center; }
+
+/* Right column sections */
+.glog2d6 .wounds-section { grid-column: 4; grid-row: 3; padding: 4px; display: flex; flex-direction: column; gap: 2px; text-align: center; }
+.glog2d6 .wounds-input { font-size: 12px; text-align: center; width: 100%; }
+
+.glog2d6 .trauma-section { grid-column: 4; grid-row: 4; padding: 4px; display: flex; align-items: center; justify-content: center; }
+.glog2d6 .trauma-btn { font-size: 9px; padding: 4px 6px; text-transform: uppercase; }
+
+.glog2d6 .torch-move-section {
+  grid-column: 4; grid-row: 5; padding: 4px; display: flex; gap: 8px;
+  align-items: center; justify-content: space-around;
+}
+
+.glog2d6 .torch-toggle, .glog2d6 .move-controls { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.glog2d6 .torch-checkbox { width: 14px; height: 14px; cursor: pointer; }
+
+.glog2d6 .movement-display {
+  font-size: 12px; font-weight: bold; padding: 4px 8px; background: var(--primary-color);
+  color: white; border-radius: var(--border-radius); text-align: center; min-width: 35px;
+}
+.glog2d6 .movement-display:hover { background: var(--primary-hover); }
+.glog2d6 .movement-input { font-size: 12px; width: 40px; text-align: center; padding: 3px; }
+
+.glog2d6 .edit-toggle {
+  position: absolute; top: 8px; right: 8px; background: var(--background-darker);
+  color: var(--text-muted); padding: 4px; border-radius: var(--border-radius); font-size: 10px; width: 20px; height: 20px;
+}
+.glog2d6 .edit-toggle:hover { background: rgba(0, 0, 0, 0.2); color: #333; }
+
+/* Form Groups */
+.glog2d6 .form-group { display: flex; flex-direction: column; gap: 2px; min-width: 80px; }
+.glog2d6 .form-group label { font-weight: bold; font-size: 10px; color: var(--secondary-color); }
+.glog2d6 .form-group input { font-size: 12px; padding: 2px 4px; border: 1px solid var(--border-color); border-radius: 2px; }
+.glog2d6 .form-group.stacked { margin: 15px 0; }
+.glog2d6 .field-display { font-size: 12px; padding: 2px 4px; min-height: 16px; color: #333; }
+.glog2d6 .encumbrance-penalty { font-size: 10px; color: var(--text-muted); }
+
+/* Sections */
+.glog2d6 .attributes-section, .glog2d6 .combat-section, .glog2d6 .inventory-section { margin: 15px 0; }
+
+/* Attribute and Combat Cards */
+.glog2d6 .attributes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.glog2d6 .combat-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+.glog2d6 .attribute-card, .glog2d6 .combat-card {
+  border: 1px solid var(--primary-color); border-radius: var(--border-radius-large);
+  overflow: hidden; background: white; transition: var(--transition);
+}
+.glog2d6 .attribute-card.clickable, .glog2d6 .combat-card.clickable { cursor: pointer; }
+.glog2d6 .attribute-card.clickable:hover, .glog2d6 .combat-card.clickable:hover {
+  border-color: var(--primary-hover); box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.glog2d6 .combat-card { flex: 1; }
+
+.glog2d6 .attribute-main, .glog2d6 .combat-main { padding: 6px; text-align: center; background: var(--background-light); }
+.glog2d6 .attribute-name, .glog2d6 .combat-name { font-weight: bold; font-size: 10px; color: var(--primary-color); margin-bottom: 3px; }
+
+.glog2d6 .attribute-value { font-size: 16px; font-weight: bold; margin-bottom: 2px; }
+.glog2d6 .attribute-input, .glog2d6 .combat-input { font-size: 16px; font-weight: bold; text-align: center; width: 40px; padding: 1px; }
+.glog2d6 .attribute-input { margin: 0 auto 2px; }
+.glog2d6 .combat-input, .glog2d6 .combat-value { font-size: 14px; font-weight: bold; }
+.glog2d6 .attribute-mod { font-size: 9px; color: var(--text-muted); }
+
+.glog2d6 .attribute-save {
+  background: var(--secondary-color); padding: 3px; text-align: center; cursor: pointer; transition: background-color 0.2s ease;
+}
+.glog2d6 .attribute-save:hover { background: var(--secondary-hover); }
+.glog2d6 .save-label { color: white; font-size: 8px; font-weight: bold; }
+
+/* Inventory */
+.glog2d6 .inventory-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+}
+.glog2d6 .slots-info { font-weight: bold; font-size: 14px; }
+.glog2d6 .encumbrance-warning { color: var(--danger-color); font-weight: bold; }
+
+.glog2d6 .item-controls { display: flex; gap: 10px; }
+.glog2d6 .item-control {
+  background: var(--secondary-color); color: white; padding: 6px 10px; border-radius: var(--border-radius);
+  text-decoration: none; font-size: 12px; cursor: pointer;
+}
+.glog2d6 .item-control:hover { background: var(--secondary-hover); color: white; }
+
+.glog2d6 .items-list { border: 1px solid var(--border-color); border-radius: var(--border-radius); }
+
+.glog2d6 .item {
+  display: grid; grid-template-columns: auto 1fr 2fr auto auto; gap: 8px; align-items: center;
+  padding: 6px 10px; border-bottom: 1px solid #eee; background: white; min-height: 36px;
+}
+.glog2d6 .item:last-child { border-bottom: none; }
+.glog2d6 .item:hover { background: var(--background-light); }
+
+.glog2d6 .item-equipped { display: flex; align-items: center; justify-content: center; }
+.glog2d6 .equipped-toggle { width: 12px; height: 12px; cursor: pointer; }
+
+.glog2d6 .item-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.glog2d6 .item-name .item-image {
+  flex-shrink: 0; background: var(--secondary-color); border-radius: var(--border-radius);
+  padding: 2px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+}
+.glog2d6 .item-name .item-image img { border-radius: 2px; width: 24px; height: 24px; object-fit: cover; }
+.glog2d6 .item-name h4 {
+  margin: 0; font-size: 12px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.glog2d6 .item-details { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.glog2d6 .item-detail {
+  font-size: 10px; color: var(--text-muted); background: #f0f0f0; padding: 1px 3px;
+  border-radius: 2px; white-space: nowrap; flex-shrink: 0;
+}
+
+/* Fixed weapon attack button size */
+.glog2d6 .weapon-attack-btn {
+  background: var(--primary-color); color: white; padding: 4px 6px; font-size: 10px;
+  width: 28px; height: 24px; flex-shrink: 0;
+}
+.glog2d6 .weapon-attack-btn:hover { background: var(--primary-hover); }
+
+.glog2d6 .item-slots { font-size: 10px; color: var(--text-muted); text-align: center; justify-self: center; min-width: 50px; }
+.glog2d6 .item .item-controls { gap: 2px; justify-self: end; }
+.glog2d6 .item .item-control { padding: 2px 4px; font-size: 9px; }
+
+/* Item Sheets */
+.glog2d6.item .sheet-header { display: flex; align-items: center; gap: 15px; }
+.glog2d6.item .header-fields { flex: 1; }
+.glog2d6.item .charname input { font-size: 20px; font-weight: bold; border: none; background: transparent; width: 100%; }
+
+.glog2d6 .weapon-properties, .glog2d6 .weapon-penalties, .glog2d6 .armor-properties, .glog2d6 .gear-properties, .glog2d6 .shield-properties {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;
+}
+
+/* Chat Messages */
+.glog2d6-roll { border: 1px solid var(--primary-color); border-radius: 5px; padding: 10px; background: var(--background-light); }
+.glog2d6-roll h3 { margin: 0 0 10px 0; color: var(--primary-color); font-size: 16px; }
+.glog2d6-roll .roll-result { font-size: 14px; line-height: 1.4; }
+
+.damage-roll-btn {
+  background: var(--success-color); color: white; padding: 6px 12px; font-size: 12px; margin-top: 8px;
+}
+.damage-roll-btn:hover:not(:disabled) { background: var(--success-hover); }
+.damage-roll-btn:disabled { background: var(--border-color); cursor: not-allowed; }
+
+/* Section Headers */
+.glog2d6 h3 {
+  color: var(--primary-color); border-bottom: 1px solid var(--primary-color);
+  padding-bottom: 3px; margin: 15px 0 8px 0; font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .glog2d6 .attributes-grid { grid-template-columns: repeat(2, 1fr); }
+  .glog2d6 .info-grid { grid-template-columns: 1fr 1fr; }
+}
