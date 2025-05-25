@@ -67,8 +67,8 @@
       }
     }
   },
-"Item": {
-    "types": ["weapon", "armor", "gear", "base"],
+ "Item": {
+    "types": ["weapon", "armor", "gear", "shield", "feature", "spell"],
     "templates": {
       "base": {
         "description": "",
@@ -96,9 +96,24 @@
       "value": 0,
       "quantity": 1
     },
-    "base": {
-      "templates": ["base"],
-      "category": "class"
+    "shield": {
+      "description": "",
+      "armorBonus": 1,
+      "slots": 1
+    },
+    "feature": {
+      "description": "",
+      "level": "",
+      "source": "class",
+      "active": true
+    },
+    "spell": {
+      "description": "",
+      "level": 1,
+      "school": "",
+      "range": "",
+      "duration": "",
+      "components": ""
     }
   }
 }

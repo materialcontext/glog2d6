@@ -8,7 +8,7 @@ export class GLOG2D6Actor extends Actor {
         // Calculate attribute modifiers
         for (let [_key, attribute] of Object.entries(this.system.attributes)) {
             if (attribute.value == 7) attribute.mod = 0
-            if (attribute.value > 7) attribute.mod = Math.floor((6 - attribute.value) / 2) * -1 - 1;
+            if (attribute.value < 7) attribute.mod = Math.floor((6 - attribute.value) / 2) * -1;
             if (attribute.value > 7) attribute.mod = Math.floor((attribute.value - 8) / 2) + 1;
         }
 

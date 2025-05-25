@@ -1,0 +1,92 @@
+{
+  "classes": [
+    {
+      "name": "Acrobat",
+      "startingEquipment": "50' of rope; good shoes",
+      "features": {
+        "level-0": "You gain +1 Move and +1 Defense against Melee Attacks for every 2 Acrobat templates. If you are encumbered or have your Movement impaired, you lose these bonuses.",
+        "A": ["Tricky", "Nimble"],
+        "B": ["Escape Artist", "Close Call"],
+        "C": ["Traceur", "Redirect"],
+        "D": ["The Greatest Escape"]
+      }
+    },
+    {
+      "name": "Assassin",
+      "startingEquipment": "Fraudulent papers; a black mask; and a knife or a pistol with 1 magazine.",
+      "features": {
+        "level-0": "You get +2 on all Stealth checks. Attacks you make against unaware targets ignore 2HP for each Assassin template.",
+        "A": ["Poisoner", "Deadly Improvisation"],
+        "B": ["Mr. Thus-and-Such", "Studied target"],
+        "C": ["Dramatic Infiltration", "Co-Conspirator"],
+        "D": ["Assassinate"]
+      }
+    },
+    {
+      "name": "Barbarian",
+      "startingEquipment": "an ax, hammer, or farm tool; olive oil, whiskey, light armor",
+      "features": {
+        "level-0": "You get +1 HP for each Barbarian template you possess, and a +1 bonus to Attack rolls with an exotic weapon of your choice.",
+        "A": ["Foreign", "At the Gates"],
+        "B": ["Reputation For…", "Danger Sense"],
+        "C": ["Tough", "Feats of Strength"],
+        "D": ["Tread the Jeweled Thrones"]
+      }
+    },
+    {
+      "name": "Courtier",
+      "startingEquipment": "fine clothes, crippling debt, 4d6 silver",
+      "features": {
+        "level-0": "You get a +1 bonus on all Reaction rolls for every 2 Courtier templates you possess.",
+        "A": ["Courtly Education", "Fast Talker"],
+        "B": ["Welcome Guest", "Entourage"],
+        "C": ["Never Forget a Face", "Loyal Servants"],
+        "D": ["Windfall"]
+      }
+    },
+    {
+      "name": "Fighter",
+      "startingEquipment": "any armor of your choice, any 2 melee or thrown weapons or 1 firearm with 2 magazines; a nasty scar",
+      "features": {
+        "level-0": "You get a +2 bonus on all Attack rolls.",
+        "A": ["Battle Scars", "Veteran's Eye"],
+        "B": ["Armor Training", "Reputation for Mercy"],
+        "C": ["Superior Combatant", "Impress"],
+        "D": ["Double Attack"]
+      }
+    },
+    {
+      "name": "Hunter",
+      "startingEquipment": "light armor; a bow and 10 arrows or a rifle and 1 magazine;",
+      "features": {
+        "level-0": "You are trained in archery and have a +1 Attack bonus with bows and rifles for every two Hunter templates you possess.",
+        "A": ["Tracker", "Woodsman"],
+        "B": ["Stalker", "Animal Companion"],
+        "C": ["Trapper", "Advantageous Terrain"],
+        "D": ["Legendary Hunt"]
+      }
+    },
+    {
+      "name": "Thief",
+      "startingEquipment": "light armor; a small knife, club or pistol with 1 magazine.",
+      "features": {
+        "level-0": "You gain +1 bonus to all checks to Investigate or bypass locks. You also get +1 Stealth for every 2 Thief templates you possess.",
+        "A": ["Pick-Pocket", "Black Market Gossip"],
+        "B": ["Well-Planned Heist", "Change Hands"],
+        "C": ["Always Prepared", "A Motley Crew"],
+        "D": ["Heist of the Century"]
+      }
+    },
+    {
+      "name": "Wizard",
+      "startingEquipment": "varies by school",
+      "features": {
+        "level-0": "You gain +1 magic dice (MD) for every Wizard template you possess.",
+        "A": ["School of Magic", "Book Casting"],
+        "B": ["Ancient Tongues", "Intellect Fortress"],
+        "C": ["One More Thing", "Autochthonous Spell"],
+        "D": ["Wizard's Tower"]
+      }
+    }
+  ]
+}

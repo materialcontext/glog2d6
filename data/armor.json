@@ -1,0 +1,49 @@
+{
+  "armor": [
+    {
+      "name": "Padded Armor",
+      "type": "armor",
+      "img": "icons/equipment/chest/vest-leather-brown.webp",
+      "system": {
+        "description": "Quilted cloth armor layered with padding. Light and flexible, offering basic protection without hindering movement.",
+        "type": "light",
+        "armorBonus": 1,
+        "encumbrancePenalty": 0
+      }
+    },
+    {
+      "name": "Leather Armor",
+      "type": "armor",
+      "img": "icons/equipment/chest/breastplate-leather-brown.webp",
+      "system": {
+        "description": "Boiled and hardened leather formed into protective plates. A good balance of protection and mobility.",
+        "type": "medium",
+        "armorBonus": 2,
+        "encumbrancePenalty": 1
+      }
+    },
+    {
+      "name": "Chain Mail",
+      "type": "armor",
+      "img": "icons/equipment/chest/chainmail-silver.webp",
+      "system": {
+        "description": "Interlocking metal rings form flexible but heavy protection. Excellent defense at the cost of mobility.",
+        "type": "heavy",
+        "armorBonus": 3,
+        "encumbrancePenalty": 2
+      }
+    }
+  ],
+  "shields": [
+    {
+      "name": "Shield",
+      "type": "shield",
+      "img": "icons/equipment/shield/heater-steel-boss.webp",
+      "system": {
+        "description": "A sturdy wooden shield reinforced with metal. Provides additional protection but occupies one hand and inventory space.",
+        "armorBonus": 1,
+        "slots": 1
+      }
+    }
+  ]
+}

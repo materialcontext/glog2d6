@@ -143,33 +143,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     async _getAvailableClasses() {
-            return ["Acrobat", "Assassin", "Barbarian", "Courtier", "Fighter", "Hunter", "Thief", "Wizard"];
-      //  try {
-      //      console.log("Loading available classes...");
-
-      //      // Get the classes compendium pack
-      //      const pack = game.packs.get("glog2d6.basic-classes");
-      //      if (!pack) {
-      //          console.warn("Classes compendium pack not found");
-      //          console.log("Available packs:", Array.from(game.packs.keys()));
-      //          return [];
-      //      }
-
-      //      console.log("Found classes pack:", pack);
-
-      //      // Get all class documents from the pack
-      //      const classDocuments = await pack.getDocuments();
-      //      console.log("Loaded class documents:", classDocuments);
-
-      //      // Extract class names and sort them
-      //      const classNames = classDocuments.map(doc => doc.name).sort();
-      //      console.log("Available class names:", classNames);
-
-      //      return classNames;
-      //  } catch (error) {
-      //      console.error("Error loading available classes:", error);
-      //      return [];
-      //  }
+        // Get class data from globally loaded JSON
+        const classes = window.getGlogClasses();
+        return classes.map(cls => cls.name).sort();
     }
 
     async _handleEquipment(newItem) {

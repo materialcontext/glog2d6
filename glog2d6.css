@@ -848,6 +848,134 @@
     margin: 20px 0;
 }
 
+/* Tabbed Content */
+.glog2d6 .tabbed-content {
+  margin-top: 20px;
+}
+
+.glog2d6 .sheet-tabs {
+  border-bottom: 2px solid var(--primary-color);
+  margin-bottom: 15px;
+  display: flex;
+  background: var(--background-section);
+  border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
+}
+
+.glog2d6 .sheet-tabs .item {
+  flex: 1;
+  text-align: center;
+  padding: 10px 15px;
+  cursor: pointer;
+  background: var(--background-section);
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 12px;
+  border-right: 1px solid var(--border-color);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.glog2d6 .sheet-tabs .item:last-child {
+  border-right: none;
+}
+
+.glog2d6 .sheet-tabs .item:hover {
+  background: var(--background-darker);
+  color: #333;
+}
+
+.glog2d6 .sheet-tabs .item.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.glog2d6 .tab {
+  display: none;
+}
+
+.glog2d6 .tab.active {
+  display: block;
+}
+
+/* Features Section */
+.glog2d6 .features-section,
+.glog2d6 .spells-section {
+  margin: 0;
+}
+
+.glog2d6 .features-info,
+.glog2d6 .spells-info {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.glog2d6 .features-list,
+.glog2d6 .spells-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.glog2d6 .feature-item,
+.glog2d6 .spell-item {
+  background: var(--background-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 10px;
+}
+
+.glog2d6 .feature-level,
+.glog2d6 .spell-level {
+  background: var(--secondary-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: var(--border-radius);
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.glog2d6 .spell-cast-btn {
+  background: var(--success-color);
+  color: white;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: var(--border-radius);
+}
+
+.glog2d6 .spell-cast-btn:hover {
+  background: var(--success-hover);
+}
+
+.glog2d6 .spell-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glog2d6 .empty-section {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.glog2d6 .empty-section p {
+  margin: 8px 0;
+}
+
+/* Inventory Section in Tab */
+.glog2d6 .inventory-section {
+  margin: 0;
+}
+
+.glog2d6 .inventory-section h3 {
+  display: none; /* Hide the h3 since we have the tab title */
+}
+
 /* Chat Messages */
 .glog2d6-roll {
     border: 1px solid var(--primary-color);
@@ -886,11 +1014,15 @@
 
 /* Section Headers */
 .glog2d6 h3 {
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--primary-color);
-    padding-bottom: 3px;
-    margin: 15px 0 8px 0;
-    font-size: 14px;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--primary-color);
+  padding-bottom: 3px;
+  margin: 15px 0 8px 0;
+  font-size: 14px;
+}
+
+.glog2d6 .tab h3 {
+  display: none;
 }
 
 /* Torch-specific styles */

@@ -1,0 +1,156 @@
+{
+  "weapons": [
+    {
+      "name": "Dagger",
+      "type": "weapon",
+      "img": "icons/weapons/daggers/dagger-straight-blade.webp",
+      "system": {
+        "damage": "1",
+        "weaponType": "melee",
+        "size": "light",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A small, quick blade perfect for close combat or thrown attacks. Light and easy to conceal."
+      }
+    },
+    {
+      "name": "Short Sword",
+      "type": "weapon",
+      "img": "icons/weapons/swords/shortsword-steel.webp",
+      "system": {
+        "damage": "1d6",
+        "weaponType": "melee",
+        "size": "medium",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A versatile one-handed blade, well-balanced for both offense and defense."
+      }
+    },
+    {
+      "name": "Long Sword",
+      "type": "weapon",
+      "img": "icons/weapons/swords/sword-guard-worn.webp",
+      "system": {
+        "damage": "1d10",
+        "weaponType": "melee",
+        "size": "heavy",
+        "attackPenalty": 1,
+        "encumbrancePenalty": 1,
+        "slots": 2,
+        "description": "A powerful two-handed sword that deals devastating damage but requires skill and strength to wield effectively."
+      }
+    },
+    {
+      "name": "Bow",
+      "type": "weapon",
+      "img": "icons/weapons/bows/shortbow-recurve.webp",
+      "system": {
+        "damage": "1d6",
+        "weaponType": "ranged",
+        "size": "medium",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A reliable ranged weapon with good range and accuracy. Requires arrows to function."
+      }
+    },
+    {
+      "name": "Crossbow",
+      "type": "weapon",
+      "img": "icons/weapons/crossbows/crossbow-heavy.webp",
+      "system": {
+        "damage": "1d8",
+        "weaponType": "ranged",
+        "size": "medium",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A mechanical ranged weapon that's easier to aim but slower to reload than a bow. Requires bolts."
+      }
+    },
+    {
+      "name": "Club",
+      "type": "weapon",
+      "img": "icons/weapons/clubs/club-wooden.webp",
+      "system": {
+        "damage": "1d6",
+        "weaponType": "melee",
+        "size": "medium",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A simple wooden weapon. Crude but effective, and easily replaced if broken."
+      }
+    },
+    {
+      "name": "Spear",
+      "type": "weapon",
+      "img": "icons/weapons/polearms/spear-simple.webp",
+      "system": {
+        "damage": "1d6",
+        "weaponType": "melee",
+        "size": "medium",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A long-hafted weapon with good reach. Can be used one or two-handed, and thrown if needed."
+      }
+    },
+    {
+      "name": "Mace",
+      "type": "weapon",
+      "img": "icons/weapons/maces/mace-flanged-steel.webp",
+      "system": {
+        "damage": "1d6",
+        "weaponType": "melee",
+        "size": "medium",
+        "attackPenalty": 0,
+        "encumbrancePenalty": 0,
+        "slots": 1,
+        "description": "A heavy blunt weapon designed to crush armor. Simple but brutally effective."
+      }
+    },
+    {
+      "name": "Flail",
+      "type": "weapon",
+      "img": "icons/weapons/maces/flail-triple-steel.webp",
+      "system": {
+        "damage": "1d10",
+        "weaponType": "melee",
+        "size": "heavy",
+        "attackPenalty": 1,
+        "encumbrancePenalty": 1,
+        "slots": 2,
+        "description": "A chain weapon that's difficult to predict and defend against, but equally hard to control."
+      }
+    }
+  ],
+  "ammunition": [
+    {
+      "name": "Arrows (20)",
+      "type": "gear",
+      "img": "icons/weapons/ammunition/arrows-flight-wood.webp",
+      "system": {
+        "size": "small",
+        "value": 1,
+        "quantity": 20,
+        "slots": 1,
+        "description": "A bundle of 20 wooden arrows with iron points. Essential ammunition for bows."
+      }
+    },
+    {
+      "name": "Crossbow Bolts (20)",
+      "type": "gear",
+      "img": "icons/weapons/ammunition/bolts-crossbow.webp",
+      "system": {
+        "size": "small",
+        "value": 2,
+        "quantity": 20,
+        "slots": 1,
+        "description": "A bundle of 20 heavy bolts designed for crossbows. Shorter but heavier than arrows."
+      }
+    }
+  ]
+}
