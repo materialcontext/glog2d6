@@ -268,13 +268,16 @@
 }
 
 .glog2d6 .torch-btn.torch-lit {
-    background: #ff6b35;
-    color: #fff;
-    border-color: #e55a2b;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
+    color: white;
+    border-color: #d64933;
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    animation: torchFlicker 3s ease-in-out infinite alternate;
 }
 
 .glog2d6 .torch-btn.torch-lit:hover {
-    background: #e55a2b;
+    background: linear-gradient(135deg, #e55a2b 0%, #d64933 100%);
+    box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
 }
 
 /* Trauma Section - row 4, column 4 */
@@ -1333,17 +1336,46 @@
     display: none;
 }
 
-/* Torch-specific styles */
+/* Torch-specific inventory styles */
 .glog2d6 .torch-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #ddd;
     color: #666;
-    font-size: 12px;
-    width: 12px;
-    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.glog2d6 .torch-icon:hover {
+    background: #ccc;
+    transform: scale(1.1);
 }
 
 .glog2d6 .torch-icon.torch-active {
-    color: #ff6b35;
-    text-shadow: 0 0 3px #ff6b35;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
+    color: white;
+    border-color: #d64933;
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    animation: torchGlow 2s ease-in-out infinite alternate;
+}
+
+.glog2d6 .torch-icon.torch-active:hover {
+    background: linear-gradient(135deg, #e55a2b 0%, #d64933 100%);
+    box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
+}
+
+@keyframes torchGlow {
+    0% {
+        box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(255, 107, 53, 0.7);
+    }
 }
 
 /* Torch item sheet styles */
@@ -1403,25 +1435,54 @@
 
 @keyframes torchFlicker {
     0% {
-        background: #ff6b35;
-        box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+        box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+        transform: scale(1);
     }
-
+    50% {
+        box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
+        transform: scale(1.02);
+    }
     100% {
-        background: #e55a2b;
-        box-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+        box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+        transform: scale(1);
     }
 }
 
-/* Torch duration warning styles */
+/* Torch duration indicators */
 .glog2d6 .torch-duration-warning {
     color: var(--danger-color);
     font-weight: bold;
+    background: rgba(211, 47, 47, 0.1);
+    border: 1px solid rgba(211, 47, 47, 0.3);
 }
 
 .glog2d6 .torch-duration-low {
     color: #ff9800;
     font-weight: bold;
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.glog2d6 .torch-active-badge {
+    background: var(--success-color) !important;
+    color: white !important;
+    font-weight: bold;
+    font-size: 8px;
+    text-transform: uppercase;
+    padding: 1px 4px !important;
+    border-radius: 2px;
+    animation: pulseGreen 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGreen {
+    0% {
+        background: var(--success-color) !important;
+        box-shadow: 0 0 3px rgba(76, 175, 80, 0.3);
+    }
+    100% {
+        background: var(--success-hover) !important;
+        box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+    }
 }
 
 @media (max-width: 600px) {

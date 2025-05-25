@@ -1,120 +1,162 @@
 {
-  "Actor": {
-    "types": ["character", "npc"],
-    "templates": {
-      "base": {
-        "hp": {
-          "value": 10,
-          "max": 10
+    "Actor": {
+        "types": [
+            "character",
+            "npc"
+        ],
+        "templates": {
+            "base": {
+                "hp": {
+                    "value": 10,
+                    "max": 10
+                },
+                "attributes": {
+                    "str": {
+                        "value": 7,
+                        "mod": 0
+                    },
+                    "dex": {
+                        "value": 7,
+                        "mod": 0
+                    },
+                    "con": {
+                        "value": 7,
+                        "mod": 0
+                    },
+                    "int": {
+                        "value": 7,
+                        "mod": 0
+                    },
+                    "wis": {
+                        "value": 7,
+                        "mod": 0
+                    },
+                    "cha": {
+                        "value": 7,
+                        "mod": 0
+                    }
+                }
+            }
         },
-        "attributes": {
-          "str": {
-            "value": 7,
-            "mod": 0
-          },
-          "dex": {
-            "value": 7,
-            "mod": 0
-          },
-          "con": {
-            "value": 7,
-            "mod": 0
-          },
-          "int": {
-            "value": 7,
-            "mod": 0
-          },
-          "wis": {
-            "value": 7,
-            "mod": 0
-          },
-          "cha": {
-            "value": 7,
-            "mod": 0
-          }
-        }
-      }
-    },
-    "character": {
-      "templates": ["base"],
-      "details": {
-        "class": "",
-        "level": 1,
-        "movement": 4
-      },
-      "combat": {
-        "attack": {
-          "value": 0
-        }
-      },
-      "inventory": {
-        "slots": {
-          "max": 6,
-          "used": 0
+        "character": {
+            "templates": [
+                "base"
+            ],
+            "details": {
+                "class": "",
+                "level": 1,
+                "movement": 4
+            },
+            "combat": {
+                "attack": {
+                    "value": 0
+                }
+            },
+            "inventory": {
+                "slots": {
+                    "max": 6,
+                    "used": 0
+                },
+                "encumbrance": 0
+            },
+            "torch": {
+                "lit": false,
+                "activeTorchId": null
+            }
         },
-        "encumbrance": 0
-      },
-      "torch": {
-        "lit": false,
-        "activeTorchId": null
-      }
+        "npc": {
+            "templates": [
+                "base"
+            ],
+            "details": {
+                "description": ""
+            }
+        }
     },
-    "npc": {
-      "templates": ["base"],
-      "details": {
-        "description": ""
-      }
+    "Item": {
+        "types": [
+            "weapon",
+            "armor",
+            "gear",
+            "shield",
+            "feature",
+            "spell",
+            "torch"
+        ],
+        "templates": {
+            "base": {
+                "description": "",
+                "slots": 1
+            }
+        },
+        "weapon": {
+            "templates": [
+                "base"
+            ],
+            "damage": "1d6+1",
+            "weaponType": "melee",
+            "size": "medium",
+            "attackPenalty": 0,
+            "encumbrancePenalty": 0,
+            "properties": ""
+        },
+        "armor": {
+            "description": "",
+            "type": "light",
+            "armorBonus": 1,
+            "encumbrancePenalty": 0
+        },
+        "gear": {
+            "templates": [
+                "base"
+            ],
+            "size": "small",
+            "value": 0,
+            "quantity": 1
+        },
+        "shield": {
+            "description": "",
+            "armorBonus": 1,
+            "slots": 1
+        },
+        "feature": {
+            "description": "",
+            "classSource": "",
+            "template": "level-0",
+            "level": 1,
+            "active": true,
+            "prerequisites": ""
+        },
+        "spell": {
+            "description": "",
+            "level": 1,
+            "school": "",
+            "range": "",
+            "duration": "",
+            "components": ""
+        },
+        "torch": {
+            "templates": [
+                "base"
+            ],
+            "lightRadius": {
+                "bright": 20,
+                "dim": 40
+            },
+            "lightAngle": 360,
+            "lightColor": "#ff8800",
+            "duration": {
+                "enabled": false,
+                "hours": 6,
+                "remaining": 6,
+                "burnRate": 1.0,
+                "autoExtinguish": true
+            },
+            "lightAnimation": {
+                "type": "torch",
+                "speed": 5,
+                "intensity": 2
+            }
+        }
     }
-  },
- "Item": {
-    "types": ["weapon", "armor", "gear", "shield", "feature", "spell"],
-    "templates": {
-      "base": {
-        "description": "",
-        "slots": 1
-      }
-    },
-    "weapon": {
-      "templates": ["base"],
-      "damage": "1d6+1",
-      "weaponType": "melee",
-      "size": "medium",
-      "attackPenalty": 0,
-      "encumbrancePenalty": 0,
-      "properties": ""
-    },
-    "armor": {
-      "description": "",
-      "type": "light",
-      "armorBonus": 1,
-      "encumbrancePenalty": 0
-    },
-    "gear": {
-      "templates": ["base"],
-      "size": "small",
-      "value": 0,
-      "quantity": 1
-    },
-    "shield": {
-      "description": "",
-      "armorBonus": 1,
-      "slots": 1
-    },
-"feature": {
-      "description": "",
-      "classSource": "",
-      "template": "level-0",
-      "level": 1,
-      "active": true,
-      "prerequisites": ""
-    },
-    "spell": {
-      "description": "",
-      "level": 1,
-      "school": "",
-      "range": "",
-      "duration": "",
-      "components": ""
-    }
-  }
 }

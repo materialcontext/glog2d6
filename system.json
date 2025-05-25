@@ -1,70 +1,72 @@
 {
-  "id": "glog2d6",
-  "title": "GLOG 2d6",
-  "description": "A minimal 2d6-based system for Foundry VTT",
-  "version": "1.0.0",
-  "compatibility": {
-    "minimum": "12",
-    "verified": "12"
-  },
-  "authors": [
-    {
-      "name": "System Developer"
-    }
-  ],
-  "esmodules": [
-    "glog2d6.mjs"
-  ],
-  "styles": [
-    "glog2d6.css"
-  ],
-  "packs": [
-    {
-      "name": "basic-weapons",
-      "label": "Basic Weapons",
-      "path": "packs/basic-weapons.db",
-      "type": "Item",
-      "system": "glog2d6"
+    "id": "glog2d6",
+    "title": "GLOG 2d6",
+    "description": "A minimal 2d6-based system for Foundry VTT",
+    "version": "1.0.0",
+    "compatibility": {
+        "minimum": "12",
+        "verified": "12"
     },
-    {
-      "name": "basic-armor",
-      "label": "Basic Armor & Shields",
-      "path": "packs/basic-armor.db",
-      "type": "Item",
-      "system": "glog2d6"
+    "authors": [
+        {
+            "name": "System Developer"
+        }
+    ],
+    "esmodules": [
+        "glog2d6.mjs"
+    ],
+    "styles": [
+        "glog2d6.css"
+    ],
+    "packs": [
+        {
+            "name": "basic-weapons",
+            "label": "Basic Weapons",
+            "path": "packs/basic-weapons.db",
+            "type": "Item",
+            "system": "glog2d6"
+        },
+        {
+            "name": "basic-armor",
+            "label": "Basic Armor & Shields",
+            "path": "packs/basic-armor.db",
+            "type": "Item",
+            "system": "glog2d6"
+        },
+        {
+            "name": "basic-classes",
+            "label": "Character Classes",
+            "path": "packs/basic-classes.db",
+            "type": "Item",
+            "system": "glog2d6"
+        }
+    ],
+    "languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "lang/en.json"
+        }
+    ],
+    "documentTypes": {
+        "Actor": {
+            "character": {},
+            "npc": {}
+        },
+        "Item": {
+            "weapon": {},
+            "armor": {},
+            "gear": {},
+            "shield": {},
+            "torch": {},
+            "feature": {},
+            "spell": {}
+        }
     },
-    {
-      "name": "basic-classes",
-      "label": "Character Classes",
-      "path": "packs/basic-classes.db",
-      "type": "Item",
-      "system": "glog2d6"
-    }
-  ],
-  "languages": [
-    {
-      "lang": "en",
-      "name": "English",
-      "path": "lang/en.json"
-    }
-  ],
-  "documentTypes": {
-    "Actor": {
-      "character": {},
-      "npc": {}
-    },
-    "Item": {
-      "weapon": {},
-      "armor": {},
-      "gear": {},
-      "shield": {},
-      "torch": {}
-    }
-  },
-  "template": "template.json",
-  "primaryTokenAttribute": "hp",
-  "secondaryTokenAttribute": null,
-  "url": "https://github.com/yourusername/glog2d6-foundry",
-  "manifest": "https://github.com/materialcontext/glog2d6/releases/latest/download/system.json",
-  "download": "https://github.com/materialcontext/glog2d6/releases/latest/download/glog2d6.zip"
+    "template": "template.json",
+    "primaryTokenAttribute": "hp",
+    "secondaryTokenAttribute": null,
+    "url": "https://github.com/yourusername/glog2d6-foundry",
+    "manifest": "https://github.com/materialcontext/glog2d6/releases/latest/download/system.json",
+    "download": "https://github.com/materialcontext/glog2d6/releases/latest/download/glog2d6.zip"
 }

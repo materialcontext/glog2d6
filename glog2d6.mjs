@@ -56,7 +56,7 @@ Hooks.once('init', async function() {
 
     Items.unregisterSheet("core", ItemSheet);
     Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield", "spell", "feature"], // Add "feature" here
+        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Item"
     });
@@ -70,7 +70,8 @@ Hooks.once('init', async function() {
         "systems/glog2d6/templates/item/item-gear-sheet.hbs",
         "systems/glog2d6/templates/item/item-shield-sheet.hbs",
         "systems/glog2d6/templates/item/item-spell-sheet.hbs",
-        "systems/glog2d6/templates/item/item-feature-sheet.hbs"
+        "systems/glog2d6/templates/item/item-feature-sheet.hbs",
+        "systems/glog2d6/templates/item/item-torch-sheet.hbs"
     ]);
 });
 
@@ -398,7 +399,60 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
         }
     }
 
-    // FIXED: Process class features for world item library
+    async function createTorchPack() {
+        const torchData = {
+            "torches": [
+                {
+                    "name": "Torch",
+                    "type": "torch",
+                    "img": "icons/sundries/lights/torch-brown-lit.webp",
+                    "system": {
+                        "description": "A wooden torch wrapped in oil-soaked cloth. Burns for about 6 hours and provides bright light.",
+                        "slots": 1,
+                        "lightRadius": {
+                            "bright": 20,
+                            "dim": 40
+                        },
+                        "lightAngle": 360,
+                        "lightColor": "#ff8800",
+                        "duration": {
+                            "enabled": true,
+                            "hours": 6,
+                            "remaining": 6,
+                            "burnRate": 1.0,
+                            "autoExtinguish": true
+                        },
+                        "lightAnimation": {
+                            "type": "torch",
+                            "speed": 5,
+                            "intensity": 2
+                        }
+                    }
+                }
+            ]
+        };
+
+        // Create torch folder
+        const torchFolder = await createFolderIfNotExists("Torches & Light", "Item", "#ff8800");
+
+        const itemsToCreate = [];
+        for (const torch of torchData.torches) {
+            itemsToCreate.push({
+                name: torch.name,
+                type: "torch",
+                img: torch.img || "icons/sundries/lights/torch-brown-lit.webp",
+                system: torch.system,
+                folder: torchFolder.id,
+                sort: itemsToCreate.length * 100
+            });
+        }
+
+        if (itemsToCreate.length > 0) {
+            await Item.createDocuments(itemsToCreate);
+            console.log(`glog2d6 | Created ${itemsToCreate.length} torch items`);
+        }
+    }
+
     if (featureData && Array.isArray(featureData)) {
         console.log('glog2d6 | Processing', featureData.length, 'classes for features');
 
