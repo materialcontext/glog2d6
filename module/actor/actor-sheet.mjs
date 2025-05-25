@@ -34,6 +34,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Get available classes from compendium pack
         context.availableClasses = await this._getAvailableClasses();
 
+        // Check if character has available class features
+        context.hasAvailableFeatures = this._hasAvailableClassFeatures();
+
         return context;
     }
 
@@ -176,15 +179,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.render();
     }
 
-    async _getAvailableClasses() {
-        // Get class data from globally loaded JSON
-        const classes = window.getGlogClasses();
-        return classes.map(cls => cls.name).sort();
-    }
-
     /**
-     * Handle adding class features automatically
-     */
+ * Add class features based on comprehensive feature data
+ */
     async _onAddClassFeatures(event) {
         event.preventDefault();
 
@@ -200,19 +197,105 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         const confirm = await Dialog.confirm({
             title: "Add Class Features",
             content: `<p>Add features for <strong>${className}</strong> up to level <strong>${currentLevel}</strong>?</p>
-                 <p><small>This will add all appropriate template features. Existing features won't be duplicated.</small></p>`
+             <p><small>This will add all appropriate template features with detailed descriptions. Existing features won't be duplicated.</small></p>`
         });
 
         if (!confirm) return;
 
         try {
-            await this._addClassFeatures(className, currentLevel);
+            await this._addClassFeaturesEnhanced(className, currentLevel);
             ui.notifications.info(`Added ${className} features for level ${currentLevel}`);
             this.render(); // Refresh the sheet
         } catch (error) {
             console.error("Error adding class features:", error);
             ui.notifications.error("Failed to add class features: " + error.message);
         }
+    }
+
+    /**
+     * Enhanced class feature addition using detailed feature data
+     */
+    async _addClassFeaturesEnhanced(className, currentLevel) {
+        const classData = window.getGlogClassFeatures(className);
+        if (!classData || !classData.features) {
+            throw new Error(`No feature data found for class: ${className}`);
+        }
+
+        // Get existing features to avoid duplicates
+        const existingFeatures = this.actor.items.filter(i =>
+            i.type === "feature" &&
+            i.system.classSource === className
+        );
+
+        const featuresToAdd = [];
+
+        // Add level-0 feature if not already present
+        if (classData.features["level-0"] &&
+            !existingFeatures.some(f => f.system.template === "level-0")) {
+            const levelZeroFeature = classData.features["level-0"];
+            featuresToAdd.push({
+                name: levelZeroFeature.name,
+                type: "feature",
+                img: this._getFeatureIcon(className, "level-0"),
+                system: {
+                    classSource: className,
+                    template: "level-0",
+                    level: 1,
+                    description: levelZeroFeature.description,
+                    active: true,
+                    prerequisites: "None"
+                }
+            });
+        }
+
+        // Add template features based on current level
+        const templates = ["A", "B", "C", "D"];
+        for (let i = 0; i < Math.min(currentLevel, 4); i++) {
+            const template = templates[i];
+            const templateFeatures = classData.features[template];
+
+            if (templateFeatures && Array.isArray(templateFeatures)) {
+                for (const featureData of templateFeatures) {
+                    // Check if this specific feature already exists
+                    const exists = existingFeatures.some(f =>
+                        f.system.template === template &&
+                        f.name === featureData.name
+                    );
+
+                    if (!exists) {
+                        featuresToAdd.push({
+                            name: featureData.name,
+                            type: "feature",
+                            img: this._getFeatureIcon(className, template),
+                            system: {
+                                classSource: className,
+                                template: template,
+                                level: i + 1,
+                                description: featureData.description,
+                                active: true,
+                                prerequisites: `${className} Template ${template}`
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        // Create the features on the actor
+        if (featuresToAdd.length > 0) {
+            await this.actor.createEmbeddedDocuments("Item", featuresToAdd);
+            console.log(`Added ${featuresToAdd.length} new features for ${className} level ${currentLevel}`);
+        } else {
+            ui.notifications.info("No new features to add - all appropriate features already exist.");
+        }
+    }
+
+    /**
+     * Updated _getAvailableClasses to use enhanced feature data
+     */
+    async _getAvailableClasses() {
+        const classes = window.getGlogFeatures();
+        return classes ? classes.map(cls => cls.name).sort() : [];
     }
 
     /**
@@ -235,68 +318,47 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     /**
-     * Add class features based on class data and level
-     */
-    async _addClassFeatures(className, currentLevel) {
-        const classData = window.getGlogClass(className);
-        if (!classData || !classData.features) {
-            throw new Error(`No feature data found for class: ${className}`);
-        }
+ * Check if character has available class features to add
+ */
+    _hasAvailableClassFeatures() {
+        const className = this.actor.system.details.class;
+        const currentLevel = this.actor.system.details.level;
 
-        // Get existing features to avoid duplicates
+        if (!className || currentLevel < 1) return false;
+
+        const classData = window.getGlogClassFeatures(className);
+        if (!classData || !classData.features) return false;
+
+        // Get existing features
         const existingFeatures = this.actor.items.filter(i =>
             i.type === "feature" &&
             i.system.classSource === className
         );
 
-        const featuresToAdd = [];
-
-        // Add level-0 feature if not already present
+        // Check level-0 feature
         if (classData.features["level-0"] &&
             !existingFeatures.some(f => f.system.template === "level-0")) {
-            featuresToAdd.push(this._createFeatureData(
-                className,
-                "level-0",
-                `${className} Starting Ability`,
-                classData.features["level-0"],
-                1
-            ));
+            return true;
         }
 
-        // Add template features based on current level
+        // Check template features
         const templates = ["A", "B", "C", "D"];
         for (let i = 0; i < Math.min(currentLevel, 4); i++) {
             const template = templates[i];
             const templateFeatures = classData.features[template];
 
             if (templateFeatures && Array.isArray(templateFeatures)) {
-                for (const featureName of templateFeatures) {
-                    // Check if this specific feature already exists
+                for (const featureData of templateFeatures) {
                     const exists = existingFeatures.some(f =>
                         f.system.template === template &&
-                        f.name === featureName
+                        f.name === featureData.name
                     );
-
-                    if (!exists) {
-                        featuresToAdd.push(this._createFeatureData(
-                            className,
-                            template,
-                            featureName,
-                            `${className} Template ${template} ability: ${featureName}. Add detailed description based on your class reference.`,
-                            i + 1
-                        ));
-                    }
+                    if (!exists) return true;
                 }
             }
         }
 
-        // Create the features on the actor
-        if (featuresToAdd.length > 0) {
-            await this.actor.createEmbeddedDocuments("Item", featuresToAdd);
-            console.log(`Added ${featuresToAdd.length} new features for ${className} level ${currentLevel}`);
-        } else {
-            ui.notifications.info("No new features to add - all appropriate features already exist.");
-        }
+        return false;
     }
 
     /**

@@ -915,43 +915,201 @@
     display: block;
 }
 
-/* Features Section */
+/* Features Section Enhanced Styling */
 .glog2d6 .features-section,
 .glog2d6 .spells-section {
     margin: 0;
 }
 
-.glog2d6 .features-info,
-.glog2d6 .spells-info {
-    font-weight: bold;
-    font-size: 14px;
+.glog2d6 .features-header,
+.glog2d6 .spells-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
 
+.glog2d6 .features-info h3,
+.glog2d6 .spells-info h3 {
+    margin: 0 0 5px 0;
+    color: var(--primary-color);
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.glog2d6 .feature-class-info {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Glowing Add Class Features Button */
+.glog2d6 .add-class-features.features-available {
+    background: var(--success-color) !important;
+    color: white !important;
+    animation: featureGlow 2s ease-in-out infinite alternate;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.glog2d6 .add-class-features.features-available:hover {
+    background: var(--success-hover) !important;
+    animation: featureGlowHover 1s ease-in-out infinite alternate;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+@keyframes featureGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+    }
+}
+
+@keyframes featureGlowHover {
+    0% {
+        box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 12px rgba(76, 175, 80, 0.8);
+    }
+}
+
+/* Enhanced Feature and Spell Cards */
 .glog2d6 .features-list,
 .glog2d6 .spells-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.glog2d6 .feature-item,
-.glog2d6 .spell-item {
-    background: var(--background-light);
+.glog2d6 .feature-card {
+    background: var(--background-section);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 10px;
+    border-radius: var(--border-radius-large);
+    padding: 12px;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.glog2d6 .feature-level,
-.glog2d6 .spell-level {
+.glog2d6 .feature-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.glog2d6 .feature-card.feature-inactive {
+    opacity: 0.6;
+    background: var(--background-darker);
+}
+
+.glog2d6 .feature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.glog2d6 .feature-main {
+    flex: 1;
+}
+
+.glog2d6 .feature-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.glog2d6 .feature-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.glog2d6 .feature-source {
     background: var(--secondary-color);
     color: white;
     padding: 2px 6px;
     border-radius: var(--border-radius);
-    font-size: 10px;
+    font-size: 9px;
     font-weight: bold;
+    text-transform: uppercase;
 }
 
+.glog2d6 .feature-template {
+    background: var(--background-light);
+    color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    padding: 2px 6px;
+    border-radius: var(--border-radius);
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.glog2d6 .feature-controls {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.glog2d6 .feature-controls .item-control {
+    padding: 2px 4px;
+    font-size: 9px;
+    min-width: auto;
+}
+
+.glog2d6 .feature-prerequisites {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 8px;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--secondary-color);
+}
+
+.glog2d6 .feature-prerequisites i {
+    font-size: 8px;
+    color: var(--secondary-color);
+}
+
+.glog2d6 .feature-description {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #333;
+    white-space: pre-line;
+}
+
+/* Enhanced Empty Section */
+.glog2d6 .empty-section {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-style: italic;
+    background: var(--background-section);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius-large);
+}
+
+.glog2d6 .empty-section .empty-icon {
+    font-size: 32px;
+    color: var(--border-color);
+    margin-bottom: 10px;
+}
+
+.glog2d6 .empty-section p {
+    margin: 8px 0;
+}
+
+/* Spell-specific styling */
 .glog2d6 .spell-cast-btn {
     background: var(--success-color);
     color: white;
@@ -970,16 +1128,6 @@
     gap: 8px;
 }
 
-.glog2d6 .empty-section {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-.glog2d6 .empty-section p {
-    margin: 8px 0;
-}
 
 /* Inventory Section in Tab */
 .glog2d6 .inventory-section {

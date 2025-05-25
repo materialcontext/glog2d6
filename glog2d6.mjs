@@ -3,11 +3,11 @@ import { GLOG2D6Item } from "./module/item/item.mjs";
 import { GLOG2D6ActorSheet } from "./module/actor/actor-sheet.mjs";
 import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
 
-
 // Store data globally when system initializes
 let GLOG_CLASSES = null;
 let GLOG_WEAPONS = null;
 let GLOG_ARMOR = null;
+let GLOG_FEATURES = null;
 
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
@@ -56,7 +56,7 @@ Hooks.once('init', async function() {
 
     Items.unregisterSheet("core", ItemSheet);
     Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield", "spell"], // Add "spell" here
+        types: ["weapon", "armor", "gear", "shield", "spell", "feature"], // Add "feature" here
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Item"
     });
@@ -69,19 +69,36 @@ Hooks.once('init', async function() {
         "systems/glog2d6/templates/item/item-armor-sheet.hbs",
         "systems/glog2d6/templates/item/item-gear-sheet.hbs",
         "systems/glog2d6/templates/item/item-shield-sheet.hbs",
-        "systems/glog2d6/templates/item/item-spell-sheet.hbs"
+        "systems/glog2d6/templates/item/item-spell-sheet.hbs",
+        "systems/glog2d6/templates/item/item-feature-sheet.hbs"
     ]);
 });
 
 // Load all system data from JSON files
 async function loadSystemData() {
-    // Load classes
+    // Load features (new comprehensive data)
+    try {
+        const response = await fetch('systems/glog2d6/data/features.json');
+        if (response.ok) {
+            const featureData = await response.json();
+            GLOG_FEATURES = featureData.classes;
+            console.log('glog2d6 | Loaded', GLOG_FEATURES.length, 'classes with detailed features');
+        } else {
+            console.warn('glog2d6 | Could not load features.json');
+            GLOG_FEATURES = getDefaultClasses();
+        }
+    } catch (error) {
+        console.error('glog2d6 | Error loading features.json:', error);
+        GLOG_FEATURES = getDefaultClasses();
+    }
+
+    // Load legacy classes for backward compatibility
     try {
         const response = await fetch('systems/glog2d6/data/classes.json');
         if (response.ok) {
             const classData = await response.json();
             GLOG_CLASSES = classData.classes;
-            console.log('glog2d6 | Loaded', GLOG_CLASSES.length, 'classes');
+            console.log('glog2d6 | Loaded', GLOG_CLASSES.length, 'legacy classes');
         } else {
             console.warn('glog2d6 | Could not load classes.json');
             GLOG_CLASSES = getDefaultClasses();
@@ -158,11 +175,11 @@ Hooks.once("ready", async function() {
             button.disabled = true;
             button.textContent = "Damage Rolled";
         }
-
-        if (game.user.isGM) {
-            await createDefaultFolders();
-        }
     });
+
+    if (game.user.isGM) {
+        await createDefaultFolders();
+    }
 
     async function createDefaultFolders() {
         // Only run this once per world to avoid duplicates
@@ -179,19 +196,28 @@ Hooks.once("ready", async function() {
             const weaponFolder = await createFolderIfNotExists("Weapons", "Item", "#8B4513");
             const armorFolder = await createFolderIfNotExists("Armor & Shields", "Item", "#4682B4");
             const gearFolder = await createFolderIfNotExists("Equipment & Gear", "Item", "#228B22");
+            const featureFolder = await createFolderIfNotExists("Class Features", "Item", "#9932CC");
 
             // Create subfolders for weapons
             const meleeFolder = await createFolderIfNotExists("Melee Weapons", "Item", "#A0522D", weaponFolder.id);
             const rangedFolder = await createFolderIfNotExists("Ranged Weapons", "Item", "#8B4513", weaponFolder.id);
             const ammunitionFolder = await createFolderIfNotExists("Ammunition", "Item", "#654321", weaponFolder.id);
 
+            // Create class subfolders for features
+            const classFolders = {};
+            for (const classData of GLOG_FEATURES) {
+                classFolders[classData.name] = await createFolderIfNotExists(
+                    classData.name, "Item", "#9932CC", featureFolder.id
+                );
+            }
+
             // Create items from data files
-            await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id);
+            await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id, classFolders);
 
             // Mark as completed
             await game.settings.set("glog2d6", "hasSetupDefaultFolders", true);
 
-            ui.notifications.info("GLOG 2d6: Default items and folders created successfully!");
+            ui.notifications.info("GLOG 2d6: Default items, features, and folders created successfully!");
 
         } catch (error) {
             console.error('glog2d6 | Error creating default folders:', error);
@@ -232,9 +258,10 @@ Hooks.once("ready", async function() {
     /**
      * Creates items from the loaded JSON data and organizes them into folders
      */
-    async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId) {
+    async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId, classFolders) {
         const weaponData = window.getGlogWeapons();
         const armorData = window.getGlogArmor();
+        const featureData = window.getGlogFeatures();
 
         const itemsToCreate = [];
 
@@ -296,24 +323,108 @@ Hooks.once("ready", async function() {
             }
         }
 
+        // Process class features for world item library
+        if (featureData) {
+            for (const classData of featureData) {
+                const classFolderId = classFolders[classData.name]?.id;
+                if (!classFolderId) continue;
+
+                let sortOrder = 0;
+
+                // Add level-0 feature
+                if (classData.features["level-0"]) {
+                    const feature = classData.features["level-0"];
+                    itemsToCreate.push({
+                        name: `${classData.name}: ${feature.name}`,
+                        type: "feature",
+                        img: getFeatureIcon(classData.name, "level-0"),
+                        system: {
+                            classSource: classData.name,
+                            template: "level-0",
+                            level: 1,
+                            description: feature.description,
+                            active: true,
+                            prerequisites: "None"
+                        },
+                        folder: classFolderId,
+                        sort: sortOrder++
+                    });
+                }
+
+                // Add template features A-D
+                const templates = ["A", "B", "C", "D"];
+                for (let i = 0; i < templates.length; i++) {
+                    const template = templates[i];
+                    const templateFeatures = classData.features[template];
+
+                    if (templateFeatures && Array.isArray(templateFeatures)) {
+                        for (const feature of templateFeatures) {
+                            itemsToCreate.push({
+                                name: `${classData.name}: ${feature.name}`,
+                                type: "feature",
+                                img: getFeatureIcon(classData.name, template),
+                                system: {
+                                    classSource: classData.name,
+                                    template: template,
+                                    level: i + 1,
+                                    description: feature.description,
+                                    active: true,
+                                    prerequisites: `${classData.name} Template ${template}`
+                                },
+                                folder: classFolderId,
+                                sort: sortOrder++
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
         // Create all items at once
         if (itemsToCreate.length > 0) {
             await Item.createDocuments(itemsToCreate);
-            console.log(`glog2d6 | Created ${itemsToCreate.length} default items`);
+            console.log(`glog2d6 | Created ${itemsToCreate.length} default items and features`);
         }
     }
 
-    // Global function to get class data
+    /**
+     * Get appropriate icon for features based on class and template
+     */
+    function getFeatureIcon(className, template) {
+        const classIcons = {
+            "Fighter": "icons/skills/melee/blade-tip-chipped-blood-red.webp",
+            "Wizard": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+            "Thief": "icons/skills/social/theft-pickpocket-bribery-brown.webp",
+            "Barbarian": "icons/skills/melee/strike-hammer-destructive-orange.webp",
+            "Hunter": "icons/weapons/bows/bow-recurve-yellow.webp",
+            "Acrobat": "icons/skills/movement/feet-winged-boots-brown.webp",
+            "Assassin": "icons/weapons/daggers/dagger-curved-poison-green.webp",
+            "Courtier": "icons/skills/social/diplomacy-handshake.webp"
+        };
+
+        return classIcons[className] || "icons/sundries/scrolls/scroll-bound-brown.webp";
+    }
+
+    // Global function to get class data (legacy support)
     window.getGlogClasses = function() {
         return GLOG_CLASSES || getDefaultClasses();
     };
 
-    // Global function to get a specific class by name
+    // Global function to get a specific class by name (legacy support)
     window.getGlogClass = function(className) {
         if (!GLOG_CLASSES) return null;
         return GLOG_CLASSES.find(cls => cls.name === className);
     };
 
+    // New enhanced functions for feature data
+    window.getGlogFeatures = function() {
+        return GLOG_FEATURES || [];
+    };
+
+    window.getGlogClassFeatures = function(className) {
+        if (!GLOG_FEATURES) return null;
+        return GLOG_FEATURES.find(cls => cls.name === className);
+    };
 
     window.getGlogWeapons = function() {
         return GLOG_WEAPONS || { weapons: [], ammunition: [] };
@@ -334,6 +445,7 @@ Hooks.once("ready", async function() {
             ...armor.shields
         ];
     };
+
     // Add torch burn macro for GMs
     if (game.user.isGM) {
         game.glog2d6 = {

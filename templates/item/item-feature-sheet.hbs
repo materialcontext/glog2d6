@@ -1,0 +1,70 @@
+<form class="{{cssClass}}" autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="Feature Name"/>
+      </h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+
+    <div class="feature-properties">
+      <div class="form-group">
+        <label for="system.classSource">Class Source</label>
+        <select name="system.classSource">
+          {{#select system.classSource}}
+          <option value="">No Class</option>
+          <option value="Acrobat">Acrobat</option>
+          <option value="Assassin">Assassin</option>
+          <option value="Barbarian">Barbarian</option>
+          <option value="Courtier">Courtier</option>
+          <option value="Fighter">Fighter</option>
+          <option value="Hunter">Hunter</option>
+          <option value="Thief">Thief</option>
+          <option value="Wizard">Wizard</option>
+          {{/select}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="system.template">Template</label>
+        <select name="system.template">
+          {{#select system.template}}
+          <option value="level-0">Level 0</option>
+          <option value="A">Template A</option>
+          <option value="B">Template B</option>
+          <option value="C">Template C</option>
+          <option value="D">Template D</option>
+          <option value="custom">Custom</option>
+          {{/select}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="system.level">Required Level</label>
+        <input type="number" name="system.level" value="{{system.level}}" min="1" max="20"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.active">
+          <input type="checkbox" name="system.active" {{#if system.active}}checked{{/if}}/>
+          Active
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="system.prerequisites">Prerequisites</label>
+      <input type="text" name="system.prerequisites" value="{{system.prerequisites}}" placeholder="e.g., Fighter Template A, Level 3"/>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="system.description">Description</label>
+      <textarea name="system.description" rows="12">{{system.description}}</textarea>
+    </div>
+
+  </section>
+</form>
