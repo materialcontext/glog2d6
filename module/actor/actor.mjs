@@ -12,8 +12,6 @@ export class GLOG2D6Actor extends Actor {
         super.prepareData();
     }
 
-    // In module/actor/actor.mjs, update the prepareBaseData method:
-
     prepareBaseData() {
         // Calculate attribute modifiers
         for (let [_key, attribute] of Object.entries(this.system.attributes)) {
@@ -28,7 +26,7 @@ export class GLOG2D6Actor extends Actor {
             const conMod = this.system.attributes.con.mod;
             this.system.inventory.slots.max = 6 + Math.max(strMod, conMod);
 
-            // FIXED: Calculate used slots by iterating through items
+            // Calculate used slots by iterating through items
             let usedSlots = 0;
             for (let item of this.items) {
                 if (item.system.slots) {
@@ -37,17 +35,52 @@ export class GLOG2D6Actor extends Actor {
             }
             this.system.inventory.slots.used = usedSlots;
 
-            // Calculate encumbrance
+            // Calculate slot-based encumbrance (over carrying capacity)
             const maxSlots = this.system.inventory.slots.max;
-            this.system.inventory.encumbrance = Math.max(0, usedSlots - maxSlots);
+            const slotEncumbrance = Math.max(0, usedSlots - maxSlots);
 
-            console.log(`Encumbrance Debug - ${this.name}: Used ${usedSlots}/${maxSlots}, Encumbrance: ${this.system.inventory.encumbrance}`);
+            // FIXED: Calculate equipment-based encumbrance penalties
+            let equipmentEncumbrance = 0;
+
+            // Check equipped armor for encumbrance penalty
+            const equippedArmor = this.items.find(item => item.type === "armor" && item.system.equipped);
+            if (equippedArmor && equippedArmor.system.encumbrancePenalty) {
+                equipmentEncumbrance += equippedArmor.system.encumbrancePenalty;
+            }
+
+            // Check equipped weapons for encumbrance penalty
+            const equippedWeapons = this.items.filter(item => item.type === "weapon" && item.system.equipped);
+            for (let weapon of equippedWeapons) {
+                if (weapon.system.encumbrancePenalty) {
+                    equipmentEncumbrance += weapon.system.encumbrancePenalty;
+                }
+            }
+
+            // ARMOR TRAINING: Reduce armor encumbrance by 1 if character has the feature
+            const hasArmorTraining = this.items.some(item =>
+                item.type === "feature" &&
+                item.name.includes("Armor Training") &&
+                item.system.active
+            );
+            if (hasArmorTraining && equipmentEncumbrance > 0) {
+                equipmentEncumbrance = Math.max(0, equipmentEncumbrance - 1);
+                console.log(`Armor Training: Reduced equipment encumbrance by 1`);
+            }
+
+            // Total encumbrance is the sum of slot overflow and equipment penalties
+            this.system.inventory.encumbrance = slotEncumbrance + equipmentEncumbrance;
+            this.system.inventory.slotEncumbrance = slotEncumbrance;
+            this.system.inventory.equipmentEncumbrance = equipmentEncumbrance;
+
+            console.log(`Encumbrance Debug - ${this.name}:`);
+            console.log(`  Slots: ${usedSlots}/${maxSlots} (overflow: ${slotEncumbrance})`);
+            console.log(`  Equipment penalties: ${equipmentEncumbrance}`);
+            console.log(`  Total encumbrance: ${this.system.inventory.encumbrance}`);
         }
     }
 
-    // Also update prepareDerivedData to ensure encumbrance effects are applied:
     prepareDerivedData() {
-        // FIXED: Set effective modifiers for all attributes first
+        // Set effective modifiers for all attributes first
         for (let [key, attribute] of Object.entries(this.system.attributes)) {
             attribute.effectiveMod = attribute.mod; // Default to original mod
             attribute.effectiveValue = attribute.value; // Default to original value
@@ -78,7 +111,7 @@ export class GLOG2D6Actor extends Actor {
             this.system.details.effectiveMovement = Math.max(0, this.system.details.movement - movePenalty);
 
             if (movePenalty > 0) {
-                console.log(`Movement penalty applied: ${this.system.details.movement} -> ${this.system.details.effectiveMovement}`);
+                console.log(`Movement penalty applied: ${this.system.details.movement} -> ${this.system.details.effectiveMovement} (encumbrance: ${encumbrance}, penalty: ${movePenalty})`);
             }
         }
 

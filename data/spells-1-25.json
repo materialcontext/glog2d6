@@ -1,0 +1,279 @@
+{
+    "spells": [
+        {
+            "name": "Acid Spit",
+            "type": "spell",
+            "img": "icons/magic/acid/projectile-arrow-acid-green.webp",
+            "system": {
+                "range": "Self (30' attack)",
+                "duration": "[sum] rounds",
+                "components": "V, S",
+                "description": "You spit acid for the duration. Make an attack roll against a target within 30'. On a hit, the target takes [sum] damage. Unless they spend a turn washing it off, they take another 1d6 damage over the next [dice] turns."
+            }
+        },
+        {
+            "name": "Albrecht's Unreliable Disintegrator",
+            "type": "spell",
+            "img": "icons/magic/death/skull-energy-light-teal.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Instantaneous",
+                "components": "V, S",
+                "description": "Target creature of [dice] HD or less, or an object weighing less than [dice]x200lbs, disintegrates into nothingness. Save negates. Magical objects get +2 to their save. You can disintegrate a section of an object or creature but not very precisely."
+            }
+        },
+        {
+            "name": "All Things Adjacent",
+            "type": "spell",
+            "img": "icons/magic/movement/teleport-flash-blue.webp",
+            "system": {
+                "range": "Self",
+                "duration": "[dice] rounds",
+                "components": "V, S",
+                "description": "You are adjacent to all things within your line of sight. You can punch anything you can see. You can pick up any object and put it in your pocket as if it were beside you. However, you are affected as if you were in every location at once. Obviously, casting this in sight of the sun is instantly fatal."
+            }
+        },
+        {
+            "name": "Animate Potion",
+            "type": "spell",
+            "img": "icons/consumables/potions/bottle-round-corked-pink.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] hours",
+                "components": "V, S (splittable)",
+                "description": "You turn a potion into an obedient homunculus (HD 0). It is tiny (1' tall) and feeble (Str 1), but it can go where you direct and even bring you small items, such as keys. The potion can be drunk as normal. Despite the name, this spell works on any liquid except water."
+            }
+        },
+        {
+            "name": "Become Delicious",
+            "type": "spell",
+            "img": "icons/magic/control/fear-fright-white.webp",
+            "system": {
+                "range": "50'",
+                "duration": "[sum] varies",
+                "components": "V, S",
+                "description": "Target creature smells and tastes delicious for the spell's duration. The smell radiates 20' in calm air, but can spread via wind or leave a trail. Sentient creatures can usually resist the urge to eat the target without a Save, but animals and other ravenous creatures must Save or select the spell's target as their primary attack target. Insects will be attracted to the target for the spell's duration. The target may attempt to cover up the smell with a strong enough scent. The effect lasts 1 [dice]: minutes, 2 [dice]: hours, 3 [dice]: months, 4 [dice] years. This spell can also affect dead creatures."
+            }
+        },
+        {
+            "name": "Bless",
+            "type": "spell",
+            "img": "icons/magic/holy/prayer-hands-glow-yellow.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Sustainable",
+                "components": "V, S",
+                "description": "Choose one effect per [dice] invested: (a) The target treats all critical failures as critical successes for the duration of the spell, (b) The target automatically passes their next Save (c) Creature or object counts as holy for the duration of the spell, (d) Target gets a new Save against any ongoing mental effect."
+            }
+        },
+        {
+            "name": "Blood Jelly",
+            "type": "spell",
+            "img": "icons/magic/death/blood-spatter-drip-red.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Permanent",
+                "components": "V, S, M (meat with your blood)",
+                "description": "You touch dead meat or a pool of blood and create a tiny blood jelly. It starts as the size of a thimble. It's transparent with a red spidery nucleus. It won't harm anyone who contributed blood to its creation. The blood jelly will react the same way you do to any potions or items fed to it. It's a great guinea pig. If it stays small and you feed it an entire potion, you can consume it to also gain the potion's effect. The more you feed a blood jelly, the larger it grows. They lose 10% of their weight each day, and gain 10% of what they eat. It takes an hour to eat something as big as they are. They have 1HD per doubling past 100 pounds and their default attack is sucking 1d4 points of blood per HD they have. Given 1000 pounds of meat, a fist-sized jelly takes about a day and a night to reach 100 pounds and 1HD. The more magical and unusual things you feed to it, the stranger it will become."
+            }
+        },
+        {
+            "name": "Blood to Quicksilver",
+            "type": "spell",
+            "img": "icons/magic/death/blood-vessel-vein-red.webp",
+            "system": {
+                "range": "100'",
+                "duration": "Instantaneous",
+                "components": "V, S",
+                "description": "The magic in the target's blood turns to mercury. Target takes 1d6+1 damage per the number of MD they possess, or 1d6 damage per HD for magical creatures (unicorns, dragons, etc.). Additionally, they lose [dice] MD for [dice] rounds. Save for half damage and to negate MD loss. Non-magical creatures, or creatures that have no spellcasting ability, are unaffected by this spell."
+            }
+        },
+        {
+            "name": "Beautify",
+            "type": "spell",
+            "img": "icons/magic/light/beam-rays-yellow-orange.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] hours*",
+                "components": "V, S",
+                "description": "Target is made more beautiful. Dirt falls away, pimples disappear, teeth whiten, lice vanish, gouges fill in, and varnish looks new again. Will also restore [dice] points of Charisma if damaged, to former max. If [sum] is greater than 12, the effect is permanent."
+            }
+        },
+        {
+            "name": "Blossom",
+            "type": "spell",
+            "img": "icons/magic/nature/plant-sprout-flower-pink.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Permanent",
+                "components": "V, S",
+                "description": "Touched plant flourishes. Seeds germinate, flower buds swell and bloom, and a sickly plant regains vigor. Heals [sum] HP to a plant creature. If cast on a fruit, the fruit will grow up to the maximum normal size or 2x as big (whichever is smaller). Yes, you can use this to double your rations, as long as your rations are fruit or vegetables."
+            }
+        },
+        {
+            "name": "Candlemass",
+            "type": "spell",
+            "img": "icons/sundries/lights/candle-lit-yellow.webp",
+            "system": {
+                "range": "Self",
+                "duration": "[sum] × [dice] minutes",
+                "components": "V, S",
+                "description": "You conjure [dice] lit candles in your hand. Each behaves as any regular candle, except they cannot be put out and will burn even underwater. They may also be easily attached to any solid surface. The candles disappear as the spell expires."
+            }
+        },
+        {
+            "name": "Capture in a Bottle",
+            "type": "spell",
+            "img": "icons/consumables/potions/bottle-round-corked-blue.webp",
+            "system": {
+                "range": "30'",
+                "duration": "Varies*",
+                "components": "V, S, M (empty bottle)",
+                "description": "This spell requires an empty bottle to cast. A creature of up to [dice]² HP must Save or be pulled into the bottle and trapped. Anyone opening the bottle releases the creature, and if the bottle is broken, the creature is freed as well. The spell duration is [sum] rounds at 1 [die], minutes at 2 [dice], hours at 3 [dice], or permanent at 4 [dice]."
+            }
+        },
+        {
+            "name": "Charm Person",
+            "type": "spell",
+            "img": "icons/magic/control/hypnosis-mesmerism-eye.webp",
+            "system": {
+                "range": "50'",
+                "duration": "[dice] hours",
+                "components": "V, S",
+                "description": "The person regards you as a good friend and ignores the obvious spell you just cast on them. If you invest 4 dice into this spell, the duration becomes permanent unless removed."
+            }
+        },
+        {
+            "name": "Circle of Frost",
+            "type": "spell",
+            "img": "icons/magic/water/barrier-ice-crystal-wall-blue.webp",
+            "system": {
+                "range": "Self",
+                "duration": "Until melted or freed",
+                "components": "V, S",
+                "description": "All creatures in [dice] × 10' radius take 1d4 damage, Save for half. Everything that fails its Save is frozen to whatever surface they were touching. Boots are frozen to the ground, keys are frozen in their locks. Creatures are usually immobilized from the boots down, unless they were playing in a fountain or something. Attempting to break loose requires a successful Strength check, or dealing [sum] damage to the ice. The DC is 7 + [dice]×2."
+            }
+        },
+        {
+            "name": "Clarity",
+            "type": "spell",
+            "img": "icons/magic/perception/eye-ringed-glow-angry-small-teal.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Instantaneous",
+                "components": "V, S",
+                "description": "Target makes another Save against an emotion-affecting effect (fear, anger, sadness, pleasure, pain)."
+            }
+        },
+        {
+            "name": "Color Spray",
+            "type": "spell",
+            "img": "icons/magic/light/prism-rainbow-colors.webp",
+            "system": {
+                "range": "15' cone",
+                "duration": "Varies*",
+                "components": "V, S",
+                "description": "If [sum] is equal or greater to the creature's HD, it is befuddled for 1d6 rounds. If [sum] is three times the creature's HD or more, it is stunned for a round, then befuddled for 1d6 rounds. If [sum] is five times the creature's HD, it is stunned for 1d6 rounds, then befuddled for 1d6 rounds."
+            }
+        },
+        {
+            "name": "Control Flame",
+            "type": "spell",
+            "img": "icons/magic/fire/flame-burning-hand-orange.webp",
+            "system": {
+                "range": "50'",
+                "duration": "[sum] rounds",
+                "components": "V, S",
+                "description": "Control a ball of fire the size of a head (1D) / a person (2D) / a wagon (3D) / a house (4D). You can do [dice] things with it per round. If it's part of a creature, they get a save whenever you try to do something with it."
+            }
+        },
+        {
+            "name": "Death Mask",
+            "type": "spell",
+            "img": "icons/equipment/head/mask-carved-brown.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Permanent",
+                "components": "V, S, M (humanoid corpse)",
+                "description": "You touch a corpse and the face peels off like a mask, while the rest of the corpse quickly rots into dust. When you (and only you) wear the mask, you will look and sound like the person whose face you're wearing, but only to sentient people (no effect on animals, spirits, or constructs). The mask will rot into uselessness after [sum] days. If [dice] is 4, the mask is permanent. This spell consumes the corpse."
+            }
+        },
+        {
+            "name": "Death Scythe",
+            "type": "spell",
+            "img": "icons/weapons/polearms/scythe-worn-black.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] hours",
+                "components": "V, S, M (corpse)",
+                "description": "The corpse disintegrates as you pluck a black scythe from it. This scythe is a +1 Heavy weapon that deals double damage to creatures of the same type."
+            }
+        },
+        {
+            "name": "Detect Metals",
+            "type": "spell",
+            "img": "icons/magic/perception/eye-ringed-glow-angry-small-blue.webp",
+            "system": {
+                "range": "100'",
+                "duration": "[sum] minutes",
+                "components": "V, S",
+                "description": "You can identify the eight true metals. In order of brightness: scarletite, gold, silver, mercury, iron, and tin. Lead and copper are nearly invisible. You see them through walls and barriers as faint shimmers, but the spell bleeds into your other senses. If you cast this spell with 3 or more [dice], your eyes turn gold and the effects are permanent."
+            }
+        },
+        {
+            "name": "Disguise",
+            "type": "spell",
+            "img": "icons/magic/control/silhouette-hold-change-blue.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] hours",
+                "components": "V, S (splittable)",
+                "description": "You cloak the object in illusion, making it appear as another object of the same type. An apple could be disguised as any other type of fruit; a table could be disguised as any other type of furniture. A humanoid can be disguised as any other humanoid of comparable size. This only extends to the visual properties of the object (not voice, smell, etc.). The maximum size of the object depends on how many dice are invested in the spell: human (1D) / ogre (2D) / dragon (3D) / ship (4D)."
+            }
+        },
+        {
+            "name": "Doom Song",
+            "type": "spell",
+            "img": "icons/magic/death/skull-horned-goat-pentagram-red.webp",
+            "system": {
+                "range": "100'",
+                "duration": "Sustainable [dice]",
+                "components": "V, S (splittable)",
+                "description": "Target creature loses [sum] HP. On the second turn the target takes [dice] more damage for the duration. On the third turn a Death appears. On the 4th turn the target's soul is ripped from their body and drug to their afterlife."
+            }
+        },
+        {
+            "name": "Door Dimension",
+            "type": "spell",
+            "img": "icons/environment/doors/door-stone-portal-blue.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] hours",
+                "components": "V, S, M (door or portcullis)",
+                "description": "Turns the target door into a portal that connects the room in which it was cast to the demiplane of infinite doors. At one dice the door leads only to a stone platform floating in the ether. At two dice a staircase leads away from the platform and connects to one other portal you've created. At three dice it leads to a wall-less foyer with staircases leading up to all the portals you've created. At four dice it leads to a central nexus connecting every door in the world. Your own portals are nearby, but good luck navigating to anything else."
+            }
+        },
+        {
+            "name": "Duo-Dimensionality",
+            "type": "spell",
+            "img": "icons/magic/movement/abstract-ribbons-red-orange.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] minutes",
+                "components": "V, S",
+                "description": "The target becomes flat and two-dimensional. They can walk through cracks, behind bookshelves, and most closed doors. If they turn so that they are facing someone edge-on, they cannot be seen. They weigh one pound. With 4 [dice] the effect is measured in hours, not minutes, and if the sum is greater than 12, the effect is permanent."
+            }
+        },
+        {
+            "name": "Elegant Judgment",
+            "type": "spell",
+            "img": "icons/magic/fire/explosion-fireball-purple.webp",
+            "system": {
+                "range": "200'",
+                "duration": "Instantaneous",
+                "components": "V, S",
+                "description": "Does [sum] damage in 20' diameter, Save vs. Charisma for half. Like a fireball, but the flames are purple and gold. Creatures with 17 or more Charisma, non-sentient creatures, beautiful objects, the dead, and Elves are immune to this spell."
+            }
+        }
+    ]
+}

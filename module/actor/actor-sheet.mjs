@@ -70,7 +70,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Item management
         html.find('.item-create').click(this._onItemCreate.bind(this));
         html.find('.item-edit').click(this._onItemEdit.bind(this));
-        html.find('.item-delete').click(this._onItemDelete.bind(this));
+        html.find('.item-delete', '.feature-delete').click(this._onItemDelete.bind(this));
 
         // Torch toggle - fixed
         html.find('.torch-btn').click(this._onTorchToggle.bind(this));
@@ -774,7 +774,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async _onItemDelete(event) {
         event.preventDefault();
-        const li = $(event.currentTarget).parents(".item");
+        const li = $(event.currentTarget).parents(".item, .feature-item");
         const item = this.actor.items.get(li.data("itemId"));
         return item.delete();
     }

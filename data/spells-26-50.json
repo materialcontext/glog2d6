@@ -1,0 +1,279 @@
+{
+    "spells": [
+        {
+            "name": "Fortune's Favor",
+            "type": "spell",
+            "img": "icons/magic/symbols/runes-star-pentagon-gold.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] rounds",
+                "components": "V, S",
+                "description": "Creature is restored to max HP at the start of each round and all doubles crit for the duration."
+            }
+        },
+        {
+            "name": "Hand of the Hound",
+            "type": "spell",
+            "img": "icons/magic/anatomy/hand-grasp-glow-purple.webp",
+            "system": {
+                "range": "Self",
+                "duration": "10 minutes",
+                "components": "V, S",
+                "description": "Your hand falls off and grows into a monstrous version of itself. You continue to control it, but if it dies, you don't have a hand anymore. You can have this affect both hands, but you'll look quite foolish. HP: [dice] Attack: [dice] Defense: [your dexterity] + [dice] Strength: [your Strength] + [dice]"
+            }
+        },
+        {
+            "name": "Heal",
+            "type": "spell",
+            "img": "icons/magic/life/cross-area-circle-green-white.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] hours",
+                "components": "V, S",
+                "description": "Heal up to [sum] HP of creatures you touch. You may distribute healing among as many creatures as you would like, as long as the total HP healed does not exceed [sum] and you maintain concentration. If you invest 3 [dice] you may instead choose to remove one cure, affliction, or permanent injury from a single target, and if you invest 4 [dice] you may do both."
+            }
+        },
+        {
+            "name": "Heat Metal",
+            "type": "spell",
+            "img": "icons/magic/fire/flame-burning-creature-skeleton.webp",
+            "system": {
+                "range": "50'",
+                "duration": "[sum] rounds",
+                "components": "V, S",
+                "description": "Target metal object becomes warm. Each round after the first, it deals 1d6 damage to anything touching it, or [dice]d6 damage if the metal has become liquid. The maximum size of the object, and additional effects, depends on how many dice are invested in the spell: 1 [dice]: sword-sized, 2 [dice]: door- or armor-sized, melts lead and tin after 5 rounds. 3 [dice]: cart-sized, melts gold, silver, and copper after 5 rounds, 4 [dice]: room-sized, melts iron after 5 rounds."
+            }
+        },
+        {
+            "name": "Hypnotic Orb",
+            "type": "spell",
+            "img": "icons/magic/control/hypnosis-mesmerism-spiral.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice]² minutes",
+                "components": "V, S, M (spherical object)",
+                "description": "You enchant a mostly-spherical object so that its surface is covered with a captivating, shimmering pattern. (Apples and most potatoes count as mostly-spherical; coins do not). Any creature who sees the enchanted object must make a save or be compelled to sit still and observe it for the spell's duration. Flying creatures will land, or circle it. You are not immune to this effect. The effect is broken if the line of sight is broken, if something startles them (a loud adjacent shout), or if they see signs of obvious danger (such as someone killing their friends). Groups of statistically identical NPCs should make their saves as a group."
+            }
+        },
+        {
+            "name": "Horrible Glyph",
+            "type": "spell",
+            "img": "icons/magic/symbols/runes-triangle-glow-red.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] rounds",
+                "components": "V, S",
+                "description": "The solid surface touched is marked with a glyph so horrible that anyone who can see it must Save vs Fear or be overcome with disgust and retreat until it can no longer see the glyph. If a creature is marked and can see the glyph, it may even harm itself to remove the glyph. You may choose its appearance but anything you choose will turn out suitably disgusting."
+            }
+        },
+        {
+            "name": "Ignite",
+            "type": "spell",
+            "img": "icons/magic/fire/explosion-fireball-medium-orange.webp",
+            "system": {
+                "range": "100'",
+                "duration": "Instantaneous",
+                "components": "V, S",
+                "description": "Target object or creature takes [sum] + [dice] damage and catches on fire dealing 1d6 damage each round until extinguished. Save negates."
+            }
+        },
+        {
+            "name": "Illusion",
+            "type": "spell",
+            "img": "icons/magic/control/silhouette-hold-change-blue.webp",
+            "system": {
+                "range": "50'",
+                "duration": "Sustainable",
+                "components": "V, S",
+                "description": "You create an illusion (basically a perfect hologram) of whatever object or creature you want in [dice] × 5' diameter. It can move as long as you dictate, but it cannot make any sound (or smell, touch, etc.). Creating the illusion of presence is easier than the illusion of absence. Creating an absence requires at least 3 [dice]."
+            }
+        },
+        {
+            "name": "Illusion of Youth",
+            "type": "spell",
+            "img": "icons/magic/time/clock-face-white.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] days varies*",
+                "components": "V, S",
+                "description": "Touched creature is cloaked with an illusion that makes them appear to be in their physical prime. If [sum] > 12 the effect is permanent."
+            }
+        },
+        {
+            "name": "Infantilize",
+            "type": "spell",
+            "img": "icons/magic/control/debuff-energy-hold-pink-purple.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Varies*",
+                "components": "V, S",
+                "description": "Target saves or becomes an adorable child version of itself. Creatures lose 1 HD (-4 max HP, -1 to hit, -1 to save). Player characters have their Strength dropped to 5 if higher. The target is so adorable all who see it must make a save the first time they try to harm it. If they fail this save, they hesitate, wasting their action. The spell duration is [sum] rounds at 1 [die], minutes at 2 [dice], hours at 3 [dice], or permanent at 4 [dice]."
+            }
+        },
+        {
+            "name": "Inflict Pain",
+            "type": "spell",
+            "img": "icons/magic/death/skull-damage-crack-purple.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] days varies*",
+                "components": "V, S",
+                "description": "Target takes [sum]×2 psychic damage. Save negates. Only works on things that feel pain. Cannot inflict wounds."
+            }
+        },
+        {
+            "name": "Invisibility",
+            "type": "spell",
+            "img": "icons/magic/control/silhouette-stealth-shadow.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] ×10 mins",
+                "components": "V, S (splittable)",
+                "description": "Object is invisible as long as it doesn't move. Each round of movement reduces the duration by 10 minutes. Invisible creatures gain the ability to see other invisible objects. Alternatively, can be used to suppress an object's invisibility."
+            }
+        },
+        {
+            "name": "Jealous Queen's Kiss",
+            "type": "spell",
+            "img": "icons/magic/control/debuff-chains-shackles-movement-purple.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] hours",
+                "components": "V, S, M (kiss)",
+                "description": "You force [dice] interdictions upon the target with a kiss. Because it's required that you kiss the target, you may only cast this spell on a willing or helpless (bound, unconscious, ...) creature. Impossible or contradictory interdictions are ignored. Multiple castings of this spell overwrite the older ones, they don't stack. Any time the target breaks one of the interdictions, they must Save or suffer a wound."
+            }
+        },
+        {
+            "name": "Keep Still",
+            "type": "spell",
+            "img": "icons/magic/control/debuff-chains-shackles-purple.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Varies*",
+                "components": "V, S",
+                "description": "The target is unable to leave its place - it can perform any action except for moving. Creatures may attempt a Str Save to move at half speed for one turn. The spell duration is [sum] rounds at 1 [die], minutes at 2 [dice], hours at 3 [dice], or permanent at 4 [dice]."
+            }
+        },
+        {
+            "name": "Knock",
+            "type": "spell",
+            "img": "icons/sundries/misc/lock-key-steel.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "Instantaneous",
+                "components": "V, S",
+                "description": "Object is opened. Doors are flung wide, locks are broken, shackles are bent open, belts come undone. Treat this as a Strength check made with a Strength of 10 + ([dice] × 4). Worn armor falls off if the wearer fails a save. Creatures must save or vomit (a free action)."
+            }
+        },
+        {
+            "name": "Leadfall",
+            "type": "spell",
+            "img": "icons/magic/symbols/runes-carved-stone-yellow.webp",
+            "system": {
+                "range": "30'",
+                "duration": "[sum] rounds",
+                "components": "V, S (splittable)",
+                "description": "Target moves at ½ speed. Alternatively, you can cast this spell in reaction to a falling creature. They take double fall damage. So does anything they land on."
+            }
+        },
+        {
+            "name": "Levitate",
+            "type": "spell",
+            "img": "icons/magic/movement/trail-streak-impact-blue.webp",
+            "system": {
+                "range": "30'",
+                "duration": "Sustainable",
+                "components": "V, S (splittable)",
+                "description": "You will an object to raise, lower, or hover. You cannot move the object horizontally, and you cannot move it more than 10' per turn. Maximum weight is 500 lbs × [dice]."
+            }
+        },
+        {
+            "name": "Light",
+            "type": "spell",
+            "img": "icons/magic/light/orb-lightblue.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[dice] hours",
+                "components": "V, S",
+                "description": "Object illuminates within 10' + ([dice] × 10'). If you invest 4 dice, this light has the qualities of sunlight."
+            }
+        },
+        {
+            "name": "Locate Animal",
+            "type": "spell",
+            "img": "icons/magic/perception/eye-ringed-glow-angry-small-blue.webp",
+            "system": {
+                "range": "[dice] miles",
+                "duration": "[dice] hours",
+                "components": "V, S",
+                "description": "Name a common animal. You now know where the nearest example of the animal is."
+            }
+        },
+        {
+            "name": "Lock",
+            "type": "spell",
+            "img": "icons/sundries/misc/lock-padlock-steel-brown.webp",
+            "system": {
+                "range": "30'",
+                "duration": "[dice] × 5 minutes",
+                "components": "V, S (splittable)",
+                "description": "Non-living object closes and becomes locked. If the object is a door, chest, or similar object, it will slam shut, dealing [sum] damage to any creature passing through it and then trapping them. This spell works on things that aren't technically portals (for example, a sword could be locked in its scabbard). Each casting die you invest beyond the first makes the object more difficult to open, and gives -1 to any Strength checks made to force the object open. Alternatively, this spell can be cast on a creature's orifice; the creature gets a save to resist, and another save at the end of each of its turns."
+            }
+        },
+        {
+            "name": "Loyal Steel",
+            "type": "spell",
+            "img": "icons/weapons/swords/sword-guard-worn.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] minutes",
+                "components": "V, S, M (one weapon)",
+                "description": "You enchant a weapon to float in the air at your side and protect you. Whenever you are attacked, the weapon counterattacks. It strikes as if wielded by you. The spell ends as its duration expires or after [dice] successful hits."
+            }
+        },
+        {
+            "name": "Magic Missile",
+            "type": "spell",
+            "img": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+            "system": {
+                "range": "200'",
+                "duration": "Instantaneous",
+                "components": "V, S (splittable)",
+                "description": "Target takes [sum] damage, no save."
+            }
+        },
+        {
+            "name": "Magic Mouth",
+            "type": "spell",
+            "img": "icons/magic/anatomy/mouth-teeth-fangs-red.webp",
+            "system": {
+                "range": "Self",
+                "duration": "[sum] hours",
+                "components": "V, S",
+                "description": "You gain [dice] extra inventory slots that can be accessed by swallowing or regurgitating the item you wish to store. The stored items are undetectable and none of their harmful effects affect you. As the spell expires, you vomit any items still stored."
+            }
+        },
+        {
+            "name": "Magnetize",
+            "type": "spell",
+            "img": "icons/magic/symbols/chevrons-triple-blue.webp",
+            "system": {
+                "range": "50'",
+                "duration": "[sum] minutes",
+                "components": "V, S, M (ferromagnetic object)",
+                "description": "Target iron object becomes highly magnetic, instantly attracting all unsecured magnetic objects in a 5×[dice]' radius to it. If the object is carried, the carrier must make a strength check against a DC of 7 + [dice] to not lose the item. The size of the object that can be targeted or affected also increases with [dice]: one [dice], hand-sized; two [dice] sword-sized; three [dice], person-sized; four dice horse-sized. At four [dice] the effect is permanent. This also works on nickel, cobalt, and manganese alloys."
+            }
+        },
+        {
+            "name": "Mental Domination",
+            "type": "spell",
+            "img": "icons/magic/control/hypnosis-mesmerism-eye-yellow.webp",
+            "system": {
+                "range": "Touch",
+                "duration": "[sum] minutes",
+                "components": "V, S",
+                "description": "A living creature makes a Charisma save. On a failed save, the creature falls under your control for the duration. It will obey any order except obviously suicidal ones, and you can use an action to take direct control of the creature and control its movements, though this will require you to stand still. Dominated creatures retain their mental ability scores, personalities, and desires. However, their loyalty to the caster is so great it obliterates all other concerns, except for basic self-preservation. At 4-dice even this instinct is overrun."
+            }
+        }
+    ]
+}

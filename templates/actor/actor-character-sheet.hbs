@@ -191,7 +191,18 @@
                         <div class="slots-info">
                             Slots: {{system.inventory.slots.used}} / {{system.inventory.slots.max}}
                             {{#if (gt system.inventory.encumbrance 0)}}
-                            <span class="encumbrance-warning">(Encumbered: -{{system.inventory.encumbrance}})</span>
+                            <span class="encumbrance-warning">
+                                (Encumbered: -{{system.inventory.encumbrance}}
+                                {{#if (and (gt system.inventory.slotEncumbrance 0) (gt
+                                system.inventory.equipmentEncumbrance 0))}}
+                                = {{system.inventory.slotEncumbrance}} slots + {{system.inventory.equipmentEncumbrance}}
+                                equipment
+                                {{else if (gt system.inventory.slotEncumbrance 0)}}
+                                from slot overflow
+                                {{else if (gt system.inventory.equipmentEncumbrance 0)}}
+                                from equipment
+                                {{/if}})
+                            </span>
                             {{/if}}
                         </div>
                         {{#if editMode}}
@@ -208,14 +219,12 @@
                             <a class="item-control item-create" data-type="gear" title="Create Gear">
                                 <i class="fas fa-suitcase"></i> Gear
                             </a>
-                            <!-- ADD THIS LINE: -->
                             <a class="item-control item-create" data-type="torch" title="Create Torch">
                                 <i class="fas fa-fire"></i> Torch
                             </a>
                         </div>
                         {{/if}}
                     </div>
-
                 </div>
                 <div class="items-list">
                     {{#each actor.items as |item id|}}
@@ -250,6 +259,9 @@
                             {{#if (eq item.type "weapon")}}
                             <span class="item-detail">{{item.system.damage}} dmg</span>
                             <span class="item-detail">{{item.system.size}}</span>
+                            {{#if (gt item.system.encumbrancePenalty 0)}}
+                            <span class="item-detail equipment-penalty">-{{item.system.encumbrancePenalty}} enc</span>
+                            {{/if}}
                             {{#if (and (not ../editMode) item.system.equipped)}}
                             <button type="button" class="weapon-attack-btn" data-item-id="{{item.id}}"
                                 title="Attack with {{item.name}}">
@@ -259,6 +271,9 @@
                             {{else if (eq item.type "armor")}}
                             <span class="item-detail">+{{item.system.armorBonus}} AC</span>
                             <span class="item-detail">{{item.system.type}}</span>
+                            {{#if (gt item.system.encumbrancePenalty 0)}}
+                            <span class="item-detail equipment-penalty">-{{item.system.encumbrancePenalty}} enc</span>
+                            {{/if}}
                             {{else if (eq item.type "shield")}}
                             <span class="item-detail">+{{item.system.armorBonus}} AC</span>
                             <span class="item-detail">shield</span>

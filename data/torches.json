@@ -107,6 +107,33 @@
           "intensity": 1
         }
       }
+    },
+    {
+      "name": "Oil Flask",
+      "type": "torch",
+      "img": "icons/consumables/potions/bottle-round-corked-orange.webp",
+      "system": {
+        "description": "A flask of lamp oil. Can be used to refuel lanterns or thrown as an improvised incendiary device.",
+        "slots": 1,
+        "lightRadius": {
+          "bright": 0,
+          "dim": 0
+        },
+        "lightAngle": 360,
+        "lightColor": "#ff8800",
+        "duration": {
+          "enabled": false,
+          "hours": 24,
+          "remaining": 24,
+          "burnRate": 0,
+          "autoExtinguish": false
+        },
+        "lightAnimation": {
+          "type": null,
+          "speed": 1,
+          "intensity": 1
+        }
+      }
     }
   ]
 }

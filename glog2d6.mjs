@@ -3,11 +3,12 @@ import { GLOG2D6Item } from "./module/item/item.mjs";
 import { GLOG2D6ActorSheet } from "./module/actor/actor-sheet.mjs";
 import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
 
-// Store data globally when system initializes
 let GLOG_CLASSES = null;
 let GLOG_WEAPONS = null;
 let GLOG_ARMOR = null;
 let GLOG_FEATURES = null;
+let GLOG_TORCHES = null;
+let GLOG_SPELLS = null;
 
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
@@ -75,21 +76,16 @@ Hooks.once('init', async function() {
     ]);
 });
 
-// Load all system data from JSON files
 async function loadSystemData() {
     try {
-        const response = await fetch('systems/glog2d6/data/features.json');
-        if (response.ok) {
-            const featureData = await response.json();
+        // Load features (classes)
+        const featuresResponse = await fetch('systems/glog2d6/data/features.json');
+        if (featuresResponse.ok) {
+            const featureData = await featuresResponse.json();
             GLOG_FEATURES = featureData.classes;
             console.log('glog2d6 | Loaded', GLOG_FEATURES.length, 'classes with detailed features');
-
-            // Debug: Log the first class to verify structure
-            if (GLOG_FEATURES.length > 0) {
-                console.log('glog2d6 | Sample class data:', GLOG_FEATURES[0].name, 'has features:', Object.keys(GLOG_FEATURES[0].features || {}));
-            }
         } else {
-            console.warn('glog2d6 | Could not load features.json, status:', response.status);
+            console.warn('glog2d6 | Could not load features.json, status:', featuresResponse.status);
             GLOG_FEATURES = getDefaultClasses();
         }
     } catch (error) {
@@ -97,12 +93,11 @@ async function loadSystemData() {
         GLOG_FEATURES = getDefaultClasses();
     }
 
-
     // Load weapons
     try {
-        const response = await fetch('systems/glog2d6/data/weapons.json');
-        if (response.ok) {
-            const weaponData = await response.json();
+        const weaponsResponse = await fetch('systems/glog2d6/data/weapons.json');
+        if (weaponsResponse.ok) {
+            const weaponData = await weaponsResponse.json();
             GLOG_WEAPONS = weaponData;
             console.log('glog2d6 | Loaded', weaponData.weapons.length, 'weapons and', weaponData.ammunition.length, 'ammunition types');
         } else {
@@ -116,9 +111,9 @@ async function loadSystemData() {
 
     // Load armor
     try {
-        const response = await fetch('systems/glog2d6/data/armor.json');
-        if (response.ok) {
-            const armorData = await response.json();
+        const armorResponse = await fetch('systems/glog2d6/data/armor.json');
+        if (armorResponse.ok) {
+            const armorData = await armorResponse.json();
             GLOG_ARMOR = armorData;
             console.log('glog2d6 | Loaded', armorData.armor.length, 'armor pieces and', armorData.shields.length, 'shields');
         } else {
@@ -129,6 +124,58 @@ async function loadSystemData() {
         console.error('glog2d6 | Error loading armor.json:', error);
         GLOG_ARMOR = { armor: [], shields: [] };
     }
+
+    // Load torches
+    try {
+        const torchesResponse = await fetch('systems/glog2d6/data/torches.json');
+        if (torchesResponse.ok) {
+            const torchData = await torchesResponse.json();
+            GLOG_TORCHES = torchData;
+            console.log('glog2d6 | Loaded', torchData.torches.length, 'torch types');
+        } else {
+            console.warn('glog2d6 | Could not load torches.json');
+            GLOG_TORCHES = { torches: [] };
+        }
+    } catch (error) {
+        console.error('glog2d6 | Error loading torches.json:', error);
+        GLOG_TORCHES = { torches: [] };
+    }
+
+    // Load spells from multiple files
+    await loadSpellData();
+}
+
+// Load spell data from multiple files
+async function loadSpellData() {
+    GLOG_SPELLS = { spells: [] };
+
+    // List of spell files to load (add more as needed)
+    const spellFiles = [
+        'spells-1-25.json',
+        'spells-26-50.json',
+        'spells-51-75.json',
+        'spells-76-100.json',  // Add this line
+    ];
+
+    for (const filename of spellFiles) {
+        try {
+            const response = await fetch(`systems/glog2d6/data/${filename}`);
+            if (response.ok) {
+                const spellData = await response.json();
+                if (spellData.spells && Array.isArray(spellData.spells)) {
+                    GLOG_SPELLS.spells.push(...spellData.spells);
+                    console.log(`glog2d6 | Loaded ${spellData.spells.length} spells from ${filename}`);
+                }
+            } else if (response.status !== 404) {
+                // Only warn if it's not a 404 (file not found is expected for optional files)
+                console.warn(`glog2d6 | Could not load ${filename}, status:`, response.status);
+            }
+        } catch (error) {
+            console.error(`glog2d6 | Error loading ${filename}:`, error);
+        }
+    }
+
+    console.log(`glog2d6 | Total spells loaded: ${GLOG_SPELLS.spells.length}`);
 }
 
 // Fallback class data
@@ -148,7 +195,7 @@ function getDefaultClasses() {
 Hooks.once("ready", async function() {
     console.log('glog2d6 | System Ready');
 
-    // FIXED: Set up global functions FIRST before creating folders
+    // Set up global functions
     window.getGlogClasses = function() {
         return GLOG_CLASSES || getDefaultClasses();
     };
@@ -175,38 +222,31 @@ Hooks.once("ready", async function() {
         return GLOG_ARMOR || { armor: [], shields: [] };
     };
 
+    window.getGlogTorches = function() {
+        return GLOG_TORCHES || { torches: [] };
+    };
+
+    window.getGlogSpells = function() {
+        return GLOG_SPELLS || { spells: [] };
+    };
+
     window.getGlogItems = function() {
         const weapons = GLOG_WEAPONS || { weapons: [], ammunition: [] };
         const armor = GLOG_ARMOR || { armor: [], shields: [] };
+        const torches = GLOG_TORCHES || { torches: [] };
+        const spells = GLOG_SPELLS || { spells: [] };
 
         return [
             ...weapons.weapons,
             ...weapons.ammunition,
             ...armor.armor,
-            ...armor.shields
+            ...armor.shields,
+            ...torches.torches,
+            ...spells.spells
         ];
     };
 
-    // Handle damage roll buttons in chat
-    $(document).on('click', '.damage-roll-btn', async function(event) {
-        const button = event.currentTarget;
-        const actorId = button.dataset.actorId;
-        const weaponId = button.dataset.weaponId;
-        const attackResult = parseInt(button.dataset.attackResult);
-
-        const actor = game.actors.get(actorId);
-        const weapon = actor.items.get(weaponId);
-
-        if (actor && weapon) {
-            await actor.rollWeaponDamage(weapon, attackResult);
-
-            // Disable the button after use
-            button.disabled = true;
-            button.textContent = "Damage Rolled";
-        }
-    });
-
-    // FIXED: Create folders AFTER global functions are set up
+    // Rest of the ready hook...
     if (game.user.isGM) {
         await createDefaultFolders();
     }
@@ -238,6 +278,7 @@ Hooks.once("ready", async function() {
         };
     }
 });
+
 
 async function createDefaultFolders() {
     // Only run this once per world to avoid duplicates
@@ -337,7 +378,9 @@ async function createFolderIfNotExists(name, type, color = "#000000", parentId =
 async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId, classFolders) {
     const weaponData = window.getGlogWeapons();
     const armorData = window.getGlogArmor();
-    const featureData = window.getGlogFeatures(); // This returns the classes array
+    const torchData = window.getGlogTorches();
+    const spellData = window.getGlogSpells();
+    const featureData = window.getGlogFeatures();
 
     const itemsToCreate = [];
 
@@ -399,43 +442,11 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
         }
     }
 
-    async function createTorchPack() {
-        const torchData = {
-            "torches": [
-                {
-                    "name": "Torch",
-                    "type": "torch",
-                    "img": "icons/sundries/lights/torch-brown-lit.webp",
-                    "system": {
-                        "description": "A wooden torch wrapped in oil-soaked cloth. Burns for about 6 hours and provides bright light.",
-                        "slots": 1,
-                        "lightRadius": {
-                            "bright": 20,
-                            "dim": 40
-                        },
-                        "lightAngle": 360,
-                        "lightColor": "#ff8800",
-                        "duration": {
-                            "enabled": true,
-                            "hours": 6,
-                            "remaining": 6,
-                            "burnRate": 1.0,
-                            "autoExtinguish": true
-                        },
-                        "lightAnimation": {
-                            "type": "torch",
-                            "speed": 5,
-                            "intensity": 2
-                        }
-                    }
-                }
-            ]
-        };
-
+    // FIXED: Process torches properly
+    if (torchData.torches) {
         // Create torch folder
         const torchFolder = await createFolderIfNotExists("Torches & Light", "Item", "#ff8800");
 
-        const itemsToCreate = [];
         for (const torch of torchData.torches) {
             itemsToCreate.push({
                 name: torch.name,
@@ -446,13 +457,39 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
                 sort: itemsToCreate.length * 100
             });
         }
-
-        if (itemsToCreate.length > 0) {
-            await Item.createDocuments(itemsToCreate);
-            console.log(`glog2d6 | Created ${itemsToCreate.length} torch items`);
-        }
+        console.log(`glog2d6 | Added ${torchData.torches.length} torches to creation queue`);
     }
 
+    // FIXED: Process spells properly
+    if (spellData.spells && spellData.spells.length > 0) {
+        // Create spell folders
+        const spellFolder = await createFolderIfNotExists("Spells", "Item", "#9966cc");
+
+        // Create subfolders for spell levels
+        const spellFolders = {};
+        const levels = [...new Set(spellData.spells.map(s => s.system.level))].sort((a, b) => a - b);
+        for (const level of levels) {
+            const levelName = level === 0 ? "Cantrips (Level 0)" : `Level ${level} Spells`;
+            spellFolders[level] = await createFolderIfNotExists(levelName, "Item", "#9966cc", spellFolder.id);
+        }
+
+        for (const spell of spellData.spells) {
+            const spellLevel = spell.system.level || 0;
+            const folderId = spellFolders[spellLevel]?.id || spellFolder.id;
+
+            itemsToCreate.push({
+                name: spell.name,
+                type: "spell",
+                img: spell.img || "icons/magic/symbols/runes-star-pentagon-blue.webp",
+                system: spell.system,
+                folder: folderId,
+                sort: itemsToCreate.length * 100
+            });
+        }
+        console.log(`glog2d6 | Added ${spellData.spells.length} spells to creation queue`);
+    }
+
+    // Process class features (existing code)
     if (featureData && Array.isArray(featureData)) {
         console.log('glog2d6 | Processing', featureData.length, 'classes for features');
 
@@ -484,7 +521,6 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
                     sort: sortOrder * 100
                 });
                 sortOrder++;
-                console.log(`glog2d6 | Added level-0 feature for ${classData.name}`);
             }
 
             // Add template features A-D
@@ -512,12 +548,9 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
                         });
                         sortOrder++;
                     }
-                    console.log(`glog2d6 | Added ${templateFeatures.length} template ${template} features for ${classData.name}`);
                 }
             }
         }
-    } else {
-        console.warn('glog2d6 | No feature data available or data is not an array');
     }
 
     // Create all items at once
