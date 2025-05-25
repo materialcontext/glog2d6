@@ -20,7 +20,28 @@
     "ItemTypes": {
       "weapon": "Weapon",
       "armor": "Armor",
-      "gear": "Gear"
+      "gear": "Gear",
+      "shield": "Shield",
+      "torch": "Torch"
+    },
+    "Torch": {
+      "LightRadius": "Light Radius",
+      "BrightLight": "Bright Light",
+      "DimLight": "Dim Light",
+      "LightAngle": "Light Angle",
+      "LightColor": "Light Color",
+      "Duration": "Duration",
+      "TimeRemaining": "Time Remaining",
+      "Animation": "Animation",
+      "AnimationType": "Animation Type",
+      "AnimationSpeed": "Animation Speed",
+      "AnimationIntensity": "Animation Intensity",
+      "Lit": "Lit",
+      "Extinguished": "Extinguished",
+      "BurnedOut": "Burned Out",
+      "NoTorches": "No torches available",
+      "TorchLit": "Torch lit",
+      "TorchExtinguished": "Torch extinguished"
     }
   }
 }

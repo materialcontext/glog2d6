@@ -18,6 +18,29 @@
   "styles": [
     "glog2d6.css"
   ],
+  "packs": [
+    {
+      "name": "basic-weapons",
+      "label": "Basic Weapons",
+      "path": "packs/basic-weapons.db",
+      "type": "Item",
+      "system": "glog2d6"
+    },
+    {
+      "name": "basic-armor",
+      "label": "Basic Armor & Shields",
+      "path": "packs/basic-armor.db",
+      "type": "Item",
+      "system": "glog2d6"
+    },
+    {
+      "name": "basic-classes",
+      "label": "Character Classes",
+      "path": "packs/basic-classes.db",
+      "type": "Item",
+      "system": "glog2d6"
+    }
+  ],
   "languages": [
     {
       "lang": "en",
@@ -34,10 +57,14 @@
       "weapon": {},
       "armor": {},
       "gear": {},
-      "shield": {}
+      "shield": {},
+      "torch": {}
     }
   },
   "template": "template.json",
   "primaryTokenAttribute": "hp",
-  "secondaryTokenAttribute": null
+  "secondaryTokenAttribute": null,
+  "url": "https://github.com/yourusername/glog2d6-foundry",
+  "manifest": "https://github.com/materialcontext/glog2d6/releases/latest/download/system.json",
+  "download": "https://github.com/materialcontext/glog2d6/releases/latest/download/glog2d6.zip"
 }

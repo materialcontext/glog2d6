@@ -19,9 +19,14 @@
 {{!-- Combined Class and Level Section - row 2, column 2 --}}
 <div class="class-level-section">
   <div class="class-part">
-    <label class="label-med">Class</label>
     {{#if editMode}}
-    <input name="system.details.class" type="text" value="{{system.details.class}}" placeholder="Class" class="class-input input-base"/>
+    <label class="label-med">Class</label>
+        <select name="system.details.class" class="class-select input-base">
+      <option value="">Select Class</option>
+      {{#each availableClasses as |className|}}
+      <option value="{{className}}" {{#if (eq ../system.details.class className)}}selected{{/if}}>{{className}}</option>
+      {{/each}}
+    </select>
     {{else}}
     <div class="class-display">{{system.details.class}}</div>
     {{/if}}
@@ -62,7 +67,7 @@
 
   {{!-- Torch & Move Section - row 5, column 4 --}}
 <div class="torch-move-section">
-  <button type="button" class="torch-btn {{#if system.torch}}torch-lit{{/if}}" data-action="torch">
+  <button type="button" class="torch-btn {{#if system.torch.lit}}torch-lit{{/if}}" data-action="torch">
     <i class="fas fa-fire"></i>
     <span>Torch</span>
   </button>
@@ -163,6 +168,9 @@
           <a class="item-control item-create" data-type="gear" title="Create Gear">
             <i class="fas fa-suitcase"></i> Gear
           </a>
+          <a class="item-control item-create" data-type="torch" title="Create Torch">
+            <i class="fas fa-fire"></i> Torch
+          </a>
         </div>
         {{/if}}
       </div>
@@ -171,7 +179,11 @@
         {{#each actor.items as |item id|}}
         <div class="item flexrow" data-item-id="{{item.id}}">
           <div class="item-equipped">
+            {{#unless (eq item.type "torch")}}
             <input type="checkbox" class="equipped-toggle" data-item-id="{{item.id}}" {{#if item.system.equipped}}checked{{/if}} title="Equipped"/>
+            {{else}}
+            <i class="fas fa-fire torch-icon {{#if (and (eq ../system.torch.activeTorchId item.id) ../system.torch.lit)}}torch-active{{/if}}" title="{{#if (eq ../system.torch.activeTorchId item.id)}}Active Torch{{else}}Torch{{/if}}"></i>
+            {{/unless}}
           </div>
 
           <div class="item-name">
@@ -196,6 +208,13 @@
             {{else if (eq item.type "shield")}}
               <span class="item-detail">+{{item.system.armorBonus}} AC</span>
               <span class="item-detail">shield</span>
+            {{else if (eq item.type "torch")}}
+              <span class="item-detail">{{item.system.lightRadius.bright}}/{{item.system.lightRadius.dim}}ft</span>
+              {{#if item.system.duration.enabled}}
+              <span class="item-detail {{#if (lt item.system.duration.remaining 1)}}torch-duration-warning{{else if (lt item.system.duration.remaining 2)}}torch-duration-low{{/if}}">{{item.system.duration.remaining}}h left</span>
+              {{else}}
+              <span class="item-detail">∞ duration</span>
+              {{/if}}
             {{else if (eq item.type "gear")}}
               <span class="item-detail">{{item.system.size}}</span>
               <span class="item-detail">{{item.system.value}}gp</span>

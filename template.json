@@ -54,6 +54,10 @@
           "used": 0
         },
         "encumbrance": 0
+      },
+      "torch": {
+        "lit": false,
+        "activeTorchId": null
       }
     },
     "npc": {
@@ -63,8 +67,8 @@
       }
     }
   },
-  "Item": {
-    "types": ["weapon", "armor", "gear"],
+"Item": {
+    "types": ["weapon", "armor", "gear", "base"],
     "templates": {
       "base": {
         "description": "",
@@ -91,6 +95,10 @@
       "size": "small",
       "value": 0,
       "quantity": 1
+    },
+    "base": {
+      "templates": ["base"],
+      "category": "class"
     }
   }
 }

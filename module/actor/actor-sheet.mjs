@@ -13,7 +13,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         return `systems/glog2d6/templates/actor/actor-${this.actor.type}-sheet.hbs`;
     }
 
-    getData() {
+    async getData() {
         const context = super.getData();
 
         // Add roll data for formulas
@@ -30,6 +30,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
         // Add edit mode
         context.editMode = this.actor.getFlag("glog2d6", "editMode") || false;
+
+        // Get available classes from compendium pack
+        context.availableClasses = await this._getAvailableClasses();
 
         return context;
     }
@@ -65,7 +68,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         html.find('.item-edit').click(this._onItemEdit.bind(this));
         html.find('.item-delete').click(this._onItemDelete.bind(this));
 
-        // torch
+        // Torch toggle - fixed
         html.find('.torch-btn').click(this._onTorchToggle.bind(this));
     }
 
@@ -88,8 +91,18 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async _onTorchToggle(event) {
         event.preventDefault();
-        const currentTorch = this.actor.system.torch || false;
-        await this.actor.update({ "system.torch": !currentTorch });
+        console.log("Torch toggle clicked - starting toggle process");
+
+        try {
+            const result = await this.actor.toggleTorch();
+            console.log("Torch toggle result:", result);
+
+            // Force a re-render to update the UI state
+            this.render(false);
+        } catch (error) {
+            console.error("Error toggling torch:", error);
+            ui.notifications.error("Failed to toggle torch: " + error.message);
+        }
     }
 
     async _onAttackRoll(event) {
@@ -127,6 +140,36 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         }
 
         this.render();
+    }
+
+    async _getAvailableClasses() {
+            return ["Acrobat", "Assassin", "Barbarian", "Courtier", "Fighter", "Hunter", "Thief", "Wizard"];
+      //  try {
+      //      console.log("Loading available classes...");
+
+      //      // Get the classes compendium pack
+      //      const pack = game.packs.get("glog2d6.basic-classes");
+      //      if (!pack) {
+      //          console.warn("Classes compendium pack not found");
+      //          console.log("Available packs:", Array.from(game.packs.keys()));
+      //          return [];
+      //      }
+
+      //      console.log("Found classes pack:", pack);
+
+      //      // Get all class documents from the pack
+      //      const classDocuments = await pack.getDocuments();
+      //      console.log("Loaded class documents:", classDocuments);
+
+      //      // Extract class names and sort them
+      //      const classNames = classDocuments.map(doc => doc.name).sort();
+      //      console.log("Available class names:", classNames);
+
+      //      return classNames;
+      //  } catch (error) {
+      //      console.error("Error loading available classes:", error);
+      //      return [];
+      //  }
     }
 
     async _handleEquipment(newItem) {

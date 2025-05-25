@@ -170,26 +170,26 @@
 }
 
 .glog2d6 .class-level-section {
-  grid-column: 2;
-  grid-row: 2;
-  background: var(--background-section);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-large);
-  padding: 4px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
+    grid-column: 2;
+    grid-row: 2;
+    background: var(--background-section);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-large);
+    padding: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
 }
 
 .glog2d6 .class-part,
 .glog2d6 .level-part {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  justify-content: center;
-  text-align: center;
-  align-items: center;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    height: 100%;
 }
 
 /* HP Section - spans rows 3-5, column 2 */
@@ -224,55 +224,57 @@
 }
 
 .glog2d6 .wounds-input {
-  font-size: 12px;
-  text-align: center;
-  width: 40px;
-  border: 1px solid transparent;
-  background: transparent;
-  padding: 2px 4px; /* Reduced padding * /
+    font-size: 12px;
+    text-align: center;
+    width: 40px;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 2px 4px;
+    /* Reduced padding * /
   border-radius: var(--border-radius);
   height: 16px; /* Fixed height */
-  line-height: 1; /* Control line height */
+    line-height: 1;
+    /* Control line height */
 }
 
 .glog2d6 .wounds-input:hover,
 .glog2d6 .wounds-input:focus {
-  border: 1px solid var(--border-color);
-  background: white;
-  outline: none;
+    border: 1px solid var(--border-color);
+    background: white;
+    outline: none;
 }
 
 .glog2d6 .torch-btn {
-  width: 100%;
-  min-height: 0;
-  max-height: 100%;
-  padding: 0;
-  border: 1px solid var(--border-color);
-  box-sizing: border-box;
-  border-radius: var(--border-radius);
-  background: #ddd;
-  color: #666;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  transition: var(--transition);
-  gap: 4px;
+    width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    border-radius: var(--border-radius);
+    background: #ddd;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: var(--transition);
+    gap: 4px;
 }
 
 .glog2d6 .torch-btn:hover {
-  background: #ccc;
+    background: #ccc;
 }
 
 .glog2d6 .torch-btn.torch-lit {
-  background: #ff6b35;
-  color: #fff;
-  border-color: #e55a2b;
+    background: #ff6b35;
+    color: #fff;
+    border-color: #e55a2b;
 }
 
 .glog2d6 .torch-btn.torch-lit:hover {
-  background: #e55a2b;
+    background: #e55a2b;
 }
 
 /* Trauma Section - row 4, column 4 */
@@ -305,7 +307,8 @@
 }
 
 .glog2d6 .trauma-btn:hover {
-  background: var(--primary-hover); /* Same hover color as save button */
+    background: var(--primary-hover);
+    /* Same hover color as save button */
 }
 
 /* Edit Toggle Button */
@@ -427,13 +430,13 @@
 }
 
 .glog2d6 .trauma-btn {
-  font-size: 10px;
-  color: white;
-  text-transform: uppercase;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  box-sizing: border-box;
+    font-size: 10px;
+    color: white;
+    text-transform: uppercase;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .glog2d6 .torch-toggle,
@@ -448,8 +451,9 @@
     font-size: 12px;
     padding: 0;
     font-weight: bold;
-    background: var(--secondary-color);
-    color: white;
+    background: var(--background-light) !important;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
     border-radius: var(--border-radius);
     text-align: center;
     gap: 4px;
@@ -461,7 +465,15 @@
 }
 
 .glog2d6 .movement-display:hover {
-    background: var(--secondary-hover);
+    background: var(--background-section) !important;
+}
+
+/* Overridden modifier styling for both attributes and movement */
+.glog2d6 .modifier-overridden {
+    color: var(--danger-color);
+    text-decoration: line-through;
+    font-size: 8px;
+    margin-left: 2px;
 }
 
 .glog2d6 .movement-input {
@@ -505,8 +517,10 @@
 }
 
 .glog2d6 .encumbrance-penalty {
-    font-size: 10px;
-    color: var(--text-muted);
+    font-size: 8px;
+    color: var(--danger-color);
+    text-decoration: line-through;
+    margin-left: 2px;
 }
 
 /* Sections */
@@ -619,8 +633,9 @@
 
 /* Inventory */
 .glog2d6 .inventory-header {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 15px;
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
@@ -630,14 +645,29 @@
 .glog2d6 .slots-info {
     font-weight: bold;
     font-size: 14px;
+    justify-self: start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
 }
 
-.glog2d6 .encumbrance-warning {
-    color: var(--danger-color);
+.glog2d6 .encumbrance-info {
+    justify-self: end;
+}
+
+.glog2d6 .encumbrance-display {
+    background: var(--danger-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    font-size: 12px;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 .glog2d6 .item-controls {
+    justify-self: center;
     display: flex;
     gap: 10px;
 }
@@ -657,6 +687,15 @@
     color: white;
 }
 
+.glog2d6 .inventory-header.edit-mode {
+    grid-template-columns: 1fr;
+    justify-items: center;
+}
+
+.glog2d6 .inventory-header.edit-mode .item-controls {
+    grid-column: 1;
+    justify-self: center;
+}
 .glog2d6 .items-list {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -685,6 +724,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 22px;
 }
 
 .glog2d6 .equipped-toggle {
@@ -851,6 +891,96 @@
     padding-bottom: 3px;
     margin: 15px 0 8px 0;
     font-size: 14px;
+}
+
+/* Torch-specific styles */
+.glog2d6 .torch-icon {
+  color: #666;
+  font-size: 12px;
+  width: 12px;
+  text-align: center;
+}
+
+.glog2d6 .torch-icon.torch-active {
+  color: #ff6b35;
+  text-shadow: 0 0 3px #ff6b35;
+}
+
+/* Torch item sheet styles */
+.glog2d6 .torch-properties,
+.glog2d6 .torch-duration,
+.glog2d6 .torch-animation {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+/* Torch item sheet layout fixes */
+.glog2d6.torch-item-sheet {
+  min-height: 400px;
+}
+
+.glog2d6.torch-item-sheet .sheet-header {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 15px;
+  background: var(--background-darker);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.glog2d6.torch-item-sheet .item-img {
+  flex-shrink: 0;
+}
+
+.glog2d6.torch-item-sheet .header-fields {
+  flex: 1;
+}
+
+.glog2d6.torch-item-sheet .header-fields .charname {
+  margin: 0;
+}
+
+.glog2d6.torch-item-sheet .header-fields .charname input {
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  background: transparent;
+  width: 100%;
+  color: var(--primary-color);
+}
+
+.glog2d6 .torch-animation {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Enhanced torch button animations */
+.glog2d6 .torch-btn.torch-lit {
+  animation: torchFlicker 2s ease-in-out infinite alternate;
+}
+
+@keyframes torchFlicker {
+  0% {
+    background: #ff6b35;
+    box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+  }
+  100% {
+    background: #e55a2b;
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+  }
+}
+
+/* Torch duration warning styles */
+.glog2d6 .torch-duration-warning {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+.glog2d6 .torch-duration-low {
+  color: #ff9800;
+  font-weight: bold;
 }
 
 /* Responsive Design */

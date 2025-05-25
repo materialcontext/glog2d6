@@ -1,0 +1,122 @@
+<form class="{{cssClass}} torch-item-sheet" autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="Torch Name"/>
+      </h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+
+    <div class="torch-properties">
+      <div class="form-group">
+        <label for="system.lightRadius.bright">Bright Light (ft)</label>
+        <input type="number" name="system.lightRadius.bright" value="{{system.lightRadius.bright}}" min="0" step="5"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.lightRadius.dim">Dim Light (ft)</label>
+        <input type="number" name="system.lightRadius.dim" value="{{system.lightRadius.dim}}" min="0" step="5"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.lightAngle">Angle (°)</label>
+        <input type="number" name="system.lightAngle" value="{{system.lightAngle}}" min="0" max="360" step="15"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.lightColor">Color</label>
+        <input type="color" name="system.lightColor" value="{{system.lightColor}}" title="Default: #ff8800 (warm orange)"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.slots">Slots</label>
+        <input type="number" name="system.slots" value="{{system.slots}}" min="0"/>
+      </div>
+    </div>
+
+    <div class="torch-duration">
+      <div class="form-group duration-toggle">
+        <label for="system.duration.enabled">
+          <input type="checkbox" name="system.duration.enabled" class="duration-enabled-toggle" {{#if system.duration.enabled}}checked{{/if}}/>
+          Duration Tracking
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="system.duration.hours">Max (hours)</label>
+        <input type="number" name="system.duration.hours" value="{{system.duration.hours}}" min="1" step="0.5" class="duration-field"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.duration.remaining">Remaining</label>
+        <input type="number" name="system.duration.remaining" value="{{system.duration.remaining}}" min="0" step="0.1" class="duration-field"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.duration.burnRate">Burn Rate</label>
+        <input type="number" name="system.duration.burnRate" value="{{system.duration.burnRate}}" min="0.1" max="10" step="0.1" class="duration-field"/>
+      </div>
+
+      <div class="form-group duration-checkbox">
+        <label for="system.duration.autoExtinguish">
+          <input type="checkbox" name="system.duration.autoExtinguish" {{#if system.duration.autoExtinguish}}checked{{/if}} class="duration-field"/>
+          Auto-extinguish
+        </label>
+      </div>
+    </div>
+
+    <div class="torch-animation">
+      <div class="form-group">
+        <label for="system.lightAnimation.type">Animation</label>
+        <select name="system.lightAnimation.type">
+          {{#select system.lightAnimation.type}}
+          <option value="">Static (No Animation)</option>
+          <option value="torch">Torch Flicker</option>
+          <option value="pulse">Pulse</option>
+          <option value="chroma">Chroma</option>
+          <option value="wave">Wave</option>
+          <option value="fog">Fog</option>
+          <option value="sunburst">Sunburst</option>
+          <option value="dome">Dome</option>
+          <option value="emanation">Emanation</option>
+          <option value="hexa">Hexa</option>
+          <option value="ghost">Ghost</option>
+          <option value="energy">Energy</option>
+          <option value="roiling">Roiling</option>
+          <option value="hole">Black Hole</option>
+          {{/select}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="system.lightAnimation.speed">Speed</label>
+        <input type="number" name="system.lightAnimation.speed" value="{{system.lightAnimation.speed}}" min="1" max="10" title="1=Very Slow, 5=Normal, 10=Fast"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.lightAnimation.intensity">Intensity</label>
+        <input type="number" name="system.lightAnimation.intensity" value="{{system.lightAnimation.intensity}}" min="1" max="5" title="1=Subtle, 3=Normal, 5=Strong"/>
+      </div>
+    </div>
+
+    <div class="form-group description-group">
+      <label for="system.description">Description</label>
+      <textarea name="system.description" rows="4">{{system.description}}</textarea>
+    </div>
+
+  </section>
+</form>" value="{{system.lightAnimation.intensity}}" min="1" max="10"/>
+      </div>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="system.description">Description</label>
+      <textarea name="system.description" rows="8">{{system.description}}</textarea>
+    </div>
+
+  </section>
+</form>
