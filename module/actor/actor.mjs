@@ -3,51 +3,83 @@ export class GLOG2D6Actor extends Actor {
     async _preCreate(data, options, user) {
         await super._preCreate(data, options, user);
 
-        if (this.type === "character") {
-            await this.updateSource({
-                "flags.glog2d6.editMode": false
-            });
-        }
+        await this.updateSource({
+            "flags.glog2d6.editMode": false
+        });
     }
 
     prepareData() {
         super.prepareData();
     }
 
+    // In module/actor/actor.mjs, update the prepareBaseData method:
+
     prepareBaseData() {
         // Calculate attribute modifiers
         for (let [_key, attribute] of Object.entries(this.system.attributes)) {
             if (attribute.value == 7) attribute.mod = 0
-            if (attribute.value < 7) attribute.mod = Math.floor((6 - attribute.value) / 2) * -1;
-            if (attribute.value > 7) attribute.mod = Math.floor((attribute.value - 8) / 2) + 1;
+            if (attribute.value < 7) attribute.mod = Math.floor((8 - attribute.value) / 2) * -1;
+            if (attribute.value > 7) attribute.mod = Math.floor((attribute.value - 6) / 2);
         }
 
-        // Calculate inventory slots
+        // Calculate inventory slots for characters
         if (this.type === "character") {
             const strMod = this.system.attributes.str.mod;
             const conMod = this.system.attributes.con.mod;
             this.system.inventory.slots.max = 6 + Math.max(strMod, conMod);
 
+            // FIXED: Calculate used slots by iterating through items
+            let usedSlots = 0;
+            for (let item of this.items) {
+                if (item.system.slots) {
+                    usedSlots += item.system.slots;
+                }
+            }
+            this.system.inventory.slots.used = usedSlots;
+
             // Calculate encumbrance
-            const usedSlots = this.system.inventory.slots.used;
             const maxSlots = this.system.inventory.slots.max;
             this.system.inventory.encumbrance = Math.max(0, usedSlots - maxSlots);
+
+            console.log(`Encumbrance Debug - ${this.name}: Used ${usedSlots}/${maxSlots}, Encumbrance: ${this.system.inventory.encumbrance}`);
         }
     }
 
+    // Also update prepareDerivedData to ensure encumbrance effects are applied:
     prepareDerivedData() {
-        // Apply encumbrance penalty to dexterity
+        // FIXED: Set effective modifiers for all attributes first
+        for (let [key, attribute] of Object.entries(this.system.attributes)) {
+            attribute.effectiveMod = attribute.mod; // Default to original mod
+            attribute.effectiveValue = attribute.value; // Default to original value
+        }
+
+        // Apply encumbrance penalty to dexterity VALUE (not modifier)
         if (this.type === "character" && this.system.inventory.encumbrance > 0) {
-            this.system.attributes.dex.effectiveMod =
-                this.system.attributes.dex.mod - this.system.inventory.encumbrance;
-        } else if (this.type === "character") {
-            this.system.attributes.dex.effectiveMod = this.system.attributes.dex.mod;
+            const dexAttribute = this.system.attributes.dex;
+            const originalValue = dexAttribute.value;
+            const encumbrancePenalty = this.system.inventory.encumbrance;
+
+            // Reduce the effective dexterity VALUE by encumbrance
+            const effectiveValue = Math.max(1, originalValue - encumbrancePenalty); // Don't go below 1
+            dexAttribute.effectiveValue = effectiveValue;
+
+            // Recalculate the modifier based on the new effective value
+            if (effectiveValue == 7) dexAttribute.effectiveMod = 0;
+            else if (effectiveValue < 7) dexAttribute.effectiveMod = Math.floor((8 - effectiveValue) / 2) * -1;
+            else if (effectiveValue > 7) dexAttribute.effectiveMod = Math.floor((effectiveValue - 6) / 2);
+
+            console.log(`Dex encumbrance applied: Value ${originalValue} -> ${effectiveValue}, Mod ${dexAttribute.mod} -> ${dexAttribute.effectiveMod}`);
         }
 
         // Calculate effective movement speed (reduced by encumbrance on 2:1 basis)
         if (this.type === "character") {
-            const movePenalty = Math.floor(this.system.inventory.encumbrance / 2);
+            const encumbrance = this.system.inventory.encumbrance || 0;
+            const movePenalty = Math.floor(encumbrance / 2);
             this.system.details.effectiveMovement = Math.max(0, this.system.details.movement - movePenalty);
+
+            if (movePenalty > 0) {
+                console.log(`Movement penalty applied: ${this.system.details.movement} -> ${this.system.details.effectiveMovement}`);
+            }
         }
 
         // Calculate defense value from armor and shields
@@ -68,7 +100,7 @@ export class GLOG2D6Actor extends Actor {
                 armorBonus += shield.system.armorBonus;
             }
 
-            // Defense = Armor + Shield + Dex mod (only if Dex mod > 0)
+            // Defense = Armor + Shield + Dex mod (use effective mod)
             const dexMod = this.system.attributes.dex.effectiveMod;
             const dexBonus = dexMod > 0 ? dexMod : 0;
 

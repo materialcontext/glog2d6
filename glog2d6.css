@@ -516,13 +516,6 @@
     color: #333;
 }
 
-.glog2d6 .encumbrance-penalty {
-    font-size: 8px;
-    color: var(--danger-color);
-    text-decoration: line-through;
-    margin-left: 2px;
-}
-
 /* Sections */
 .glog2d6 .attributes-section,
 .glog2d6 .combat-section,
@@ -533,7 +526,7 @@
 /* Attribute and Combat Cards */
 .glog2d6 .attributes-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 8px;
     margin-top: 8px;
 }
@@ -544,7 +537,16 @@
     margin-top: 8px;
 }
 
-.glog2d6 .attribute-card,
+.glog2d6 .attribute-card {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 .glog2d6 .combat-card {
     border: 1px solid var(--primary-color);
     border-radius: var(--border-radius-large);
@@ -558,24 +560,55 @@
     cursor: pointer;
 }
 
-.glog2d6 .attribute-card.clickable:hover,
 .glog2d6 .combat-card.clickable:hover {
     border-color: var(--primary-hover);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.glog2d6 .attribute-card.clickable:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(120, 46, 34, 0.15);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+}
+
+.glog2d6 .attribute-card.clickable:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(120, 46, 34, 0.2);
 }
 
 .glog2d6 .combat-card {
     flex: 1;
 }
 
-.glog2d6 .attribute-main,
+/* Enhanced attribute main section */
+.glog2d6 .attribute-main {
+    padding: 8px 6px;
+    text-align: center;
+    background: transparent;
+    position: relative;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.glog2d6 .attribute-name {
+    font-weight: bold;
+    font-size: 9px;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .glog2d6 .combat-main {
     padding: 6px;
     text-align: center;
     background: var(--background-light);
 }
 
-.glog2d6 .attribute-name,
 .glog2d6 .combat-name {
     font-weight: bold;
     font-size: 10px;
@@ -583,13 +616,34 @@
     margin-bottom: 3px;
 }
 
+/* View mode styling for attribute values */
 .glog2d6 .attribute-value {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
     margin-bottom: 2px;
+    transition: color 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
 }
 
-.glog2d6 .attribute-input,
+/* Color states for attribute values */
+.glog2d6 .attribute-value.normal {
+    color: #2c3e50;
+}
+
+.glog2d6 .attribute-value.negatively-impacted {
+    color: var(--danger-color);
+    text-shadow: 0 0 2px rgba(211, 47, 47, 0.2);
+}
+
+.glog2d6 .attribute-value.positively-impacted {
+    color: var(--success-color);
+    text-shadow: 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
 .glog2d6 .combat-input {
     font-size: 16px;
     font-weight: bold;
@@ -602,34 +656,101 @@
     margin: 0 auto 2px;
 }
 
+/* Effective attribute value styling */
+.glog2d6 .effective-attr-value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.glog2d6 .original-attr-value {
+    font-size: 10px;
+    color: var(--danger-color);
+    text-decoration: line-through;
+    margin-top: 1px;
+    opacity: 0.8;
+}
+
 .glog2d6 .combat-input,
 .glog2d6 .combat-value {
     font-size: 14px;
     font-weight: bold;
 }
 
-.glog2d6 .attribute-mod {
-    font-size: 9px;
-    color: var(--text-muted);
+.glog2d6 .attribute-modifier {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(120, 46, 34, 0.95);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+    min-width: 80px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
+.glog2d6 .attribute-modifier::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(120, 46, 34, 0.95);
+}
+
+/* Show modifier on hover */
+.glog2d6 .attribute-card:hover .attribute-modifier {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Current modifier display - bigger font */
+.glog2d6 .modifier-current {
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+/* Original modifier (slashed out) - bigger font */
+.glog2d6 .modifier-original {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: line-through;
+    margin-top: 4px;
+    display: block;
+    font-weight: 700;
+}
+
+/* Enhanced save button */
 .glog2d6 .attribute-save {
-    background: var(--secondary-color);
-    padding: 3px;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+    padding: 4px;
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.3s ease;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .glog2d6 .attribute-save:hover {
-    background: var(--secondary-hover);
+    background: linear-gradient(135deg, var(--secondary-hover) 0%, #6a6864 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .glog2d6 .save-label {
     color: white;
-    font-size: 9px;
+    font-size: 8px;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
+
 
 /* Inventory */
 .glog2d6 .inventory-header {
@@ -652,8 +773,22 @@
     white-space: nowrap;
 }
 
+/* Enhanced encumbrance warning styles */
+.glog2d6 .encumbrance-warning {
+    color: var(--danger-color);
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: rgba(211, 47, 47, 0.1);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(211, 47, 47, 0.3);
+}
+
 .glog2d6 .encumbrance-info {
     justify-self: end;
+    display: flex;
+    align-items: center;
 }
 
 .glog2d6 .encumbrance-display {
@@ -664,6 +799,14 @@
     font-size: 12px;
     font-weight: bold;
     white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
+}
+
+.glog2d6 .encumbrance-penalty {
+    font-size: 8px;
+    color: var(--danger-color);
+    text-decoration: line-through;
+    margin-left: 2px;
 }
 
 .glog2d6 .item-controls {
@@ -963,6 +1106,7 @@
     0% {
         box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
     }
+
     100% {
         box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
     }
@@ -972,6 +1116,7 @@
     0% {
         box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
     }
+
     100% {
         box-shadow: 0 0 12px rgba(76, 175, 80, 0.8);
     }
@@ -1279,9 +1424,26 @@
     font-weight: bold;
 }
 
-/* Responsive Design */
 @media (max-width: 600px) {
     .glog2d6 .attributes-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+    }
+
+    .glog2d6 .attribute-card {
+        border-radius: 6px;
+    }
+
+    .glog2d6 .attribute-main {
+        padding: 6px 4px;
+        min-height: 50px;
+    }
+
+    .glog2d6 .attribute-value {
+        font-size: 16px;
+    }
+
+    .glog2d6 .attribute-name {
+        font-size: 8px;
     }
 }

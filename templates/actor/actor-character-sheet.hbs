@@ -99,28 +99,41 @@
   {{!-- Main Content --}}
   <section class="sheet-body">
 
-    {{!-- Attributes Section --}}
-    <div class="attributes-section">
-      <h3>Attributes</h3>
-      <div class="attributes-grid">
-        {{#each system.attributes as |attr key|}}
-        <div class="attribute-card {{#unless ../editMode}}clickable{{/unless}}" {{#unless ../editMode}}data-attribute="{{key}}"{{/unless}}>
-          <div class="attribute-main">
-            <div class="attribute-name">{{upperCase key}}</div>
-            {{#if ../editMode}}
-            <input name="system.attributes.{{key}}.value" type="number" value="{{attr.value}}" min="2" max="12" class="attribute-input"/>
-            {{else}}
-            <div class="attribute-value">{{attr.value}}</div>
-            {{/if}}
-            <div class="attribute-mod">({{numberFormat attr.mod decimals=0 sign=true}})</div>
-          </div>
-          <div class="attribute-save" data-attribute="{{key}}">
-            <span class="save-label">SAVE</span>
-          </div>
+{{!-- Updated Attributes Section for character sheet --}}
+{{!-- Updated Attributes Section for character sheet --}}
+<div class="attributes-section">
+  <h3>Attributes</h3>
+  <div class="attributes-grid">
+    {{#each system.attributes as |attr key|}}
+    <div class="attribute-card {{#unless ../editMode}}clickable{{/unless}}" {{#unless ../editMode}}data-attribute="{{key}}"{{/unless}}>
+      <div class="attribute-main">
+        <div class="attribute-name">{{upperCase key}}</div>
+        {{#if ../editMode}}
+        <input name="system.attributes.{{key}}.value" type="number" value="{{attr.value}}" min="2" max="12" class="attribute-input"/>
+        {{else}}
+        <div class="attribute-value normal" data-base-value="{{attr.value}}" data-effective-mod="{{attr.effectiveMod}}" data-original-mod="{{attr.mod}}">
+          {{attr.value}}
         </div>
-        {{/each}}
+        {{/if}}
+
+        {{#unless ../editMode}}
+        <div class="attribute-modifier">
+          <span class="modifier-current">{{numberFormat attr.mod decimals=0 sign=true}}</span>
+          {{#if attr.effectiveMod}}
+          {{#unless (eq attr.effectiveMod attr.mod)}}
+          <span class="modifier-original">{{numberFormat attr.mod decimals=0 sign=true}}</span>
+          {{/unless}}
+          {{/if}}
+        </div>
+        {{/unless}}
+      </div>
+      <div class="attribute-save" data-attribute="{{key}}">
+        <span class="save-label">SAVE</span>
       </div>
     </div>
+    {{/each}}
+  </div>
+</div>
 
     {{!-- Combat Section --}}
     <div class="combat-section">
@@ -163,30 +176,32 @@
       {{!-- Inventory Tab --}}
       <div class="tab" data-group="primary" data-tab="inventory">
         <div class="inventory-section">
-          <div class="inventory-header">
-            <div class="slots-info">
-              Slots: {{system.inventory.slots.used}} / {{system.inventory.slots.max}}
-              {{#if system.inventory.encumbrance}}
-              <span class="encumbrance-warning">(Encumbered: {{system.inventory.encumbrance}})</span>
-              {{/if}}
-            </div>
-            {{#if editMode}}
-            <div class="item-controls">
-              <a class="item-control item-create" data-type="weapon" title="Create Weapon">
-                <i class="fas fa-sword"></i> Weapon
-              </a>
-              <a class="item-control item-create" data-type="armor" title="Create Armor">
-                <i class="fas fa-shield-alt"></i> Armor
-              </a>
-              <a class="item-control item-create" data-type="shield" title="Create Shield">
-                <i class="fas fa-shield"></i> Shield
-              </a>
-              <a class="item-control item-create" data-type="gear" title="Create Gear">
-                <i class="fas fa-suitcase"></i> Gear
-              </a>
-            </div>
-            {{/if}}
-          </div>
+
+          {{!-- Enhanced inventory header with encumbrance display --}}
+<div class="inventory-header">
+  <div class="slots-info">
+    Slots: {{system.inventory.slots.used}} / {{system.inventory.slots.max}}
+    {{#if (gt system.inventory.encumbrance 0)}}
+    <span class="encumbrance-warning">(Encumbered: -{{system.inventory.encumbrance}})</span>
+    {{/if}}
+  </div>
+  {{#if editMode}}
+  <div class="item-controls">
+    <a class="item-control item-create" data-type="weapon" title="Create Weapon">
+      <i class="fas fa-sword"></i> Weapon
+    </a>
+    <a class="item-control item-create" data-type="armor" title="Create Armor">
+      <i class="fas fa-shield-alt"></i> Armor
+    </a>
+    <a class="item-control item-create" data-type="shield" title="Create Shield">
+      <i class="fas fa-shield"></i> Shield
+    </a>
+    <a class="item-control item-create" data-type="gear" title="Create Gear">
+      <i class="fas fa-suitcase"></i> Gear
+    </a>
+  </div>
+  {{/if}}
+</div>
 
           <div class="items-list">
             {{#each actor.items as |item id|}}

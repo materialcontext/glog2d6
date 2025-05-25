@@ -21,16 +21,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         context.system = context.actor.system;
         context.flags = context.actor.flags;
 
-        // Calculate inventory usage
-        let usedSlots = 0;
-        for (let item of context.actor.items) {
-            usedSlots += item.system.slots || 0;
-        }
-        context.actor.system.inventory.slots.used = usedSlots;
 
         // Add edit mode
-        context.editMode = this.actor.getFlag("glog2d6", "editMode");
-        context.editMode = editModeFlag === true;
+        context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
         // Get available classes from compendium pack
         context.availableClasses = await this._getAvailableClasses();
@@ -38,11 +31,18 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Check if character has available class features
         context.hasAvailableFeatures = this._hasAvailableClassFeatures();
 
+        // Debug encumbrance
+        if (this.actor.type === "character") {
+            console.log(`Sheet getData - Encumbrance: ${context.system.inventory.encumbrance}, Used: ${context.system.inventory.slots.used}/${context.system.inventory.slots.max}`);
+        }
+
         return context;
     }
 
     activateListeners(html) {
         super.activateListeners(html);
+
+        this._enhanceAttributeDisplay(html);
 
         // Everything below here is only needed if the sheet is editable
         if (!this.isEditable) return;
@@ -397,6 +397,86 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         };
 
         return classIcons[className] || "icons/sundries/scrolls/scroll-bound-brown.webp";
+    }
+
+    /**
+    * Enhance attribute display with proper coloring, effective values, and modifier handling
+    */
+    _enhanceAttributeDisplay(html) {
+        if (this.actor.getFlag("glog2d6", "editMode")) return; // Skip in edit mode
+
+        html.find('.attribute-card[data-attribute]').each((index, element) => {
+            const $card = $(element);
+            const attributeKey = $card.attr('data-attribute');
+
+            if (attributeKey) {
+                const attribute = this.actor.system.attributes[attributeKey];
+                const originalMod = attribute.mod;
+                const effectiveMod = attribute.effectiveMod !== undefined ? attribute.effectiveMod : attribute.mod;
+                const baseValue = attribute.value;
+                const effectiveValue = attribute.effectiveValue !== undefined ? attribute.effectiveValue : attribute.value;
+
+                // FIXED: Show effective attribute value when different from base
+                const $attributeValue = $card.find('.attribute-value');
+                if (effectiveValue !== baseValue) {
+                    // Show effective value with original in parentheses (struck through)
+                    $attributeValue.html(`
+                    <span class="effective-attr-value">${effectiveValue}</span>
+                    <span class="original-attr-value">(${baseValue})</span>
+                `);
+                } else {
+                    // Show normal value
+                    $attributeValue.text(baseValue);
+                }
+
+                // Update the modifier display
+                const $modifierCurrent = $card.find('.modifier-current');
+                $modifierCurrent.text((effectiveMod >= 0 ? '+' : '') + effectiveMod);
+
+                // Handle original modifier display
+                const $modifierOriginal = $card.find('.modifier-original');
+                if (effectiveMod !== originalMod) {
+                    $modifierOriginal.text((originalMod >= 0 ? '+' : '') + originalMod).show();
+                } else {
+                    $modifierOriginal.hide();
+                }
+
+                // Apply coloring to attribute value to indicate if value/modifier is affected
+                $attributeValue.removeClass('normal negatively-impacted positively-impacted');
+
+                if (effectiveValue < baseValue || effectiveMod < originalMod) {
+                    $attributeValue.addClass('negatively-impacted');
+                } else if (effectiveValue > baseValue || effectiveMod > originalMod) {
+                    $attributeValue.addClass('positively-impacted');
+                } else {
+                    $attributeValue.addClass('normal');
+                }
+            }
+        });
+
+        // Update movement display to show effective movement (don't touch - it's working)
+        const $movementDisplay = html.find('.movement-display');
+        if ($movementDisplay.length > 0 && this.actor.type === "character") {
+            const baseMovement = this.actor.system.details.movement;
+            const effectiveMovement = this.actor.system.details.effectiveMovement;
+
+            if (effectiveMovement !== undefined && effectiveMovement !== baseMovement) {
+                // Show effective movement with struck-through original
+                $movementDisplay.html(`
+                <span>Move</span>
+                <span class="effective-value">${effectiveMovement}</span>
+                <span class="original-value">(${baseMovement})</span>
+            `);
+                $movementDisplay.addClass('negatively-impacted');
+            } else {
+                // Show normal movement
+                $movementDisplay.html(`
+                <span>Move</span>
+                ${baseMovement}
+            `);
+                $movementDisplay.removeClass('negatively-impacted');
+            }
+        }
     }
 
     async _handleEquipment(newItem) {
