@@ -696,6 +696,7 @@
     grid-column: 1;
     justify-self: center;
 }
+
 .glog2d6 .items-list {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -850,130 +851,144 @@
 
 /* Tabbed Content */
 .glog2d6 .tabbed-content {
-  margin-top: 20px;
+    margin-top: 20px;
 }
 
 .glog2d6 .sheet-tabs {
-  border-bottom: 2px solid var(--primary-color);
-  margin-bottom: 15px;
-  display: flex;
-  background: var(--background-section);
-  border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
+    border-bottom: 2px solid var(--primary-color);
+    margin-bottom: 15px;
+    display: flex;
+    background: var(--background-section);
+    border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
+    box-shadow: none;
 }
 
 .glog2d6 .sheet-tabs .item {
-  flex: 1;
-  text-align: center;
-  padding: 10px 15px;
-  cursor: pointer;
-  background: var(--background-section);
-  color: var(--secondary-color);
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 12px;
-  border-right: 1px solid var(--border-color);
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+    flex: 1;
+    text-align: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    background: var(--background-section);
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 12px;
+    border-right: 1px solid var(--border-color);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-top: none;
+    border-left: none;
+    border-bottom: none;
+    box-shadow: none;
 }
 
 .glog2d6 .sheet-tabs .item:last-child {
-  border-right: none;
+    border-right: none;
 }
 
 .glog2d6 .sheet-tabs .item:hover {
-  background: var(--background-darker);
-  color: #333;
+    background: var(--background-darker);
+    color: #333;
+}
+
+.glog2d6 .sheet-tabs .item i {
+    width: 14px;
+    text-align: center;
+    display: inline-block;
+    /* Ensure icons don't affect button appearance */
+    vertical-align: middle;
 }
 
 .glog2d6 .sheet-tabs .item.active {
-  background: var(--primary-color);
-  color: white;
+    background: var(--primary-color);
+    color: white;
 }
 
 .glog2d6 .tab {
-  display: none;
+    display: none;
 }
 
 .glog2d6 .tab.active {
-  display: block;
+    display: block;
 }
 
 /* Features Section */
 .glog2d6 .features-section,
 .glog2d6 .spells-section {
-  margin: 0;
+    margin: 0;
 }
 
 .glog2d6 .features-info,
 .glog2d6 .spells-info {
-  font-weight: bold;
-  font-size: 14px;
+    font-weight: bold;
+    font-size: 14px;
 }
 
 .glog2d6 .features-list,
 .glog2d6 .spells-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .glog2d6 .feature-item,
 .glog2d6 .spell-item {
-  background: var(--background-light);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: 10px;
+    background: var(--background-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 10px;
 }
 
 .glog2d6 .feature-level,
 .glog2d6 .spell-level {
-  background: var(--secondary-color);
-  color: white;
-  padding: 2px 6px;
-  border-radius: var(--border-radius);
-  font-size: 10px;
-  font-weight: bold;
+    background: var(--secondary-color);
+    color: white;
+    padding: 2px 6px;
+    border-radius: var(--border-radius);
+    font-size: 10px;
+    font-weight: bold;
 }
 
 .glog2d6 .spell-cast-btn {
-  background: var(--success-color);
-  color: white;
-  padding: 4px 8px;
-  font-size: 10px;
-  border-radius: var(--border-radius);
+    background: var(--success-color);
+    color: white;
+    padding: 4px 8px;
+    font-size: 10px;
+    border-radius: var(--border-radius);
 }
 
 .glog2d6 .spell-cast-btn:hover {
-  background: var(--success-hover);
+    background: var(--success-hover);
 }
 
 .glog2d6 .spell-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .glog2d6 .empty-section {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 .glog2d6 .empty-section p {
-  margin: 8px 0;
+    margin: 8px 0;
 }
 
 /* Inventory Section in Tab */
 .glog2d6 .inventory-section {
-  margin: 0;
+    margin: 0;
 }
 
 .glog2d6 .inventory-section h3 {
-  display: none; /* Hide the h3 since we have the tab title */
+    display: none;
+    /* Hide the h3 since we have the tab title */
 }
 
 /* Chat Messages */
@@ -1014,105 +1029,106 @@
 
 /* Section Headers */
 .glog2d6 h3 {
-  color: var(--primary-color);
-  border-bottom: 1px solid var(--primary-color);
-  padding-bottom: 3px;
-  margin: 15px 0 8px 0;
-  font-size: 14px;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+    padding-bottom: 3px;
+    margin: 15px 0 8px 0;
+    font-size: 14px;
 }
 
 .glog2d6 .tab h3 {
-  display: none;
+    display: none;
 }
 
 /* Torch-specific styles */
 .glog2d6 .torch-icon {
-  color: #666;
-  font-size: 12px;
-  width: 12px;
-  text-align: center;
+    color: #666;
+    font-size: 12px;
+    width: 12px;
+    text-align: center;
 }
 
 .glog2d6 .torch-icon.torch-active {
-  color: #ff6b35;
-  text-shadow: 0 0 3px #ff6b35;
+    color: #ff6b35;
+    text-shadow: 0 0 3px #ff6b35;
 }
 
 /* Torch item sheet styles */
 .glog2d6 .torch-properties,
 .glog2d6 .torch-duration,
 .glog2d6 .torch-animation {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin: 20px 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
 }
 
 /* Torch item sheet layout fixes */
 .glog2d6.torch-item-sheet {
-  min-height: 400px;
+    min-height: 400px;
 }
 
 .glog2d6.torch-item-sheet .sheet-header {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center;
-  gap: 15px;
-  padding: 10px 15px;
-  background: var(--background-darker);
-  border-bottom: 2px solid var(--primary-color);
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    background: var(--background-darker);
+    border-bottom: 2px solid var(--primary-color);
 }
 
 .glog2d6.torch-item-sheet .item-img {
-  flex-shrink: 0;
+    flex-shrink: 0;
 }
 
 .glog2d6.torch-item-sheet .header-fields {
-  flex: 1;
+    flex: 1;
 }
 
 .glog2d6.torch-item-sheet .header-fields .charname {
-  margin: 0;
+    margin: 0;
 }
 
 .glog2d6.torch-item-sheet .header-fields .charname input {
-  font-size: 18px;
-  font-weight: bold;
-  border: none;
-  background: transparent;
-  width: 100%;
-  color: var(--primary-color);
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    width: 100%;
+    color: var(--primary-color);
 }
 
 .glog2d6 .torch-animation {
-  grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
 }
 
 /* Enhanced torch button animations */
 .glog2d6 .torch-btn.torch-lit {
-  animation: torchFlicker 2s ease-in-out infinite alternate;
+    animation: torchFlicker 2s ease-in-out infinite alternate;
 }
 
 @keyframes torchFlicker {
-  0% {
-    background: #ff6b35;
-    box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
-  }
-  100% {
-    background: #e55a2b;
-    box-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
-  }
+    0% {
+        background: #ff6b35;
+        box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+    }
+
+    100% {
+        background: #e55a2b;
+        box-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+    }
 }
 
 /* Torch duration warning styles */
 .glog2d6 .torch-duration-warning {
-  color: var(--danger-color);
-  font-weight: bold;
+    color: var(--danger-color);
+    font-weight: bold;
 }
 
 .glog2d6 .torch-duration-low {
-  color: #ff9800;
-  font-weight: bold;
+    color: #ff9800;
+    font-weight: bold;
 }
 
 /* Responsive Design */
