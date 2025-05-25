@@ -1,0 +1,59 @@
+<form class="{{cssClass}}" autocomplete="off">
+
+  <header class="sheet-header">
+    <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <div class="header-fields">
+      <h1 class="charname">
+        <input name="name" type="text" value="{{item.name}}" placeholder="Spell Name"/>
+      </h1>
+    </div>
+  </header>
+
+  <section class="sheet-body">
+
+    <div class="spell-properties">
+      <div class="form-group">
+        <label for="system.level">Spell Level</label>
+        <input type="number" name="system.level" value="{{system.level}}" min="1" max="9"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.school">School of Magic</label>
+        <select name="system.school">
+          {{#select system.school}}
+          <option value="">Select School</option>
+          <option value="abjuration">Abjuration</option>
+          <option value="conjuration">Conjuration</option>
+          <option value="divination">Divination</option>
+          <option value="enchantment">Enchantment</option>
+          <option value="evocation">Evocation</option>
+          <option value="illusion">Illusion</option>
+          <option value="necromancy">Necromancy</option>
+          <option value="transmutation">Transmutation</option>
+          {{/select}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="system.range">Range</label>
+        <input type="text" name="system.range" value="{{system.range}}" placeholder="e.g., Touch, 30 feet, Self"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.duration">Duration</label>
+        <input type="text" name="system.duration" value="{{system.duration}}" placeholder="e.g., Instantaneous, 1 hour, Concentration"/>
+      </div>
+
+      <div class="form-group">
+        <label for="system.components">Components</label>
+        <input type="text" name="system.components" value="{{system.components}}" placeholder="e.g., V, S, M (a pinch of sulfur)"/>
+      </div>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="system.description">Description</label>
+      <textarea name="system.description" rows="12">{{system.description}}</textarea>
+    </div>
+
+  </section>
+</form>

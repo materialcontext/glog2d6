@@ -38,7 +38,7 @@ Hooks.once('init', async function() {
 
     Items.unregisterSheet("core", ItemSheet);
     Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield"],
+        types: ["weapon", "armor", "gear", "shield", "spell"], // Add "spell" here
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Item"
     });
@@ -50,7 +50,8 @@ Hooks.once('init', async function() {
         "systems/glog2d6/templates/item/item-weapon-sheet.hbs",
         "systems/glog2d6/templates/item/item-armor-sheet.hbs",
         "systems/glog2d6/templates/item/item-gear-sheet.hbs",
-        "systems/glog2d6/templates/item/item-shield-sheet.hbs"
+        "systems/glog2d6/templates/item/item-shield-sheet.hbs",
+        "systems/glog2d6/templates/item/item-spell-sheet.hbs"
     ]);
 });
 

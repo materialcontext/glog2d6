@@ -70,6 +70,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
         // Torch toggle - fixed
         html.find('.torch-btn').click(this._onTorchToggle.bind(this));
+
+        // spells
+        html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
     }
 
     async _onAttributeRoll(event) {
@@ -79,6 +82,33 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
         // Use default target of 7, DM will declare if different
         this.actor.rollAttribute(attribute, 7);
+    }
+
+    async _onSpellCast(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.dataset.itemId;
+        const spell = this.actor.items.get(itemId);
+
+        if (spell) {
+            // For now, just show the spell in chat - extend this later for actual spell mechanics
+            ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                content: `
+                <div class="glog2d6-roll">
+                    <h3>${this.actor.name} casts ${spell.name}</h3>
+                    <div class="roll-result">
+                        ${spell.system.level ? `<strong>Level:</strong> ${spell.system.level}<br>` : ''}
+                        ${spell.system.school ? `<strong>School:</strong> ${spell.system.school}<br>` : ''}
+                        ${spell.system.range ? `<strong>Range:</strong> ${spell.system.range}<br>` : ''}
+                        ${spell.system.duration ? `<strong>Duration:</strong> ${spell.system.duration}<br>` : ''}
+                        ${spell.system.components ? `<strong>Components:</strong> ${spell.system.components}<br>` : ''}
+                        <br><strong>Description:</strong><br>
+                        ${spell.system.description || 'No description available.'}
+                    </div>
+                </div>
+            `
+            });
+        }
     }
 
     async _onSaveRoll(event) {
