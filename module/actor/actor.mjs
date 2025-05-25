@@ -1,5 +1,15 @@
 export class GLOG2D6Actor extends Actor {
 
+    async _preCreate(data, options, user) {
+        await super._preCreate(data, options, user);
+
+        if (this.type === "character") {
+            await this.updateSource({
+                "flags.glog2d6.editMode": false
+            });
+        }
+    }
+
     prepareData() {
         super.prepareData();
     }

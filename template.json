@@ -100,11 +100,13 @@
       "armorBonus": 1,
       "slots": 1
     },
-    "feature": {
+"feature": {
       "description": "",
-      "level": "",
-      "source": "class",
-      "active": true
+      "classSource": "",
+      "template": "level-0",
+      "level": 1,
+      "active": true,
+      "prerequisites": ""
     },
     "spell": {
       "description": "",

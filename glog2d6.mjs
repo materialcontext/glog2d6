@@ -24,6 +24,24 @@ Hooks.once('init', async function() {
         return str.charAt(0).toUpperCase() + str.slice(1);
     });
 
+    game.settings.register("glog2d6", "hasSetupDefaultFolders", {
+        name: "Default Folders Created",
+        hint: "Tracks whether default item folders have been created",
+        scope: "world",
+        config: false,
+        type: Boolean,
+        default: false
+    });
+
+    game.settings.register("glog2d6", "autoBurnTorches", {
+        name: "Auto-burn Torches",
+        hint: "Automatically reduce torch duration when world time advances",
+        scope: "world",
+        config: true,
+        type: Boolean,
+        default: false
+    });
+
     // Define custom Document classes
     CONFIG.Actor.documentClass = GLOG2D6Actor;
     CONFIG.Item.documentClass = GLOG2D6Item;
@@ -140,7 +158,150 @@ Hooks.once("ready", async function() {
             button.disabled = true;
             button.textContent = "Damage Rolled";
         }
+
+        if (game.user.isGM) {
+            await createDefaultFolders();
+        }
     });
+
+    async function createDefaultFolders() {
+        // Only run this once per world to avoid duplicates
+        const hasSetupFolders = game.settings.get("glog2d6", "hasSetupDefaultFolders");
+        if (hasSetupFolders) {
+            console.log('glog2d6 | Default folders already created');
+            return;
+        }
+
+        console.log('glog2d6 | Creating default item folders and items...');
+
+        try {
+            // Create folder structure
+            const weaponFolder = await createFolderIfNotExists("Weapons", "Item", "#8B4513");
+            const armorFolder = await createFolderIfNotExists("Armor & Shields", "Item", "#4682B4");
+            const gearFolder = await createFolderIfNotExists("Equipment & Gear", "Item", "#228B22");
+
+            // Create subfolders for weapons
+            const meleeFolder = await createFolderIfNotExists("Melee Weapons", "Item", "#A0522D", weaponFolder.id);
+            const rangedFolder = await createFolderIfNotExists("Ranged Weapons", "Item", "#8B4513", weaponFolder.id);
+            const ammunitionFolder = await createFolderIfNotExists("Ammunition", "Item", "#654321", weaponFolder.id);
+
+            // Create items from data files
+            await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id);
+
+            // Mark as completed
+            await game.settings.set("glog2d6", "hasSetupDefaultFolders", true);
+
+            ui.notifications.info("GLOG 2d6: Default items and folders created successfully!");
+
+        } catch (error) {
+            console.error('glog2d6 | Error creating default folders:', error);
+            ui.notifications.error("Failed to create default folders: " + error.message);
+        }
+    }
+
+    /**
+     * Creates a folder if it doesn't already exist
+     */
+    async function createFolderIfNotExists(name, type, color = "#000000", parentId = null) {
+        // Check if folder already exists
+        const existingFolder = game.folders.find(f =>
+            f.name === name &&
+            f.type === type &&
+            f.folder === parentId
+        );
+
+        if (existingFolder) {
+            console.log(`glog2d6 | Folder "${name}" already exists`);
+            return existingFolder;
+        }
+
+        // Create new folder
+        const folderData = {
+            name: name,
+            type: type,
+            color: color,
+            folder: parentId,
+            sort: 0
+        };
+
+        const folder = await Folder.create(folderData);
+        console.log(`glog2d6 | Created folder: ${name}`);
+        return folder;
+    }
+
+    /**
+     * Creates items from the loaded JSON data and organizes them into folders
+     */
+    async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId) {
+        const weaponData = window.getGlogWeapons();
+        const armorData = window.getGlogArmor();
+
+        const itemsToCreate = [];
+
+        // Process weapons
+        if (weaponData.weapons) {
+            for (const weapon of weaponData.weapons) {
+                const folderId = weapon.system.weaponType === "ranged" ? rangedFolderId : meleeFolderId;
+
+                itemsToCreate.push({
+                    name: weapon.name,
+                    type: "weapon",
+                    img: weapon.img || "icons/weapons/swords/sword-guard-worn.webp",
+                    system: weapon.system,
+                    folder: folderId,
+                    sort: itemsToCreate.length * 100
+                });
+            }
+        }
+
+        // Process ammunition
+        if (weaponData.ammunition) {
+            for (const ammo of weaponData.ammunition) {
+                itemsToCreate.push({
+                    name: ammo.name,
+                    type: "gear",
+                    img: ammo.img || "icons/weapons/ammunition/arrows-flight-wood.webp",
+                    system: ammo.system,
+                    folder: ammunitionFolderId,
+                    sort: itemsToCreate.length * 100
+                });
+            }
+        }
+
+        // Process armor
+        if (armorData.armor) {
+            for (const armor of armorData.armor) {
+                itemsToCreate.push({
+                    name: armor.name,
+                    type: "armor",
+                    img: armor.img || "icons/equipment/chest/breastplate-leather-brown.webp",
+                    system: armor.system,
+                    folder: armorFolderId,
+                    sort: itemsToCreate.length * 100
+                });
+            }
+        }
+
+        // Process shields
+        if (armorData.shields) {
+            for (const shield of armorData.shields) {
+                itemsToCreate.push({
+                    name: shield.name,
+                    type: "shield",
+                    img: shield.img || "icons/equipment/shield/heater-steel-boss.webp",
+                    system: shield.system,
+                    folder: armorFolderId,
+                    sort: itemsToCreate.length * 100
+                });
+            }
+        }
+
+        // Create all items at once
+        if (itemsToCreate.length > 0) {
+            await Item.createDocuments(itemsToCreate);
+            console.log(`glog2d6 | Created ${itemsToCreate.length} default items`);
+        }
+    }
 
     // Global function to get class data
     window.getGlogClasses = function() {

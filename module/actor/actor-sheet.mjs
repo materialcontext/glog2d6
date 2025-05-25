@@ -29,7 +29,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         context.actor.system.inventory.slots.used = usedSlots;
 
         // Add edit mode
-        context.editMode = this.actor.getFlag("glog2d6", "editMode") || false;
+        context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
         // Get available classes from compendium pack
         context.availableClasses = await this._getAvailableClasses();
@@ -73,6 +73,10 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
         // spells
         html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
+
+        // Feature management
+        html.find('.add-class-features').click(this._onAddClassFeatures.bind(this));
+        html.find('.feature-item').click(this._onFeatureToggle.bind(this));
     }
 
     async _onAttributeRoll(event) {
@@ -176,6 +180,160 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Get class data from globally loaded JSON
         const classes = window.getGlogClasses();
         return classes.map(cls => cls.name).sort();
+    }
+
+    /**
+     * Handle adding class features automatically
+     */
+    async _onAddClassFeatures(event) {
+        event.preventDefault();
+
+        const className = this.actor.system.details.class;
+        const currentLevel = this.actor.system.details.level;
+
+        if (!className) {
+            ui.notifications.warn("No class selected. Set your class first.");
+            return;
+        }
+
+        // Confirm with user
+        const confirm = await Dialog.confirm({
+            title: "Add Class Features",
+            content: `<p>Add features for <strong>${className}</strong> up to level <strong>${currentLevel}</strong>?</p>
+                 <p><small>This will add all appropriate template features. Existing features won't be duplicated.</small></p>`
+        });
+
+        if (!confirm) return;
+
+        try {
+            await this._addClassFeatures(className, currentLevel);
+            ui.notifications.info(`Added ${className} features for level ${currentLevel}`);
+            this.render(); // Refresh the sheet
+        } catch (error) {
+            console.error("Error adding class features:", error);
+            ui.notifications.error("Failed to add class features: " + error.message);
+        }
+    }
+
+    /**
+     * Toggle feature active state when clicked
+     */
+    async _onFeatureToggle(event) {
+        if (this.actor.getFlag("glog2d6", "editMode")) return; // Don't toggle in edit mode
+
+        event.preventDefault();
+        const itemId = event.currentTarget.dataset.itemId;
+        const feature = this.actor.items.get(itemId);
+
+        if (feature) {
+            const newState = !feature.system.active;
+            await feature.update({ "system.active": newState });
+
+            const message = newState ? "activated" : "deactivated";
+            ui.notifications.info(`${feature.name} ${message}`);
+        }
+    }
+
+    /**
+     * Add class features based on class data and level
+     */
+    async _addClassFeatures(className, currentLevel) {
+        const classData = window.getGlogClass(className);
+        if (!classData || !classData.features) {
+            throw new Error(`No feature data found for class: ${className}`);
+        }
+
+        // Get existing features to avoid duplicates
+        const existingFeatures = this.actor.items.filter(i =>
+            i.type === "feature" &&
+            i.system.classSource === className
+        );
+
+        const featuresToAdd = [];
+
+        // Add level-0 feature if not already present
+        if (classData.features["level-0"] &&
+            !existingFeatures.some(f => f.system.template === "level-0")) {
+            featuresToAdd.push(this._createFeatureData(
+                className,
+                "level-0",
+                `${className} Starting Ability`,
+                classData.features["level-0"],
+                1
+            ));
+        }
+
+        // Add template features based on current level
+        const templates = ["A", "B", "C", "D"];
+        for (let i = 0; i < Math.min(currentLevel, 4); i++) {
+            const template = templates[i];
+            const templateFeatures = classData.features[template];
+
+            if (templateFeatures && Array.isArray(templateFeatures)) {
+                for (const featureName of templateFeatures) {
+                    // Check if this specific feature already exists
+                    const exists = existingFeatures.some(f =>
+                        f.system.template === template &&
+                        f.name === featureName
+                    );
+
+                    if (!exists) {
+                        featuresToAdd.push(this._createFeatureData(
+                            className,
+                            template,
+                            featureName,
+                            `${className} Template ${template} ability: ${featureName}. Add detailed description based on your class reference.`,
+                            i + 1
+                        ));
+                    }
+                }
+            }
+        }
+
+        // Create the features on the actor
+        if (featuresToAdd.length > 0) {
+            await this.actor.createEmbeddedDocuments("Item", featuresToAdd);
+            console.log(`Added ${featuresToAdd.length} new features for ${className} level ${currentLevel}`);
+        } else {
+            ui.notifications.info("No new features to add - all appropriate features already exist.");
+        }
+    }
+
+    /**
+     * Create feature data object
+     */
+    _createFeatureData(className, template, featureName, description, level = 1) {
+        return {
+            name: featureName,
+            type: "feature",
+            img: this._getFeatureIcon(className, template),
+            system: {
+                classSource: className,
+                template: template,
+                level: level,
+                description: description,
+                active: true,
+                prerequisites: template === "level-0" ? "None" : `${className} Template ${template}`
+            }
+        };
+    }
+
+    /**
+     * Get appropriate icon for features based on class and template
+     */
+    _getFeatureIcon(className, template) {
+        const classIcons = {
+            "Fighter": "icons/skills/melee/blade-tip-chipped-blood-red.webp",
+            "Wizard": "icons/magic/symbols/runes-star-pentagon-blue.webp",
+            "Thief": "icons/skills/social/theft-pickpocket-bribery-brown.webp",
+            "Barbarian": "icons/skills/melee/strike-hammer-destructive-orange.webp",
+            "Hunter": "icons/weapons/bows/bow-recurve-yellow.webp",
+            "Acrobat": "icons/skills/movement/feet-winged-boots-brown.webp",
+            "Assassin": "icons/weapons/daggers/dagger-curved-poison-green.webp",
+            "Courtier": "icons/skills/social/diplomacy-handshake.webp"
+        };
+
+        return classIcons[className] || "icons/sundries/scrolls/scroll-bound-brown.webp";
     }
 
     async _handleEquipment(newItem) {
