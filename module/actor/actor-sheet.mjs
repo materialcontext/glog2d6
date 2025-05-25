@@ -29,7 +29,8 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         context.actor.system.inventory.slots.used = usedSlots;
 
         // Add edit mode
-        context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
+        context.editMode = this.actor.getFlag("glog2d6", "editMode");
+        context.editMode = editModeFlag === true;
 
         // Get available classes from compendium pack
         context.availableClasses = await this._getAvailableClasses();

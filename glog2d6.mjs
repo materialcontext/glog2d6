@@ -76,15 +76,19 @@ Hooks.once('init', async function() {
 
 // Load all system data from JSON files
 async function loadSystemData() {
-    // Load features (new comprehensive data)
     try {
         const response = await fetch('systems/glog2d6/data/features.json');
         if (response.ok) {
             const featureData = await response.json();
             GLOG_FEATURES = featureData.classes;
             console.log('glog2d6 | Loaded', GLOG_FEATURES.length, 'classes with detailed features');
+
+            // Debug: Log the first class to verify structure
+            if (GLOG_FEATURES.length > 0) {
+                console.log('glog2d6 | Sample class data:', GLOG_FEATURES[0].name, 'has features:', Object.keys(GLOG_FEATURES[0].features || {}));
+            }
         } else {
-            console.warn('glog2d6 | Could not load features.json');
+            console.warn('glog2d6 | Could not load features.json, status:', response.status);
             GLOG_FEATURES = getDefaultClasses();
         }
     } catch (error) {
@@ -92,21 +96,6 @@ async function loadSystemData() {
         GLOG_FEATURES = getDefaultClasses();
     }
 
-    // Load legacy classes for backward compatibility
-    try {
-        const response = await fetch('systems/glog2d6/data/classes.json');
-        if (response.ok) {
-            const classData = await response.json();
-            GLOG_CLASSES = classData.classes;
-            console.log('glog2d6 | Loaded', GLOG_CLASSES.length, 'legacy classes');
-        } else {
-            console.warn('glog2d6 | Could not load classes.json');
-            GLOG_CLASSES = getDefaultClasses();
-        }
-    } catch (error) {
-        console.error('glog2d6 | Error loading classes.json:', error);
-        GLOG_CLASSES = getDefaultClasses();
-    }
 
     // Load weapons
     try {
@@ -261,7 +250,7 @@ Hooks.once("ready", async function() {
     async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId, classFolders) {
         const weaponData = window.getGlogWeapons();
         const armorData = window.getGlogArmor();
-        const featureData = window.getGlogFeatures();
+        const featureData = window.getGlogFeatures(); // This returns the classes array
 
         const itemsToCreate = [];
 
@@ -323,39 +312,46 @@ Hooks.once("ready", async function() {
             }
         }
 
-        // Process class features for world item library
-        if (featureData) {
+        // FIXED: Process class features for world item library
+        if (featureData && Array.isArray(featureData)) {
+            console.log('glog2d6 | Processing', featureData.length, 'classes for features');
+
             for (const classData of featureData) {
                 const classFolderId = classFolders[classData.name]?.id;
-                if (!classFolderId) continue;
+                if (!classFolderId) {
+                    console.warn(`glog2d6 | No folder found for class: ${classData.name}`);
+                    continue;
+                }
 
                 let sortOrder = 0;
 
                 // Add level-0 feature
-                if (classData.features["level-0"]) {
-                    const feature = classData.features["level-0"];
+                if (classData.features && classData.features["level-0"]) {
+                    const levelZeroFeature = classData.features["level-0"];
                     itemsToCreate.push({
-                        name: `${classData.name}: ${feature.name}`,
+                        name: `${classData.name}: ${levelZeroFeature.name}`,
                         type: "feature",
                         img: getFeatureIcon(classData.name, "level-0"),
                         system: {
                             classSource: classData.name,
                             template: "level-0",
                             level: 1,
-                            description: feature.description,
+                            description: levelZeroFeature.description,
                             active: true,
                             prerequisites: "None"
                         },
                         folder: classFolderId,
-                        sort: sortOrder++
+                        sort: sortOrder * 100
                     });
+                    sortOrder++;
+                    console.log(`glog2d6 | Added level-0 feature for ${classData.name}`);
                 }
 
                 // Add template features A-D
                 const templates = ["A", "B", "C", "D"];
                 for (let i = 0; i < templates.length; i++) {
                     const template = templates[i];
-                    const templateFeatures = classData.features[template];
+                    const templateFeatures = classData.features?.[template];
 
                     if (templateFeatures && Array.isArray(templateFeatures)) {
                         for (const feature of templateFeatures) {
@@ -372,18 +368,25 @@ Hooks.once("ready", async function() {
                                     prerequisites: `${classData.name} Template ${template}`
                                 },
                                 folder: classFolderId,
-                                sort: sortOrder++
+                                sort: sortOrder * 100
                             });
+                            sortOrder++;
                         }
+                        console.log(`glog2d6 | Added ${templateFeatures.length} template ${template} features for ${classData.name}`);
                     }
                 }
             }
+        } else {
+            console.warn('glog2d6 | No feature data available or data is not an array');
         }
 
         // Create all items at once
         if (itemsToCreate.length > 0) {
+            console.log(`glog2d6 | Creating ${itemsToCreate.length} total items`);
             await Item.createDocuments(itemsToCreate);
-            console.log(`glog2d6 | Created ${itemsToCreate.length} default items and features`);
+            console.log(`glog2d6 | Successfully created ${itemsToCreate.length} default items and features`);
+        } else {
+            console.warn('glog2d6 | No items to create');
         }
     }
 
