@@ -154,5 +154,19 @@ const FEATURE_BONUSES = {
         return [
             { target: "combat.archery.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
-    }
+    },
+    "Magical Training": (actor, feature) => {
+        const templates = actor.getClassTemplateCount("Wizard");
+        return [
+            { target: "magicDice.max", value: templates, type: "untyped" }
+        ];
+    },
+    // Intellect Fortress - already partially there, just need to fix it
+    "Intellect Fortress": (actor, feature) => {
+        const templates = actor.getClassTemplateCount("Wizard");
+        return [
+            { target: "saves.int.bonus", value: templates, type: "untyped" },
+            { target: "saves.wis.bonus", value: templates, type: "untyped" }
+        ];
+    },
 };

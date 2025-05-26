@@ -137,6 +137,25 @@ export class GLOG2D6Actor extends Actor {
             }
         }
 
+        if (this.type === "character") {
+            const level = this.system.details.level || 1;
+            this.system.combat.attack.value = level;
+
+            console.log(`Attack calculation for ${this.name}: Base = ${level} (level), Bonus = ${this.system.combat.attack.bonus || 0}`);
+        }
+
+        // Calculate spell slots for wizards
+        if (this.type === "character") {
+            const wizardLevel = this.getClassTemplateCount("Wizard");
+            if (wizardLevel > 0) {
+                const intMod = this.system.attributes.int.mod;
+                this.system.spellSlots = wizardLevel + Math.max(0, intMod);
+                console.log(`Spell slots for ${this.name}: ${this.system.spellSlots}`);
+            } else {
+                this.system.spellSlots = 0;
+            }
+        }
+
         console.log("calculating defenses")
         // Calculate defense value from armor and shields
         if (this.type === "character") {
@@ -321,6 +340,24 @@ export class GLOG2D6Actor extends Actor {
                 if (!this.system.defense) this.system.defense = {};
                 this.system.defense.meleeBonus = (this.system.defense.meleeBonus || 0) + totalBonus;
                 this.system.defense.meleeBreakdown = breakdown;
+                break;
+
+            case "magicDice.max":
+                this.system.magicDiceMax = (this.system.magicDiceMax || 0) + totalBonus;
+                this.system.magicDiceMaxBreakdown = breakdown;
+                // Initialize current if not set or if max increased
+                if (this.system.magicDiceCurrent === undefined || this.system.magicDiceCurrent < totalBonus) {
+                    this.system.magicDiceCurrent = totalBonus;
+                }
+                break;
+
+            case "saves.int.bonus":
+            case "saves.wis.bonus":
+                if (!this.system.saves) this.system.saves = {};
+                const saveType = target.split('.')[1];
+                if (!this.system.saves[saveType]) this.system.saves[saveType] = {};
+                this.system.saves[saveType].bonus = (this.system.saves[saveType].bonus || 0) + totalBonus;
+                this.system.saves[saveType].breakdown = breakdown;
                 break;
 
             default:
@@ -535,6 +572,43 @@ export class GLOG2D6Actor extends Actor {
                 ui.notifications.warn(`${activeTorch.name} is burned out but still lit (auto-extinguish disabled)`);
             }
         }
+    }
+
+    async castSpellWithDice(spell, diceCount) {
+        // Roll the magic dice
+        const roll = new Roll(`${diceCount}d6`);
+        await roll.evaluate();
+
+        const results = roll.terms[0].results.map(r => r.result);
+        const sum = roll.total;
+
+        // Determine which dice are exhausted (4-6) vs returned (1-3)
+        const exhausted = results.filter(r => r >= 4).length;
+        const returned = results.filter(r => r <= 3).length;
+
+        // Update magic dice
+        const newCurrent = Math.max(0, this.system.magicDiceCurrent - exhausted);
+        await this.update({ "system.magicDiceCurrent": newCurrent });
+
+        // Create result message
+        ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+        <div class="glog2d6-spell-result">
+            <h3>${this.name} casts ${spell.name}!</h3>
+            <div class="magic-dice-result">
+                <strong>Magic Dice:</strong> [${results.join(', ')}] = ${sum}<br>
+                <strong>Dice Exhausted:</strong> ${exhausted} (rolled 4-6)<br>
+                <strong>Dice Returned:</strong> ${returned} (rolled 1-3)<br>
+                <strong>Remaining MD:</strong> ${newCurrent}/${this.system.magicDiceMax}
+            </div>
+            <div class="spell-effect">
+                <p><strong>Spell Effect:</strong> Use [dice] = ${diceCount} and [sum] = ${sum} in spell description</p>
+            </div>
+        </div>
+    `,
+            roll: roll
+        });
     }
 
     /**

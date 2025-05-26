@@ -38,12 +38,14 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Check if character has available class features
         context.hasAvailableFeatures = this._hasAvailableClassFeatures();
 
-        // FIXED: Analyze equipped weapons for smart button display
+        // Analyze equipped weapons for smart button display
         const weaponAnalysis = this._analyzeEquippedWeapons();
         context.weaponAnalysis = weaponAnalysis;
 
-        // FIXED: Properly detect Acrobat training
-        context.hasAcrobatTraining = this._hasFeature("Acrobat Training");
+        // Properly detect Acrobat training with robust fallback
+        context.hasAcrobatTraining = this.actor.hasFeature ?
+            this.actor.hasFeature("Acrobat Training") :
+            this.actor.items.some(i => i.type === "feature" && i.system.active && i.name === "Acrobat Training");
 
         // Debug logging
         if (this.actor.type === "character") {
@@ -114,6 +116,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Feature management
         html.find('.add-class-features').click(this._onAddClassFeatures.bind(this));
         html.find('.feature-item').click(this._onFeatureToggle.bind(this));
+
+        // Auto-update hireling stats when type changes
+        html.find('.hireling-type-select').change(this._onHirelingTypeChange.bind(this));
     }
 
     async _onAddClassFeatures(event) {
@@ -188,23 +193,47 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         const spell = this.actor.items.get(itemId);
 
         if (spell) {
-            // For now, just show the spell in chat - extend this later for actual spell mechanics
+            const currentMD = this.actor.system.magicDiceCurrent || 0;
+            const maxMD = this.actor.system.magicDiceMax || 0;
+
+            // Create dice buttons for available magic dice
+            let diceButtons = '';
+            for (let i = 1; i <= currentMD; i++) {
+                diceButtons += `<button type="button" class="magic-die-btn" data-dice-count="${i}" data-spell-id="${spell.id}">
+                ${i} Die${i > 1 ? 's' : ''}
+            </button>`;
+            }
+
+            if (currentMD === 0) {
+                diceButtons = '<p><em>No magic dice available!</em></p>';
+            }
+
             ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({ actor: this.actor }),
                 content: `
-                <div class="glog2d6-roll">
-                    <h3>${this.actor.name} casts ${spell.name}</h3>
-                    <div class="roll-result">
-                        ${spell.system.level ? `<strong>Level:</strong> ${spell.system.level}<br>` : ''}
-                        ${spell.system.school ? `<strong>School:</strong> ${spell.system.school}<br>` : ''}
-                        ${spell.system.range ? `<strong>Range:</strong> ${spell.system.range}<br>` : ''}
-                        ${spell.system.duration ? `<strong>Duration:</strong> ${spell.system.duration}<br>` : ''}
-                        ${spell.system.components ? `<strong>Components:</strong> ${spell.system.components}<br>` : ''}
-                        <br><strong>Description:</strong><br>
-                        ${spell.system.description || 'No description available.'}
-                    </div>
+            <div class="glog2d6-spell-cast">
+                <h3>${this.actor.name} prepares to cast ${spell.name}</h3>
+                <div class="spell-info">
+                    ${spell.system.level ? `<strong>Level:</strong> ${spell.system.level}<br>` : ''}
+                    ${spell.system.school ? `<strong>School:</strong> ${spell.system.school}<br>` : ''}
+                    ${spell.system.range ? `<strong>Range:</strong> ${spell.system.range}<br>` : ''}
+                    ${spell.system.duration ? `<strong>Duration:</strong> ${spell.system.duration}<br>` : ''}
+                    ${spell.system.components ? `<strong>Components:</strong> ${spell.system.components}<br>` : ''}
+                    <br><strong>Description:</strong><br>
+                    ${spell.system.description || 'No description available.'}
                 </div>
-            `
+                <div class="magic-dice-selection">
+                    <p><strong>Choose Magic Dice to invest:</strong></p>
+                    ${diceButtons}
+                </div>
+            </div>
+        `,
+                flags: {
+                    glog2d6: {
+                        actorId: this.actor.id,
+                        spellId: spell.id
+                    }
+                }
             });
         }
     }
@@ -341,6 +370,24 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.render();
     }
 
+    async _onHirelingTypeChange(event) {
+        const newType = event.target.value;
+        const updates = { "system.details.type": newType };
+
+        if (newType === "henchman") {
+            updates["system.details.dailyWage"] = 1;
+            updates["system.combat.attack.value"] = 0;
+            updates["system.combat.attack.bonus"] = 0;
+        } else if (newType === "mercenary") {
+            updates["system.details.dailyWage"] = 10;
+            updates["system.combat.attack.value"] = 1; // Level 0 fighter
+            updates["system.combat.attack.bonus"] = 1; // Fighter bonus
+        }
+
+        await this.actor.update(updates);
+        this.render();
+    }
+
     _getActionHandler(action) {
         const handlers = {
             'sneak': this._onSneakRoll,
@@ -368,7 +415,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             console.warn(`No handler for combat action: ${action}`);
         });
     }
-
 
     /**
     * Enhance attribute display with proper coloring, effective values, and modifier handling

@@ -6,7 +6,7 @@
       "img": "icons/weapons/daggers/dagger-straight-blade.webp",
       "system": {
         "damage": "1",
-        "weaponType": "melee",
+        "weaponType": "thrown",
         "size": "light",
         "attackPenalty": 0,
         "encumbrancePenalty": 0,
@@ -85,12 +85,12 @@
       }
     },
     {
-      "name": "Spear",
+      "name": "Javelin",
       "type": "weapon",
       "img": "icons/weapons/polearms/spear-simple.webp",
       "system": {
         "damage": "1d6",
-        "weaponType": "melee",
+        "weaponType": "thrown",
         "size": "medium",
         "attackPenalty": 0,
         "encumbrancePenalty": 0,

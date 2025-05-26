@@ -20,6 +20,24 @@ Hooks.once('init', async function() {
         return str.charAt(0).toUpperCase() + str.slice(1);
     });
 
+    Handlebars.registerHelper('add', function(...args) {
+        // Remove the last argument which is the handlebars options object
+        const numbers = args.slice(0, -1);
+        return numbers.reduce((sum, num) => sum + (num || 0), 0);
+    });
+
+    Handlebars.registerHelper('subtract', function(a, b) {
+        return (a || 0) - (b || 0);
+    });
+
+    Handlebars.registerHelper('gt', function(a, b) {
+        return a > b;
+    });
+
+    Handlebars.registerHelper('lt', function(a, b) {
+        return a < b;
+    });
+
     // Register game settinngs
     game.settings.register("glog2d6", "hasSetupDefaultFolders", {
         name: "Default Folders Created",
@@ -106,6 +124,23 @@ Hooks.once("ready", async function() {
     setupSystemHooks();
 
     Hooks.on("renderChatMessage", (message, html) => {
+        html.find('.magic-die-btn').click(async (event) => {
+            event.preventDefault();
+            const button = event.currentTarget;
+            const diceCount = parseInt(button.dataset.diceCount);
+            const spellId = button.dataset.spellId;
+            const actorId = message.flags?.glog2d6?.actorId;
+
+            const actor = game.actors.get(actorId);
+            const spell = actor?.items.get(spellId);
+
+            if (actor && spell) {
+                await actor.castSpellWithDice(spell, diceCount);
+                // Disable all buttons in this message
+                html.find('.magic-die-btn').prop('disabled', true).text('Cast!');
+            }
+        });
+
         html.find('.damage-roll-btn').click(async (event) => {
             event.preventDefault();
             const button = event.currentTarget;

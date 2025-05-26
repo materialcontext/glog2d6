@@ -72,62 +72,82 @@
     </div>
 </div>
 
-{{!-- FIXED Combat Section with proper button logic --}}
+{{!-- Combat Section --}}
 <div class="combat-section">
     <h3>Combat</h3>
     <div class="combat-actions">
-        {{!-- FIXED Attack Button Logic --}}
+        {{!-- Attack Button Logic --}}
         {{#if weaponAnalysis.hasWeapons}}
-            {{#eq weaponAnalysis.attackButtonType 'split'}}
+            {{#if (eq weaponAnalysis.attackButtonType 'split')}}
+                {{!-- Split buttons for mixed weapon types --}}
                 <div class="combat-card attack-split" data-action="attack" data-attack-type="melee">
                     <div class="combat-main">
-                        <div class="combat-name">Melee Attack</div>
+                        <div class="combat-name">Melee</div>
+                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
-                {{#if weaponAnalysis.throwableWeapon}}
+                {{#if weaponAnalysis.hasThrowable}}
                 <div class="combat-card attack-split" data-action="attack" data-attack-type="thrown">
                     <div class="combat-main">
-                        <div class="combat-name">Throw {{weaponAnalysis.throwableWeapon.name}}</div>
+                        <div class="combat-name">Throw</div>
+                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
                 {{else}}
                 <div class="combat-card attack-split" data-action="attack" data-attack-type="ranged">
                     <div class="combat-main">
-                        <div class="combat-name">Ranged Attack</div>
+                        <div class="combat-name">Ranged</div>
+                        <div class="combat-value">{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
                 {{/if}}
-            {{else}}
+            {{else if (eq weaponAnalysis.attackButtonType 'ranged')}}
+                {{!-- Single ranged button --}}
                 <div class="combat-card" data-action="attack">
                     <div class="combat-main">
-                        <div class="combat-name">
-                            {{#eq weaponAnalysis.attackButtonType 'ranged'}}Ranged Attack{{/eq}}
-                            {{#eq weaponAnalysis.attackButtonType 'melee'}}Melee Attack{{/eq}}
-                            {{#eq weaponAnalysis.attackButtonType 'generic'}}Attack{{/eq}}
-                        </div>
+                        <div class="combat-name">Ranged Attack</div>
+                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
-            {{/eq}}
+            {{else if (eq weaponAnalysis.attackButtonType 'melee')}}
+                {{!-- Single melee button --}}
+                <div class="combat-card" data-action="attack">
+                    <div class="combat-main">
+                        <div class="combat-name">Melee Attack</div>
+                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
+                    </div>
+                </div>
+            {{else}}
+                {{!-- Generic attack button --}}
+                <div class="combat-card" data-action="attack">
+                    <div class="combat-main">
+                        <div class="combat-name">Attack</div>
+                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
+                    </div>
+                </div>
+            {{/if}}
         {{else}}
+            {{!-- No weapons equipped --}}
             <div class="combat-card" data-action="attack">
                 <div class="combat-main">
                     <div class="combat-name">Attack</div>
+                    <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                 </div>
             </div>
         {{/if}}
 
-        {{!-- FIXED Defense Button Logic --}}
-        {{#if (actor.hasFeature "Acrobat Training")}}
+        {{!-- Defense Button Logic --}}
+        {{#if hasAcrobatTraining}}
             {{!-- Split defense for Acrobats --}}
             <div class="combat-card defense-split" data-action="defend-melee">
                 <div class="combat-main">
-                    <div class="combat-name">Defend (Melee)</div>
+                    <div class="combat-name">Melee Def</div>
                     <div class="combat-value">{{system.defense.meleeTotal}}</div>
                 </div>
             </div>
             <div class="combat-card defense-split" data-action="defend-ranged">
                 <div class="combat-main">
-                    <div class="combat-name">Defend (Ranged)</div>
+                    <div class="combat-name">Ranged Def</div>
                     <div class="combat-value">{{system.defense.rangedTotal}}</div>
                 </div>
             </div>

@@ -3,7 +3,8 @@
     <div class="spells-section">
         <div class="spells-header">
             <div class="spells-info">
-                Magic Dice (MD): {{system.magicDice}} | Spells Known
+                Magic Dice (MD): {{system.magicDiceCurrent}}/{{system.magicDiceMax}} | Spell Slots:
+                {{system.spellSlots}} | Spells Known
             </div>
             {{#if editMode}}
             <div class="item-controls">

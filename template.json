@@ -2,7 +2,8 @@
     "Actor": {
         "types": [
             "character",
-            "npc"
+            "npc",
+            "hireling"
         ],
         "templates": {
             "base": {
@@ -83,6 +84,10 @@
                 "bonus": 0,
                 "breakdown": []
             },
+            "magicDice": 0,
+            "magicDiceMax": 0,
+            "magicDiceCurrent": 0,
+            "spellSlots": 0,
             "inventory": {
                 "slots": {
                     "max": 6,
@@ -101,6 +106,29 @@
             ],
             "details": {
                 "description": ""
+            }
+        },
+        "hireling": {
+            "templates": [
+                "base"
+            ],
+            "details": {
+                "type": "henchman",
+                "dailyWage": 1,
+                "loyalty": 4,
+                "employer": ""
+            },
+            "combat": {
+                "attack": {
+                    "value": 0,
+                    "bonus": 1
+                }
+            },
+            "inventory": {
+                "slots": {
+                    "max": 8,
+                    "used": 0
+                }
             }
         }
     },
