@@ -49,8 +49,30 @@
             },
             "combat": {
                 "attack": {
-                    "value": 0
+                    "value": 0,
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "archery": {
+                    "bonus": 0,
+                    "breakdown": []
                 }
+            },
+            "skills": {
+                "stealth": {
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "reaction": {
+                    "bonus": 0,
+                    "breakdown": []
+                }
+            },
+            "hp": {
+                "value": 10,
+                "max": 10,
+                "bonus": 0,
+                "breakdown": []
             },
             "inventory": {
                 "slots": {

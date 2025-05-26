@@ -90,6 +90,14 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Feature management
         html.find('.add-class-features').click(this._onAddClassFeatures.bind(this));
         html.find('.feature-item').click(this._onFeatureToggle.bind(this));
+
+        // action buttons
+        html.find('.action-card.clickable[data-action="sneak"]').click(this._onSneakRoll.bind(this));
+        html.find('.action-card.clickable[data-action="hide"]').click(this._onHideRoll.bind(this));
+        html.find('.action-card.clickable[data-action="disguise"]').click(this._onDisguiseRoll.bind(this));
+        html.find('.action-card.clickable[data-action="reaction"]').click(this._onReactionRoll.bind(this));
+        html.find('.action-card.clickable[data-action="diplomacy"]').click(this._onDiplomacyRoll.bind(this));
+        html.find('.action-card.clickable[data-action="intimidate"]').click(this._onIntimidateRoll.bind(this));
     }
 
     async _onAddClassFeatures(event) {
@@ -115,6 +123,37 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
         // Use default target of 7, DM will declare if different
         this.actor.rollAttribute(attribute, 7);
+    }
+
+    // Action roll handlers
+    async _onSneakRoll(event) {
+        event.preventDefault();
+        this.actor.rollSneak();
+    }
+
+    async _onHideRoll(event) {
+        event.preventDefault();
+        this.actor.rollHide();
+    }
+
+    async _onDisguiseRoll(event) {
+        event.preventDefault();
+        this.actor.rollDisguise();
+    }
+
+    async _onReactionRoll(event) {
+        event.preventDefault();
+        this.actor.rollReaction();
+    }
+
+    async _onDiplomacyRoll(event) {
+        event.preventDefault();
+        this.actor.rollDiplomacy();
+    }
+
+    async _onIntimidateRoll(event) {
+        event.preventDefault();
+        this.actor.rollIntimidate();
     }
 
     async _onSpellCast(event) {

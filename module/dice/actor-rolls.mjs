@@ -56,6 +56,7 @@ export class ActorRolls {
     async rollAttack(attackType = null) {
         const strMod = this.actor.system.attributes.str.mod;
         const atkValue = this.actor.system.combat.attack.value;
+        const atkBonus = this.actor.system.combat.attack.bonus || 0;
 
         // Find equipped weapons
         const equippedWeapons = this.actor.items.filter(i => i.type === "weapon" && i.system.equipped);
@@ -76,9 +77,15 @@ export class ActorRolls {
             const weaponType = bestWeapon.system.weaponType || "melee";
             const weaponPenalty = bestWeapon.system.attackPenalty || 0;
 
+            let archeryBonus = 0;
+            if (weaponType === "ranged") {
+                archeryBonus = this.actor.system.combat.archery?.bonus || 0;
+            }
+
             if (weaponType === "melee" || weaponType === "thrown") {
                 roll = this.actor.createRoll("2d6 + @atk + @str - @penalty + @dual", {
                     atk: atkValue,
+                    bonus: atkBonus,
                     str: strMod,
                     penalty: weaponPenalty,
                     dual: dualWieldBonus
@@ -87,6 +94,8 @@ export class ActorRolls {
             } else {
                 roll = this.actor.createRoll("2d6 + @atk - @penalty + @dual", {
                     atk: atkValue,
+                    bonus: atkBonus,
+                    archery: archeryBonus,
                     penalty: weaponPenalty,
                     dual: dualWieldBonus
                 }, 'attack');
@@ -98,11 +107,16 @@ export class ActorRolls {
             // Create damage roll button
             const damageButton = `<button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${bestWeapon.id}" data-attack-result="${roll.total}">Roll Damage</button>`;
 
+            let bonusText = '';
+            if (atkBonus > 0) bonusText += `<br><small>Attack bonus: +${atkBonus}</small>`;
+            if (archeryBonus > 0) bonusText += `<br><small>Archery bonus: +${archeryBonus}</small>`;
+
             const extraContent = `
-                ${dualWieldBonus > 0 ? '<br><small>Dual wielding: +1</small>' : ''}
-                <br><small>Damage: ${bestWeapon.system.damage} + base damage</small>
-                <br>${damageButton}
-            `;
+            ${dualWieldBonus > 0 ? '<br><small>Dual wielding: +1</small>' : ''}
+            ${bonusText}
+            <br><small>Damage: ${bestWeapon.system.damage} + base damage</small>
+            <br>${damageButton}
+        `;
 
             this.actor._createRollChatMessage(
                 `${this.actor.name} - ${description}`,
@@ -151,6 +165,7 @@ export class ActorRolls {
     async rollWeaponAttack(weapon) {
         const strMod = this.actor.system.attributes.str.mod;
         const atkValue = this.actor.system.combat.attack.value;
+        const atkBonus = this.actor.system.combat.attack.bonus || 0;
         const weaponPenalty = weapon.system.attackPenalty || 0;
 
         // Determine attack type
@@ -162,6 +177,7 @@ export class ActorRolls {
         if (weaponType === "melee" || weaponType === "thrown") {
             roll = this.actor.createRoll("2d6 + @atk + @str - @penalty", {
                 atk: atkValue,
+                bonus: atkBonus,
                 str: strMod,
                 penalty: weaponPenalty
             }, 'attack');
@@ -169,6 +185,7 @@ export class ActorRolls {
         } else {
             roll = this.actor.createRoll("2d6 + @atk - @penalty", {
                 atk: atkValue,
+                bonus: atkBonus,
                 penalty: weaponPenalty
             }, 'attack');
             description = `${weapon.name} Attack (ranged)`;
@@ -281,12 +298,22 @@ export class ActorRolls {
     // Stealth rolls
     async rollSneak() {
         const dexMod = this.actor.system.attributes.dex.effectiveMod;
-        const roll = this.actor.createRoll("2d6 + @dex", { dex: dexMod }, 'stealth');
+        const stealthBonus = this.actor.system.skills?.stealth?.bonus || 0;
+        const roll = this.actor.createRoll("2d6 + @dex + @stealth", {
+            dex: dexMod,
+            stealth: stealthBonus
+        }, 'stealth');
         await roll.evaluate();
+
+        let extraContent = '';
+        if (stealthBonus > 0) {
+            extraContent = `<br><small>Stealth bonus: +${stealthBonus}</small>`;
+        }
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - Sneak`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;
@@ -294,12 +321,22 @@ export class ActorRolls {
 
     async rollHide() {
         const wisMod = this.actor.system.attributes.wis.effectiveMod;
-        const roll = this.actor.createRoll("2d6 + @wis", { wis: wisMod }, 'stealth');
+        const stealthBonus = this.actor.system.skills?.stealth?.bonus || 0;
+        const roll = this.actor.createRoll("2d6 + @wis + @stealth", {
+            wis: wisMod,
+            stealth: stealthBonus
+        }, 'stealth');
         await roll.evaluate();
+
+        let extraContent = '';
+        if (stealthBonus > 0) {
+            extraContent = `<br><small>Stealth bonus: +${stealthBonus}</small>`;
+        }
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - Hide`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;
@@ -307,26 +344,44 @@ export class ActorRolls {
 
     async rollDisguise() {
         const intMod = this.actor.system.attributes.int.effectiveMod;
-        const roll = this.actor.createRoll("2d6 + @int", { int: intMod }, 'stealth');
+        const stealthBonus = this.actor.system.skills?.stealth?.bonus || 0;
+        const roll = this.actor.createRoll("2d6 + @int + @stealth", {
+            int: intMod,
+            stealth: stealthBonus
+        }, 'stealth');
         await roll.evaluate();
+
+        let extraContent = '';
+        if (stealthBonus > 0) {
+            extraContent = `<br><small>Stealth bonus: +${stealthBonus}</small>`;
+        }
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - Disguise`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;
     }
 
-    // Social rolls
+    // social rolls
     async rollReaction() {
-        // No modifiers for reaction rolls
-        const roll = this.actor.createRoll("2d6", {}, 'social');
+        const reactionBonus = this.actor.system.skills?.reaction?.bonus || 0;
+        const roll = this.actor.createRoll("2d6 + @reaction", {
+            reaction: reactionBonus
+        }, 'social');
         await roll.evaluate();
+
+        let extraContent = '';
+        if (reactionBonus > 0) {
+            extraContent = `<br><small>Reaction bonus: +${reactionBonus}</small>`;
+        }
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - Reaction`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;

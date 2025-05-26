@@ -1,5 +1,6 @@
 import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
 import { ActorRolls } from "../dice/actor-rolls.mjs";
+import { BonusCalculator } from "../systems/bonus-calculator.mjs";
 
 export class GLOG2D6Actor extends Actor {
     constructor(data, context) {
@@ -91,6 +92,12 @@ export class GLOG2D6Actor extends Actor {
         for (let [key, attribute] of Object.entries(this.system.attributes)) {
             attribute.effectiveMod = attribute.mod; // Default to original mod
             attribute.effectiveValue = attribute.value; // Default to original value
+        }
+
+        if (this.type === "character") {
+            this.bonusCalculator = new BonusCalculator(this);
+            const bonuses = this.bonusCalculator.calculateBonuses();
+            this._applyBonuses(bonuses);
         }
 
         // Apply encumbrance penalty to dexterity VALUE (not modifier)
@@ -209,6 +216,78 @@ export class GLOG2D6Actor extends Actor {
 
     async rollTraumaSave(...args) {
         return this.rolls.rollTraumaSave(...args);
+    }
+
+    /**
+    * Get the number of templates this character has for a specific class
+    */
+    getClassTemplateCount(className) {
+        const classFeatures = this.items.filter(i =>
+            i.type === "feature" &&
+            i.system.active &&
+            i.system.classSource === className
+        );
+
+        // Count unique templates (A, B, C, D, level-0)
+        const templates = new Set();
+        for (const feature of classFeatures) {
+            if (feature.system.template) {
+                templates.add(feature.system.template);
+            }
+        }
+
+        return templates.size;
+    }
+
+    /**
+ * Apply calculated bonuses to actor data
+ */
+    _applyBonuses(bonuses) {
+        for (const [target, bonusData] of bonuses) {
+            this._applyBonusToTarget(target, bonusData.total, bonusData.breakdown);
+        }
+    }
+
+    /**
+     * Apply a bonus to a specific target path
+     */
+    _applyBonusToTarget(target, totalBonus, breakdown) {
+        switch (target) {
+            case "combat.attack.bonus":
+                // Store the bonus separately so we can show it in UI
+                this.system.combat.attack.bonus = (this.system.combat.attack.bonus || 0) + totalBonus;
+                this.system.combat.attack.breakdown = breakdown;
+                break;
+
+            case "hp.bonus":
+                this.system.hp.bonus = (this.system.hp.bonus || 0) + totalBonus;
+                this.system.hp.max += totalBonus;
+                this.system.hp.breakdown = breakdown;
+                break;
+
+            case "skills.stealth.bonus":
+                if (!this.system.skills) this.system.skills = {};
+                if (!this.system.skills.stealth) this.system.skills.stealth = {};
+                this.system.skills.stealth.bonus = (this.system.skills.stealth.bonus || 0) + totalBonus;
+                this.system.skills.stealth.breakdown = breakdown;
+                break;
+
+            case "skills.reaction.bonus":
+                if (!this.system.skills) this.system.skills = {};
+                if (!this.system.skills.reaction) this.system.skills.reaction = {};
+                this.system.skills.reaction.bonus = (this.system.skills.reaction.bonus || 0) + totalBonus;
+                this.system.skills.reaction.breakdown = breakdown;
+                break;
+
+            case "combat.archery.bonus":
+                if (!this.system.combat.archery) this.system.combat.archery = {};
+                this.system.combat.archery.bonus = (this.system.combat.archery.bonus || 0) + totalBonus;
+                this.system.combat.archery.breakdown = breakdown;
+                break;
+
+            default:
+                console.warn(`Unknown bonus target: ${target}`);
+        }
     }
 
     /**
