@@ -6,6 +6,7 @@ import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
+import { GLOG2D6Roll } from "./module/dice/glog-roll.mjs";
 
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
@@ -103,6 +104,27 @@ Hooks.once("ready", async function() {
     }
 
     setupSystemHooks();
+
+    Hooks.on("renderChatMessage", (message, html) => {
+        html.find('.damage-roll-btn').click(async (event) => {
+            event.preventDefault();
+            const button = event.currentTarget;
+            const actorId = button.dataset.actorId;
+            const weaponId = button.dataset.weaponId;
+            const attackResult = parseInt(button.dataset.attackResult);
+
+            const actor = game.actors.get(actorId);
+            const weapon = actor?.items.get(weaponId);
+
+            if (actor && weapon) {
+                await actor.rollWeaponDamage(weapon, attackResult);
+                button.disabled = true;
+                button.textContent = "Rolled";
+            } else {
+                ui.notifications.error("Actor or weapon not found!");
+            }
+        });
+    });
 
     // Add torch burn macro for GMs
     if (game.user.isGM) {

@@ -1365,6 +1365,59 @@
     display: none;
 }
 
+/* Special effects notice styling */
+.glog2d6-roll .special-effects-notice {
+    margin-top: 6px;
+    padding: 4px 6px;
+    background: rgba(120, 46, 34, 0.1);
+    border-left: 2px solid var(--primary-color);
+    border-radius: 2px;
+    font-size: 11px;
+    color: var(--primary-color);
+}
+
+.glog2d6-roll .special-effects-notice i {
+    margin-right: 4px;
+    font-size: 10px;
+}
+
+.glog2d6 .actions-section {
+    margin: 15px 0;
+}
+
+.glog2d6 .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.glog2d6 .action-card {
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius-large);
+    overflow: hidden;
+    background: white;
+    transition: var(--transition);
+}
+
+.glog2d6 .action-card.clickable:hover {
+    border-color: var(--primary-hover);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.glog2d6 .action-main {
+    padding: 6px;
+    text-align: center;
+    background: var(--background-light);
+}
+
+.glog2d6 .action-name {
+    font-weight: bold;
+    font-size: 10px;
+    color: var(--primary-color);
+    margin-bottom: 3px;
+}
+
 /* Torch-specific inventory styles */
 .glog2d6 .torch-icon {
     width: 20px;
@@ -1402,6 +1455,7 @@
     0% {
         box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
     }
+
     100% {
         box-shadow: 0 0 15px rgba(255, 107, 53, 0.7);
     }
@@ -1467,10 +1521,12 @@
         box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
         transform: scale(1);
     }
+
     50% {
         box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
         transform: scale(1.02);
     }
+
     100% {
         box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         transform: scale(1);
@@ -1508,6 +1564,7 @@
         background: var(--success-color) !important;
         box-shadow: 0 0 3px rgba(76, 175, 80, 0.3);
     }
+
     100% {
         background: var(--success-hover) !important;
         box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
