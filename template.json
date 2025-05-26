@@ -58,6 +58,15 @@
                     "breakdown": []
                 }
             },
+            "defense": {
+                "armor": 0,
+                "dexBonus": 0,
+                "meleeBonus": 0,
+                "rangedBonus": 0,
+                "meleeTotal": 0,
+                "rangedTotal": 0,
+                "total": 0
+            },
             "skills": {
                 "stealth": {
                     "bonus": 0,

@@ -44,6 +44,18 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             console.log(`Sheet getData - Encumbrance: ${context.system.inventory.encumbrance}, Used: ${context.system.inventory.slots.used}/${context.system.inventory.slots.max}`);
         }
 
+        // acrobat training feature accessor
+        context.hasAcrobatTraining = this.actor.hasFeature("Acrobat Training");
+
+        // Analyze equipped weapons for smart button display
+        const weaponAnalysis = this._analyzeEquippedWeapons();
+
+        console.log(weaponAnalysis);
+
+        context.weaponAnalysis = weaponAnalysis;
+        context.hasAcrobatTraining = this.actor.hasFeature("Acrobat Training");
+
+
         return context;
     }
 
@@ -61,7 +73,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
         // Combat rolls - click on card when not in edit mode
         html.find('.combat-card.clickable[data-action="attack"]').click(this._onAttackRoll.bind(this));
-        html.find('.combat-card.clickable[data-action="defend"]').click(this._onDefenseRoll.bind(this));
 
         // Movement roll
         html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
@@ -92,12 +103,17 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         html.find('.feature-item').click(this._onFeatureToggle.bind(this));
 
         // action buttons
-        html.find('.action-card.clickable[data-action="sneak"]').click(this._onSneakRoll.bind(this));
-        html.find('.action-card.clickable[data-action="hide"]').click(this._onHideRoll.bind(this));
-        html.find('.action-card.clickable[data-action="disguise"]').click(this._onDisguiseRoll.bind(this));
-        html.find('.action-card.clickable[data-action="reaction"]').click(this._onReactionRoll.bind(this));
-        html.find('.action-card.clickable[data-action="diplomacy"]').click(this._onDiplomacyRoll.bind(this));
-        html.find('.action-card.clickable[data-action="intimidate"]').click(this._onIntimidateRoll.bind(this));
+        html.find('[data-action="sneak"].clickable').click(this._onSneakRoll.bind(this));
+        html.find('[data-action="hide"].clickable').click(this._onHideRoll.bind(this));
+        html.find('[data-action="disguise"].clickable').click(this._onDisguiseRoll.bind(this));
+        html.find('[data-action="reaction"].clickable').click(this._onReactionRoll.bind(this));
+        html.find('[data-action="diplomacy"].clickable').click(this._onDiplomacyRoll.bind(this));
+        html.find('[data-action="intimidate"].clickable').click(this._onIntimidateRoll.bind(this));
+
+        // Defense roll listeners
+        html.find('.combat-card.clickable[data-action="defend"]').click(this._onDefenseRoll.bind(this));
+        html.find('.combat-card.clickable[data-action="defend-melee"]').click(this._onMeleeDefenseRoll.bind(this));
+        html.find('.combat-card.clickable[data-action="defend-ranged"]').click(this._onRangedDefenseRoll.bind(this));
     }
 
     async _onAddClassFeatures(event) {
@@ -156,6 +172,46 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.actor.rollIntimidate();
     }
 
+    async _onDefenseRoll(event) {
+        event.preventDefault();
+        this.actor.rollDefense();
+    }
+
+    async _onMeleeDefenseRoll(event) {
+        event.preventDefault();
+        this.actor.rollMeleeDefense();
+    }
+
+    async _onRangedDefenseRoll(event) {
+        event.preventDefault();
+        this.actor.rollRangedDefense();
+    }
+
+    async _onSaveRoll(event) {
+        event.preventDefault();
+        event.stopPropagation(); // Prevent the event from bubbling up to the attribute card
+        const element = event.currentTarget;
+        const attribute = element.dataset.attribute;
+        this.actor.rollSave(attribute);
+    }
+
+    async _onAttackRoll(event) {
+        event.preventDefault();
+
+        // Prompt for melee or ranged
+        const attackType = await this._getAttackType();
+        if (attackType === null) return;
+
+        this.actor.rollAttack(attackType);
+    }
+
+    async _onEditToggle(event) {
+        event.preventDefault();
+        const currentMode = this.actor.getFlag("glog2d6", "editMode") || false;
+        await this.actor.setFlag("glog2d6", "editMode", !currentMode);
+        this.render();
+    }
+
     async _onSpellCast(event) {
         event.preventDefault();
         const itemId = event.currentTarget.dataset.itemId;
@@ -191,34 +247,52 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         return toggleTorchItem(this, event);
     }
 
-    async _onSaveRoll(event) {
-        event.preventDefault();
-        event.stopPropagation(); // Prevent the event from bubbling up to the attribute card
-        const element = event.currentTarget;
-        const attribute = element.dataset.attribute;
-        this.actor.rollSave(attribute);
-    }
+    _analyzeEquippedWeapons() {
+        console.log("analyszing...")
+        const equippedWeapons = this.actor.items.filter(i =>
+            i.type === "weapon" && i.system.equipped
+        );
 
-    async _onAttackRoll(event) {
-        event.preventDefault();
+        const analysis = {
+            hasWeapons: equippedWeapons.length > 0,
+            weaponCount: equippedWeapons.length,
+            primaryWeapon: null,
+            weaponTypes: new Set(),
+            hasThrowable: false,
+            attackButtonType: 'generic', // 'generic', 'melee', 'ranged', 'split'
+            throwableWeapon: null
+        };
 
-        // Prompt for melee or ranged
-        const attackType = await this._getAttackType();
-        if (attackType === null) return;
+        if (equippedWeapons.length === 0) {
+            analysis.attackButtonType = 'generic';
+            return analysis;
+        }
 
-        this.actor.rollAttack(attackType);
-    }
+        // Analyze weapon types
+        for (const weapon of equippedWeapons) {
+            const type = weapon.system.weaponType || 'melee';
+            analysis.weaponTypes.add(type);
 
-    async _onEditToggle(event) {
-        event.preventDefault();
-        const currentMode = this.actor.getFlag("glog2d6", "editMode") || false;
-        await this.actor.setFlag("glog2d6", "editMode", !currentMode);
-        this.render();
-    }
+            if (type === 'thrown') {
+                analysis.hasThrowable = true;
+                analysis.throwableWeapon = weapon;
+            }
+        }
 
-    async _onDefenseRoll(event) {
-        event.preventDefault();
-        this.actor.rollDefense();
+        // Determine primary weapon (best weapon logic)
+        analysis.primaryWeapon = this.actor._getBestWeapon(equippedWeapons);
+
+        // Determine attack button type
+        if (analysis.hasThrowable && equippedWeapons.length === 2) {
+            // Dual wielding with throwable = split attack button
+            analysis.attackButtonType = 'split';
+        } else if (analysis.weaponTypes.has('ranged')) {
+            analysis.attackButtonType = 'ranged';
+        } else {
+            analysis.attackButtonType = 'melee';
+        }
+
+        return analysis;
     }
 
     async _onEquippedToggle(event) {
@@ -325,6 +399,17 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             const equippedShields = items.filter(i => i.type === "shield" && i.system.equipped);
             const equippedHeavyWeapons = equippedWeapons.filter(w => w.system.size === "heavy");
 
+            // NEW: Check for weapon type conflicts (can't mix melee and ranged)
+            const newWeaponType = newItem.system.weaponType;
+            for (let weapon of equippedWeapons) {
+                const existingType = weapon.system.weaponType;
+                if ((newWeaponType === "ranged" && existingType !== "ranged" && existingType !== "thrown") ||
+                    (newWeaponType !== "ranged" && newWeaponType !== "thrown" && existingType === "ranged")) {
+                    // Weapon type conflict - unequip conflicting weapon
+                    updates.push({ _id: weapon.id, "system.equipped": false });
+                }
+            }
+
             if (newItem.system.size === "heavy") {
                 // Heavy weapon unequips all other weapons and shields
                 for (let item of [...equippedWeapons, ...equippedShields]) {
@@ -338,7 +423,10 @@ export class GLOG2D6ActorSheet extends ActorSheet {
                 }
 
                 // Then handle normal weapon limits
-                const remainingWeapons = equippedWeapons.filter(w => w.system.size !== "heavy");
+                const remainingWeapons = equippedWeapons.filter(w =>
+                    w.system.size !== "heavy" &&
+                    !updates.some(u => u._id === w.id) // Don't count weapons we're about to unequip
+                );
 
                 if (equippedShields.length > 0) {
                     // Shield prevents second weapon
@@ -353,7 +441,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
                     updates.push({ _id: weakest.id, "system.equipped": false });
                 }
             }
-        } else if (newItem.type === "shield") {
+        }
+        // ... rest of your existing shield and armor logic stays exactly the same ...
+        else if (newItem.type === "shield") {
             const equippedWeapons = items.filter(i => i.type === "weapon" && i.system.equipped);
             const equippedShields = items.filter(i => i.type === "shield" && i.system.equipped);
             const equippedHeavyWeapons = equippedWeapons.filter(w => w.system.size === "heavy");

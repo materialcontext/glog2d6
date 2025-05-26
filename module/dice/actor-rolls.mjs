@@ -210,6 +210,41 @@ export class ActorRolls {
         return roll;
     }
 
+    // Defense rolls - separate melee and ranged
+    async rollMeleeDefense() {
+        const defense = this.actor.system.defense?.meleeTotal || 0;
+        const roll = this.actor.createRoll("2d6 + @def", { def: defense }, 'defense');
+        await roll.evaluate();
+
+        const extraContent = this.actor.system.defense ?
+            `<br><small>Armor: +${this.actor.system.defense.armor}, Dex: +${this.actor.system.defense.dexBonus}, Melee: +${this.actor.system.defense.meleeBonus}</small>` : '';
+
+        this.actor._createRollChatMessage(
+            `${this.actor.name} - Melee Defense`,
+            roll,
+            extraContent
+        );
+
+        return roll;
+    }
+
+    async rollRangedDefense() {
+        const defense = this.actor.system.defense?.rangedTotal || 0;
+        const roll = this.actor.createRoll("2d6 + @def", { def: defense }, 'defense');
+        await roll.evaluate();
+
+        const extraContent = this.actor.system.defense ?
+            `<br><small>Armor: +${this.actor.system.defense.armor}, Dex: +${this.actor.system.defense.dexBonus}, Ranged: +${this.actor.system.defense.rangedBonus}</small>` : '';
+
+        this.actor._createRollChatMessage(
+            `${this.actor.name} - Ranged Defense`,
+            roll,
+            extraContent
+        );
+
+        return roll;
+    }
+
     async rollDefense() {
         const defense = this.actor.system.defense?.total || 0;
         const roll = this.actor.createRoll("2d6 + @def", { def: defense }, 'defense');

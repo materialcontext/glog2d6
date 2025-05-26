@@ -619,6 +619,18 @@
     margin-bottom: 3px;
 }
 
+/* Split defense buttons for Acrobats */
+.glog2d6 .combat-card.defense-split {
+    min-width: 80px;
+    /* Slightly smaller to fit both */
+}
+
+.glog2d6 .combat-card.defense-split .combat-name {
+    font-size: 9px;
+    /* Smaller text to fit */
+    line-height: 1.1;
+}
+
 /* View mode styling for attribute values */
 .glog2d6 .attribute-value {
     font-size: 18px;

@@ -98,6 +98,22 @@ export class BonusCalculator {
  * Feature bonus definitions - easily extensible
  */
 const FEATURE_BONUSES = {
+    "Acrobat Training": (actor, feature) => {
+        const templates = actor.getClassTemplateCount("Acrobat");
+        const bonus = Math.floor(templates / 2);
+
+        // Only apply if not encumbered
+        const isEncumbered = actor.system.inventory?.encumbrance > 0;
+
+        if (!isEncumbered && bonus > 0) {
+            return [
+                { target: "details.movement.bonus", value: bonus, type: "untyped" },
+                { target: "defense.melee.bonus", value: bonus, type: "untyped" }
+            ];
+        }
+
+        return [];
+    },
     // Fighter gets +2 to all attack rolls
     "Combat Training": (actor, feature) => [
         { target: "combat.attack.bonus", value: 2, type: "untyped" }

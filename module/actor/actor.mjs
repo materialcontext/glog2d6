@@ -89,11 +89,12 @@ export class GLOG2D6Actor extends Actor {
 
     prepareDerivedData() {
         // Set effective modifiers for all attributes first
-        for (let [key, attribute] of Object.entries(this.system.attributes)) {
+        for (let [_key, attribute] of Object.entries(this.system.attributes)) {
             attribute.effectiveMod = attribute.mod; // Default to original mod
             attribute.effectiveValue = attribute.value; // Default to original value
         }
 
+        // calculate bonuses
         if (this.type === "character") {
             this.bonusCalculator = new BonusCalculator(this);
             const bonuses = this.bonusCalculator.calculateBonuses();
@@ -118,14 +119,17 @@ export class GLOG2D6Actor extends Actor {
             console.log(`Dex encumbrance applied: Value ${originalValue} -> ${effectiveValue}, Mod ${dexAttribute.mod} -> ${dexAttribute.effectiveMod}`);
         }
 
-        // Calculate effective movement speed (reduced by encumbrance on 2:1 basis)
+        // calculate effective movement, reduced by encumbrance on a 2:1 basis
         if (this.type === "character") {
+            const baseMovement = this.system.details.movement;
+            const movementBonus = this.system.details.movementBonus || 0;
             const encumbrance = this.system.inventory.encumbrance || 0;
             const movePenalty = Math.floor(encumbrance / 2);
-            this.system.details.effectiveMovement = Math.max(0, this.system.details.movement - movePenalty);
 
-            if (movePenalty > 0) {
-                console.log(`Movement penalty applied: ${this.system.details.movement} -> ${this.system.details.effectiveMovement} (encumbrance: ${encumbrance}, penalty: ${movePenalty})`);
+            this.system.details.effectiveMovement = Math.max(0, baseMovement + movementBonus - movePenalty);
+
+            if (movePenalty > 0 || movementBonus > 0) {
+                console.log(`Movement calculation: ${baseMovement} base + ${movementBonus} bonus - ${movePenalty} penalty = ${this.system.details.effectiveMovement}`);
             }
         }
 
@@ -151,11 +155,19 @@ export class GLOG2D6Actor extends Actor {
             const dexMod = this.system.attributes.dex.effectiveMod;
             const dexBonus = dexMod > 0 ? dexMod : 0;
 
+            // Get melee/ranged bonuses from features (like Acrobat Training)
+            const meleeBonus = this.system.defense?.meleeBonus || 0;
+            const rangedBonus = this.system.defense?.rangedBonus || 0;
+
             this.system.defense = {
                 armor: armor?.system.armorBonus || 0,
                 shield: shield?.system.armorBonus || 0,
                 dexBonus: dexBonus,
-                total: armorBonus + dexBonus,
+                meleeBonus: meleeBonus,
+                rangedBonus: rangedBonus,
+                meleeTotal: armorBonus + dexBonus + meleeBonus,
+                rangedTotal: armorBonus + dexBonus + rangedBonus,
+                total: armorBonus + dexBonus, // Backwards compatibility
                 armorEncumbrance: armorEncumbrance
             };
         }
@@ -180,6 +192,15 @@ export class GLOG2D6Actor extends Actor {
 
     async rollDefense(...args) {
         return this.rolls.rollDefense(...args);
+    }
+
+    // Add these delegations with the other roll methods
+    async rollMeleeDefense(...args) {
+        return this.rolls.rollMeleeDefense(...args);
+    }
+
+    async rollRangedDefense(...args) {
+        return this.rolls.rollRangedDefense(...args);
     }
 
     async rollMovement(...args) {
@@ -285,9 +306,45 @@ export class GLOG2D6Actor extends Actor {
                 this.system.combat.archery.breakdown = breakdown;
                 break;
 
+            case "details.movement.bonus":
+                if (!this.system.details.movementBonus) this.system.details.movementBonus = 0;
+                this.system.details.movementBonus = totalBonus;
+                this.system.details.movementBreakdown = breakdown;
+                break;
+
+            case "defense.melee.bonus":
+                if (!this.system.defense) this.system.defense = {};
+                this.system.defense.meleeBonus = (this.system.defense.meleeBonus || 0) + totalBonus;
+                this.system.defense.meleeBreakdown = breakdown;
+                break;
+
             default:
                 console.warn(`Unknown bonus target: ${target}`);
         }
+    }
+
+    /**
+     * Check if this actor has any levels in a specific class
+     */
+    hasClass(className) {
+        return this.items.some(i =>
+            i.type === "feature" &&
+            i.system.active &&
+            i.system.classSource === className
+        );
+    }
+
+    /**
+     * Check if this actor has specific features (can check multiple)
+     */
+    hasFeature(...featureNames) {
+        return featureNames.some(name =>
+            this.items.some(i =>
+                i.type === "feature" &&
+                i.system.active &&
+                i.name === name
+            )
+        );
     }
 
     /**
