@@ -44,17 +44,12 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             console.log(`Sheet getData - Encumbrance: ${context.system.inventory.encumbrance}, Used: ${context.system.inventory.slots.used}/${context.system.inventory.slots.max}`);
         }
 
-        // acrobat training feature accessor
-        context.hasAcrobatTraining = this.actor.hasFeature("Acrobat Training");
-
         // Analyze equipped weapons for smart button display
         const weaponAnalysis = this._analyzeEquippedWeapons();
-
-        console.log(weaponAnalysis);
-
         context.weaponAnalysis = weaponAnalysis;
-        context.hasAcrobatTraining = this.actor.hasFeature("Acrobat Training");
 
+        // acrobat training feature accessor
+        context.hasAcrobatTraining = this.actor.hasFeature("Acrobat Training");
 
         return context;
     }
@@ -172,11 +167,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.actor.rollIntimidate();
     }
 
-    async _onDefenseRoll(event) {
-        event.preventDefault();
-        this.actor.rollDefense();
-    }
-
     async _onMeleeDefenseRoll(event) {
         event.preventDefault();
         this.actor.rollMeleeDefense();
@@ -185,31 +175,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     async _onRangedDefenseRoll(event) {
         event.preventDefault();
         this.actor.rollRangedDefense();
-    }
-
-    async _onSaveRoll(event) {
-        event.preventDefault();
-        event.stopPropagation(); // Prevent the event from bubbling up to the attribute card
-        const element = event.currentTarget;
-        const attribute = element.dataset.attribute;
-        this.actor.rollSave(attribute);
-    }
-
-    async _onAttackRoll(event) {
-        event.preventDefault();
-
-        // Prompt for melee or ranged
-        const attackType = await this._getAttackType();
-        if (attackType === null) return;
-
-        this.actor.rollAttack(attackType);
-    }
-
-    async _onEditToggle(event) {
-        event.preventDefault();
-        const currentMode = this.actor.getFlag("glog2d6", "editMode") || false;
-        await this.actor.setFlag("glog2d6", "editMode", !currentMode);
-        this.render();
     }
 
     async _onSpellCast(event) {
@@ -248,7 +213,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     _analyzeEquippedWeapons() {
-        console.log("analyszing...")
+        console.log("hereeee")
         const equippedWeapons = this.actor.items.filter(i =>
             i.type === "weapon" && i.system.equipped
         );
@@ -293,6 +258,36 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         }
 
         return analysis;
+    }
+
+    async _onSaveRoll(event) {
+        event.preventDefault();
+        event.stopPropagation(); // Prevent the event from bubbling up to the attribute card
+        const element = event.currentTarget;
+        const attribute = element.dataset.attribute;
+        this.actor.rollSave(attribute);
+    }
+
+    async _onAttackRoll(event) {
+        event.preventDefault();
+
+        // Prompt for melee or ranged
+        const attackType = await this._getAttackType();
+        if (attackType === null) return;
+
+        this.actor.rollAttack(attackType);
+    }
+
+    async _onEditToggle(event) {
+        event.preventDefault();
+        const currentMode = this.actor.getFlag("glog2d6", "editMode") || false;
+        await this.actor.setFlag("glog2d6", "editMode", !currentMode);
+        this.render();
+    }
+
+    async _onDefenseRoll(event) {
+        event.preventDefault();
+        this.actor.rollDefense();
     }
 
     async _onEquippedToggle(event) {

@@ -28,6 +28,7 @@ export class GLOG2D6Actor extends Actor {
             if (attribute.value > 7) attribute.mod = Math.floor((attribute.value - 6) / 2);
         }
 
+        console.log("calculating inventory");
         // Calculate inventory slots for characters
         if (this.type === "character") {
             const strMod = this.system.attributes.str.mod;
@@ -75,6 +76,7 @@ export class GLOG2D6Actor extends Actor {
                 console.log(`Armor Training: Reduced equipment encumbrance by 1`);
             }
 
+            console.log("finalizing encumbrance");
             // Total encumbrance is the sum of slot overflow and equipment penalties
             this.system.inventory.encumbrance = slotEncumbrance + equipmentEncumbrance;
             this.system.inventory.slotEncumbrance = slotEncumbrance;
@@ -94,6 +96,7 @@ export class GLOG2D6Actor extends Actor {
             attribute.effectiveValue = attribute.value; // Default to original value
         }
 
+        console.log("bonusing")
         // calculate bonuses
         if (this.type === "character") {
             this.bonusCalculator = new BonusCalculator(this);
@@ -101,6 +104,7 @@ export class GLOG2D6Actor extends Actor {
             this._applyBonuses(bonuses);
         }
 
+        console.log("adjusting for weight")
         // Apply encumbrance penalty to dexterity VALUE (not modifier)
         if (this.type === "character" && this.system.inventory.encumbrance > 0) {
             const dexAttribute = this.system.attributes.dex;
@@ -133,6 +137,7 @@ export class GLOG2D6Actor extends Actor {
             }
         }
 
+        console.log("calculating defenses")
         // Calculate defense value from armor and shields
         if (this.type === "character") {
             let armorBonus = 0;
