@@ -29,7 +29,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         context.system = context.actor.system;
         context.flags = context.actor.flags;
 
-
         // Add edit mode
         context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
@@ -39,17 +38,21 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Check if character has available class features
         context.hasAvailableFeatures = this._hasAvailableClassFeatures();
 
-        // Debug encumbrance
-        if (this.actor.type === "character") {
-            console.log(`Sheet getData - Encumbrance: ${context.system.inventory.encumbrance}, Used: ${context.system.inventory.slots.used}/${context.system.inventory.slots.max}`);
-        }
-
-        // Analyze equipped weapons for smart button display
+        // FIXED: Analyze equipped weapons for smart button display
         const weaponAnalysis = this._analyzeEquippedWeapons();
         context.weaponAnalysis = weaponAnalysis;
 
-        // acrobat training feature accessor
-        context.hasAcrobatTraining = this.actor.hasFeature("Acrobat Training");
+        // FIXED: Properly detect Acrobat training
+        context.hasAcrobatTraining = this._hasFeature("Acrobat Training");
+
+        // Debug logging
+        if (this.actor.type === "character") {
+            console.log(`Sheet getData - ${this.actor.name}:`);
+            console.log(`  Edit Mode: ${context.editMode}`);
+            console.log(`  Weapon Analysis:`, weaponAnalysis);
+            console.log(`  Has Acrobat Training: ${context.hasAcrobatTraining}`);
+            console.log(`  Encumbrance: ${context.system.inventory.encumbrance}`);
+        }
 
         return context;
     }
@@ -57,58 +60,60 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     activateListeners(html) {
         super.activateListeners(html);
 
+        // FIXED: Enhance attribute display regardless of edit mode
         this._enhanceAttributeDisplay(html);
 
         // Everything below here is only needed if the sheet is editable
         if (!this.isEditable) return;
 
-        // Attribute rolls - click on card when not in edit mode
-        html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
+        // FIXED: Only activate clickable elements when NOT in edit mode
+        const editMode = this.actor.getFlag("glog2d6", "editMode") === true;
+
+        if (!editMode) {
+            // Attribute rolls - click on card when not in edit mode
+            html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
+
+            // Combat action buttons
+            html.find('.action-card.clickable').each((i, element) => {
+                const action = element.dataset.action;
+                if (action) {
+                    $(element).click(this._getActionHandler(action).bind(this));
+                }
+            });
+
+            // Combat rolls - click on card when not in edit mode
+            html.find('.combat-card.clickable').each((i, element) => {
+                const action = element.dataset.action;
+                if (action) {
+                    $(element).click(this._getCombatHandler(action).bind(this));
+                }
+            });
+
+            // Movement roll
+            html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
+        }
+
+        // Always active elements (regardless of edit mode)
         html.find('.attribute-save').click(this._onSaveRoll.bind(this));
-
-        // Combat rolls - click on card when not in edit mode
-        html.find('.combat-card.clickable[data-action="attack"]').click(this._onAttackRoll.bind(this));
-
-        // Movement roll
-        html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
-
-        // Weapon attack buttons
         html.find('.weapon-attack-btn').click(this._onWeaponAttack.bind(this));
+        html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
 
-        // Equipment toggles
+        // Equipment and UI controls
         html.find('.equipped-toggle').change(this._onEquippedToggle.bind(this));
-
-        // Edit mode toggle
         html.find('.edit-toggle').click(this._onEditToggle.bind(this));
 
         // Item management
         html.find('.item-create').click(this._onItemCreate.bind(this));
         html.find('.item-edit').click(this._onItemEdit.bind(this));
-        html.find('.item-delete', '.feature-delete').click(this._onItemDelete.bind(this));
+        html.find('.item-delete').click(this._onItemDelete.bind(this));
 
-        // Torch toggle - fixed
+        // Torch controls
         html.find('.torch-btn').click(this._onTorchToggle.bind(this));
         html.find('.torch-icon[data-action="toggle-torch"]').click(this._onTorchItemToggle.bind(this));
-
-        // spells
-        html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
 
         // Feature management
         html.find('.add-class-features').click(this._onAddClassFeatures.bind(this));
         html.find('.feature-item').click(this._onFeatureToggle.bind(this));
-
-        // action buttons
-        html.find('[data-action="sneak"].clickable').click(this._onSneakRoll.bind(this));
-        html.find('[data-action="hide"].clickable').click(this._onHideRoll.bind(this));
-        html.find('[data-action="disguise"].clickable').click(this._onDisguiseRoll.bind(this));
-        html.find('[data-action="reaction"].clickable').click(this._onReactionRoll.bind(this));
-        html.find('[data-action="diplomacy"].clickable').click(this._onDiplomacyRoll.bind(this));
-        html.find('[data-action="intimidate"].clickable').click(this._onIntimidateRoll.bind(this));
-
-        // Defense roll listeners
-        html.find('.combat-card.clickable[data-action="defend"]').click(this._onDefenseRoll.bind(this));
-        html.find('.combat-card.clickable[data-action="defend-melee"]').click(this._onMeleeDefenseRoll.bind(this));
-        html.find('.combat-card.clickable[data-action="defend-ranged"]').click(this._onRangedDefenseRoll.bind(this));
     }
 
     async _onAddClassFeatures(event) {
@@ -213,7 +218,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     _analyzeEquippedWeapons() {
-        console.log("hereeee")
         const equippedWeapons = this.actor.items.filter(i =>
             i.type === "weapon" && i.system.equipped
         );
@@ -225,15 +229,16 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             weaponTypes: new Set(),
             hasThrowable: false,
             attackButtonType: 'generic', // 'generic', 'melee', 'ranged', 'split'
-            throwableWeapon: null
+            throwableWeapon: null,
+            meleeWeapons: [],
+            rangedWeapons: []
         };
 
         if (equippedWeapons.length === 0) {
-            analysis.attackButtonType = 'generic';
             return analysis;
         }
 
-        // Analyze weapon types
+        // Categorize weapons
         for (const weapon of equippedWeapons) {
             const type = weapon.system.weaponType || 'melee';
             analysis.weaponTypes.add(type);
@@ -241,22 +246,36 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             if (type === 'thrown') {
                 analysis.hasThrowable = true;
                 analysis.throwableWeapon = weapon;
+                analysis.meleeWeapons.push(weapon); // Thrown weapons can be melee
+            } else if (type === 'ranged') {
+                analysis.rangedWeapons.push(weapon);
+            } else {
+                analysis.meleeWeapons.push(weapon);
             }
         }
 
-        // Determine primary weapon (best weapon logic)
+        // Determine primary weapon
         analysis.primaryWeapon = this.actor._getBestWeapon(equippedWeapons);
 
-        // Determine attack button type
-        if (analysis.hasThrowable && equippedWeapons.length === 2) {
-            // Dual wielding with throwable = split attack button
+        // FIXED: Better attack button type logic
+        if (analysis.hasThrowable && analysis.meleeWeapons.length > 1) {
+            // Has throwable + another melee weapon = split buttons
             analysis.attackButtonType = 'split';
-        } else if (analysis.weaponTypes.has('ranged')) {
+        } else if (analysis.rangedWeapons.length > 0 && analysis.meleeWeapons.length === 0) {
+            // Only ranged weapons
             analysis.attackButtonType = 'ranged';
-        } else {
+        } else if (analysis.meleeWeapons.length > 0 && analysis.rangedWeapons.length === 0) {
+            // Only melee weapons
             analysis.attackButtonType = 'melee';
+        } else if (analysis.weaponTypes.size > 1) {
+            // Mixed weapon types
+            analysis.attackButtonType = 'split';
+        } else {
+            // Default to generic
+            analysis.attackButtonType = 'generic';
         }
 
+        console.log(`Weapon Analysis for ${this.actor.name}:`, analysis);
         return analysis;
     }
 
@@ -271,18 +290,35 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     async _onAttackRoll(event) {
         event.preventDefault();
 
-        // Prompt for melee or ranged
-        const attackType = await this._getAttackType();
-        if (attackType === null) return;
+        const analysis = this._analyzeEquippedWeapons();
 
-        this.actor.rollAttack(attackType);
+        if (!analysis.hasWeapons) {
+            // No weapons equipped, prompt for attack type
+            const attackType = await this._getAttackType();
+            if (attackType === null) return;
+            this.actor.rollAttack(attackType);
+        } else if (analysis.attackButtonType === 'split') {
+            // Multiple attack options available
+            const attackType = await this._getAttackType();
+            if (attackType === null) return;
+            this.actor.rollAttack(attackType);
+        } else {
+            // Single attack type, use primary weapon
+            if (analysis.primaryWeapon) {
+                this.actor.rollWeaponAttack(analysis.primaryWeapon);
+            } else {
+                this.actor.rollAttack();
+            }
+        }
     }
 
     async _onEditToggle(event) {
         event.preventDefault();
         const currentMode = this.actor.getFlag("glog2d6", "editMode") || false;
         await this.actor.setFlag("glog2d6", "editMode", !currentMode);
-        this.render();
+
+        // Force a complete re-render to ensure all elements update properly
+        this.render(true);
     }
 
     async _onDefenseRoll(event) {
@@ -305,81 +341,129 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.render();
     }
 
+    _getActionHandler(action) {
+        const handlers = {
+            'sneak': this._onSneakRoll,
+            'hide': this._onHideRoll,
+            'disguise': this._onDisguiseRoll,
+            'reaction': this._onReactionRoll,
+            'diplomacy': this._onDiplomacyRoll,
+            'intimidate': this._onIntimidateRoll
+        };
+
+        return handlers[action] || (() => {
+            console.warn(`No handler for action: ${action}`);
+        });
+    }
+
+    _getCombatHandler(action) {
+        const handlers = {
+            'attack': this._onAttackRoll,
+            'defend': this._onDefenseRoll,
+            'defend-melee': this._onMeleeDefenseRoll,
+            'defend-ranged': this._onRangedDefenseRoll
+        };
+
+        return handlers[action] || (() => {
+            console.warn(`No handler for combat action: ${action}`);
+        });
+    }
+
+
     /**
     * Enhance attribute display with proper coloring, effective values, and modifier handling
     */
     _enhanceAttributeDisplay(html) {
-        if (this.actor.getFlag("glog2d6", "editMode")) return; // Skip in edit mode
+        const editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
+        if (editMode) {
+            // In edit mode, ensure no clickable styling
+            html.find('.attribute-card').removeClass('clickable');
+            html.find('.combat-card').removeClass('clickable');
+            html.find('.action-card').removeClass('clickable');
+            html.find('.movement-display').removeClass('clickable');
+            return;
+        }
+
+        // FIXED: Add clickable class to interactive elements
+        html.find('.attribute-card[data-attribute]').addClass('clickable');
+        html.find('.combat-card[data-action]').addClass('clickable');
+        html.find('.action-card[data-action]').addClass('clickable');
+        html.find('.movement-display').addClass('clickable');
+
+        // Update attribute values and modifiers
         html.find('.attribute-card[data-attribute]').each((index, element) => {
             const $card = $(element);
             const attributeKey = $card.attr('data-attribute');
 
-            if (attributeKey) {
+            if (attributeKey && this.actor.system.attributes[attributeKey]) {
                 const attribute = this.actor.system.attributes[attributeKey];
-                const originalMod = attribute.mod;
-                const effectiveMod = attribute.effectiveMod !== undefined ? attribute.effectiveMod : attribute.mod;
-                const baseValue = attribute.value;
-                const effectiveValue = attribute.effectiveValue !== undefined ? attribute.effectiveValue : attribute.value;
-
-                // FIXED: Show effective attribute value when different from base
-                const $attributeValue = $card.find('.attribute-value');
-                if (effectiveValue !== baseValue) {
-                    // Show effective value with original in parentheses (struck through)
-                    $attributeValue.html(`
-                    <span class="effective-attr-value">${effectiveValue}</span>
-                    <span class="original-attr-value">(${baseValue})</span>
-                `);
-                } else {
-                    // Show normal value
-                    $attributeValue.text(baseValue);
-                }
-
-                // Update the modifier display
-                const $modifierCurrent = $card.find('.modifier-current');
-                $modifierCurrent.text((effectiveMod >= 0 ? '+' : '') + effectiveMod);
-
-                // Handle original modifier display
-                const $modifierOriginal = $card.find('.modifier-original');
-                if (effectiveMod !== originalMod) {
-                    $modifierOriginal.text((originalMod >= 0 ? '+' : '') + originalMod).show();
-                } else {
-                    $modifierOriginal.hide();
-                }
-
-                // Apply coloring to attribute value to indicate if value/modifier is affected
-                $attributeValue.removeClass('normal negatively-impacted positively-impacted');
-
-                if (effectiveValue < baseValue || effectiveMod < originalMod) {
-                    $attributeValue.addClass('negatively-impacted');
-                } else if (effectiveValue > baseValue || effectiveMod > originalMod) {
-                    $attributeValue.addClass('positively-impacted');
-                } else {
-                    $attributeValue.addClass('normal');
-                }
+                this._updateAttributeDisplay($card, attribute);
             }
         });
 
-        // Update movement display to show effective movement (don't touch - it's working)
+        // Update movement display
+        this._updateMovementDisplay(html);
+    }
+
+    _updateAttributeDisplay($card, attribute) {
+        const originalMod = attribute.mod;
+        const effectiveMod = attribute.effectiveMod !== undefined ? attribute.effectiveMod : attribute.mod;
+        const baseValue = attribute.value;
+        const effectiveValue = attribute.effectiveValue !== undefined ? attribute.effectiveValue : attribute.value;
+
+        // Show effective attribute value when different from base
+        const $attributeValue = $card.find('.attribute-value');
+        if (effectiveValue !== baseValue) {
+            $attributeValue.html(`
+                <span class="effective-attr-value">${effectiveValue}</span>
+                <span class="original-attr-value">(${baseValue})</span>
+            `);
+        } else {
+            $attributeValue.text(baseValue);
+        }
+
+        // Update the modifier display
+        const $modifierCurrent = $card.find('.modifier-current');
+        $modifierCurrent.text((effectiveMod >= 0 ? '+' : '') + effectiveMod);
+
+        // Handle original modifier display
+        const $modifierOriginal = $card.find('.modifier-original');
+        if (effectiveMod !== originalMod) {
+            $modifierOriginal.text((originalMod >= 0 ? '+' : '') + originalMod).show();
+        } else {
+            $modifierOriginal.hide();
+        }
+
+        // Apply coloring
+        $attributeValue.removeClass('normal negatively-impacted positively-impacted');
+        if (effectiveValue < baseValue || effectiveMod < originalMod) {
+            $attributeValue.addClass('negatively-impacted');
+        } else if (effectiveValue > baseValue || effectiveMod > originalMod) {
+            $attributeValue.addClass('positively-impacted');
+        } else {
+            $attributeValue.addClass('normal');
+        }
+    }
+
+    _updateMovementDisplay(html) {
         const $movementDisplay = html.find('.movement-display');
         if ($movementDisplay.length > 0 && this.actor.type === "character") {
             const baseMovement = this.actor.system.details.movement;
             const effectiveMovement = this.actor.system.details.effectiveMovement;
 
             if (effectiveMovement !== undefined && effectiveMovement !== baseMovement) {
-                // Show effective movement with struck-through original
                 $movementDisplay.html(`
-                <span>Move</span>
-                <span class="effective-value">${effectiveMovement}</span>
-                <span class="original-value">(${baseMovement})</span>
-            `);
+                    <span>Move</span>
+                    <span class="effective-value">${effectiveMovement}</span>
+                    <span class="original-value">(${baseMovement})</span>
+                `);
                 $movementDisplay.addClass('negatively-impacted');
             } else {
-                // Show normal movement
                 $movementDisplay.html(`
-                <span>Move</span>
-                ${baseMovement}
-            `);
+                    <span>Move</span>
+                    ${baseMovement || 4}
+                `);
                 $movementDisplay.removeClass('negatively-impacted');
             }
         }

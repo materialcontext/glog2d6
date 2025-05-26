@@ -3,8 +3,7 @@
     <h3>Attributes</h3>
     <div class="attributes-grid">
         {{#each system.attributes as |attr key|}}
-        <div class="attribute-card {{#unless ../editMode}}clickable{{/unless}}" {{#unless
-            ../editMode}}data-attribute="{{key}}" {{/unless}}>
+        <div class="attribute-card" data-attribute="{{key}}">
             <div class="attribute-main">
                 <div class="attribute-name">{{upperCase key}}</div>
                 {{#if ../editMode}}
@@ -40,32 +39,32 @@
 <div class="actions-section">
     <h3>Actions</h3>
     <div class="actions-grid">
-        <div class="action-card {{#unless editMode}}clickable{{/unless}}" data-action="sneak">
+        <div class="action-card" data-action="sneak">
             <div class="action-main">
                 <div class="action-name">Sneak</div>
             </div>
         </div>
-        <div class="action-card {{#unless editMode}}clickable{{/unless}}" data-action="hide">
+        <div class="action-card" data-action="hide">
             <div class="action-main">
                 <div class="action-name">Hide</div>
             </div>
         </div>
-        <div class="action-card {{#unless editMode}}clickable{{/unless}}" data-action="disguise">
+        <div class="action-card" data-action="disguise">
             <div class="action-main">
                 <div class="action-name">Disguise</div>
             </div>
         </div>
-        <div class="action-card {{#unless editMode}}clickable{{/unless}}" data-action="reaction">
+        <div class="action-card" data-action="reaction">
             <div class="action-main">
                 <div class="action-name">Reaction</div>
             </div>
         </div>
-        <div class="action-card {{#unless editMode}}clickable{{/unless}}" data-action="diplomacy">
+        <div class="action-card" data-action="diplomacy">
             <div class="action-main">
                 <div class="action-name">Diplomacy</div>
             </div>
         </div>
-        <div class="action-card {{#unless editMode}}clickable{{/unless}}" data-action="intimidate">
+        <div class="action-card" data-action="intimidate">
             <div class="action-main">
                 <div class="action-name">Intimidate</div>
             </div>
@@ -73,49 +72,73 @@
     </div>
 </div>
 
-{{!-- Combat Section --}}
+{{!-- FIXED Combat Section with proper button logic --}}
 <div class="combat-section">
     <h3>Combat</h3>
     <div class="combat-actions">
+        {{!-- FIXED Attack Button Logic --}}
         {{#if weaponAnalysis.hasWeapons}}
-        {{#eq weaponAnalysis.attackButtonType 'split'}}
-        <div class="combat-card attack-split">Melee Attack</div>
-        <div class="combat-card attack-split">Throw {{weaponAnalysis.throwableWeapon.name}}</div>
+            {{#eq weaponAnalysis.attackButtonType 'split'}}
+                <div class="combat-card attack-split" data-action="attack" data-attack-type="melee">
+                    <div class="combat-main">
+                        <div class="combat-name">Melee Attack</div>
+                    </div>
+                </div>
+                {{#if weaponAnalysis.throwableWeapon}}
+                <div class="combat-card attack-split" data-action="attack" data-attack-type="thrown">
+                    <div class="combat-main">
+                        <div class="combat-name">Throw {{weaponAnalysis.throwableWeapon.name}}</div>
+                    </div>
+                </div>
+                {{else}}
+                <div class="combat-card attack-split" data-action="attack" data-attack-type="ranged">
+                    <div class="combat-main">
+                        <div class="combat-name">Ranged Attack</div>
+                    </div>
+                </div>
+                {{/if}}
+            {{else}}
+                <div class="combat-card" data-action="attack">
+                    <div class="combat-main">
+                        <div class="combat-name">
+                            {{#eq weaponAnalysis.attackButtonType 'ranged'}}Ranged Attack{{/eq}}
+                            {{#eq weaponAnalysis.attackButtonType 'melee'}}Melee Attack{{/eq}}
+                            {{#eq weaponAnalysis.attackButtonType 'generic'}}Attack{{/eq}}
+                        </div>
+                    </div>
+                </div>
+            {{/eq}}
         {{else}}
-        <div class="combat-card">
-            {{#eq weaponAnalysis.attackButtonType 'ranged'}}Ranged Attack{{/eq}}
-            {{#eq weaponAnalysis.attackButtonType 'melee'}}Melee Attack{{/eq}}
-        </div>
-        {{/eq}}
-        {{else}}
-        <div class="combat-card">Attack</div>
+            <div class="combat-card" data-action="attack">
+                <div class="combat-main">
+                    <div class="combat-name">Attack</div>
+                </div>
+            </div>
         {{/if}}
 
-        {{!-- Conditional Defense Buttons --}}
-        {{#if hasAcrobatTraining}}
-        {{!-- Split defense for Acrobats --}}
-        <div class="combat-card defense-split {{#unless @root.editMode}}clickable{{/unless}}"
-            data-action="defend-melee">
-            <div class="combat-main">
-                <div class="combat-name">Defend (Melee)</div>
-                <div class="combat-value">{{system.defense.meleeTotal}}</div>
+        {{!-- FIXED Defense Button Logic --}}
+        {{#if (actor.hasFeature "Acrobat Training")}}
+            {{!-- Split defense for Acrobats --}}
+            <div class="combat-card defense-split" data-action="defend-melee">
+                <div class="combat-main">
+                    <div class="combat-name">Defend (Melee)</div>
+                    <div class="combat-value">{{system.defense.meleeTotal}}</div>
+                </div>
             </div>
-        </div>
-        <div class="combat-card defense-split {{#unless @root.editMode}}clickable{{/unless}}"
-            data-action="defend-ranged">
-            <div class="combat-main">
-                <div class="combat-name">Defend (Ranged)</div>
-                <div class="combat-value">{{system.defense.rangedTotal}}</div>
+            <div class="combat-card defense-split" data-action="defend-ranged">
+                <div class="combat-main">
+                    <div class="combat-name">Defend (Ranged)</div>
+                    <div class="combat-value">{{system.defense.rangedTotal}}</div>
+                </div>
             </div>
-        </div>
         {{else}}
-        {{!-- Regular defense for everyone else --}}
-        <div class="combat-card {{#unless @root.editMode}}clickable{{/unless}}" data-action="defend">
-            <div class="combat-main">
-                <div class="combat-name">Defend</div>
-                <div class="combat-value">{{system.defense.total}}</div>
+            {{!-- Regular defense for everyone else --}}
+            <div class="combat-card" data-action="defend">
+                <div class="combat-main">
+                    <div class="combat-name">Defend</div>
+                    <div class="combat-value">{{system.defense.total}}</div>
+                </div>
             </div>
-        </div>
         {{/if}}
     </div>
 </div>
