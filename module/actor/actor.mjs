@@ -154,9 +154,13 @@ export class GLOG2D6Actor extends Actor {
             } else {
                 this.system.spellSlots = 0;
             }
+
+            // Ensure magicDiceCurrent is always defined
+            if (this.system.magicDiceCurrent === undefined) {
+                this.system.magicDiceCurrent = 0;
+            }
         }
 
-        console.log("calculating defenses")
         // Calculate defense value from armor and shields
         if (this.type === "character") {
             let armorBonus = 0;
@@ -571,6 +575,21 @@ export class GLOG2D6Actor extends Actor {
                 // Just notify, but keep the torch "lit" (GM can decide what to do)
                 ui.notifications.warn(`${activeTorch.name} is burned out but still lit (auto-extinguish disabled)`);
             }
+        }
+    }
+
+    async rest() {
+        const updates = {};
+
+        // Restore magic dice to maximum
+        if (this.system.magicDiceMax > 0) {
+            updates["system.magicDiceCurrent"] = this.system.magicDiceMax;
+        }
+
+        // TODO: Add other rest benefits later (HP recovery, etc.)
+
+        if (Object.keys(updates).length > 0) {
+            await this.update(updates);
         }
     }
 

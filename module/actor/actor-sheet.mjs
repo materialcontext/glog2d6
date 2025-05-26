@@ -99,6 +99,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         html.find('.attribute-save').click(this._onSaveRoll.bind(this));
         html.find('.weapon-attack-btn').click(this._onWeaponAttack.bind(this));
         html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
+        html.find('.rest-btn').click(this._onRest.bind(this));
 
         // Equipment and UI controls
         html.find('.equipped-toggle').change(this._onEquippedToggle.bind(this));
@@ -236,6 +237,13 @@ export class GLOG2D6ActorSheet extends ActorSheet {
                 }
             });
         }
+    }
+
+    async _onRest(event) {
+        event.preventDefault();
+        await this.actor.rest();
+        ui.notifications.info(`${this.actor.name} rests and recovers magic dice.`);
+        this.render(); // Refresh to show updated MD
     }
 
     async _onTorchToggle(event) {

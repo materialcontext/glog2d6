@@ -1166,6 +1166,20 @@
     }
 }
 
+.glog2d6 .rest-btn {
+    background: var(--success-color);
+    color: white;
+    font-size: 10px;
+    padding: 4px 8px;
+    margin-top: 4px;
+    width: 100%;
+    text-transform: uppercase;
+}
+
+.glog2d6 .rest-btn:hover {
+    background: var(--success-hover);
+}
+
 /* Enhanced Feature and Spell Cards */
 .glog2d6 .features-list,
 .glog2d6 .spells-list {

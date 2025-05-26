@@ -1,100 +1,100 @@
+{{!-- Header --}}
+<header class="sheet-header">
+    {{!-- Name Bar - col 1 row 1 --}}
+    <div class="name-bar">
+        {{#if editMode}}
+        <input name="name" type="text" value="{{actor.name}}" placeholder="Character Name" class="name-input" />
+        {{else}}
+        <div class="name-display">{{actor.name}}</div>
+        {{/if}}
+    </div>
 
-    {{!-- Header --}}
-    <header class="sheet-header">
-        {{!-- Name Bar - col 1 row 1 --}}
-        <div class="name-bar">
+    {{!-- Character Portrait - col 1 row 2-5 height --}}
+    <div class="character-portrait">
+        <img src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" title="Character Portrait" />
+    </div>
+
+    {{!-- Class and Level Section - col 2 row 2--}}
+    <div class="class-level-section">
+        <div class="class-part">
             {{#if editMode}}
-            <input name="name" type="text" value="{{actor.name}}" placeholder="Character Name" class="name-input" />
+            <label class="label-med">Class</label>
+            <select name="system.details.class" class="class-select input-base">
+                <option value="">Select Class</option>
+                {{#each availableClasses as |className|}}
+                <option value="{{className}}" {{#if (eq ../system.details.class className)}}selected{{/if}}>
+                    {{className}}</option>
+                {{/each}}
+            </select>
             {{else}}
-            <div class="name-display">{{actor.name}}</div>
+            <div class="class-display">{{system.details.class}}</div>
             {{/if}}
         </div>
-
-        {{!-- Character Portrait - col 1 row 2-5 height --}}
-        <div class="character-portrait">
-            <img src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" title="Character Portrait" />
-        </div>
-
-        {{!-- Class and Level Section - col 2 row 2--}}
-        <div class="class-level-section">
-            <div class="class-part">
-                {{#if editMode}}
-                <label class="label-med">Class</label>
-                <select name="system.details.class" class="class-select input-base">
-                    <option value="">Select Class</option>
-                    {{#each availableClasses as |className|}}
-                    <option value="{{className}}" {{#if (eq ../system.details.class className)}}selected{{/if}}>
-                        {{className}}</option>
-                    {{/each}}
-                </select>
-                {{else}}
-                <div class="class-display">{{system.details.class}}</div>
-                {{/if}}
-            </div>
-            <div class="level-part">
-                {{#if editMode}}
-                <label class="label-med">Level</label>
-                <input name="system.details.level" type="number" value="{{system.details.level}}" min="1"
-                    class="level-input input-base" placeholder="Level" />
-                {{else}}
-                <div class="level-display">Lvl {{system.details.level}}</div>
-                {{/if}}
-            </div>
-        </div>
-
-        {{!-- HP Section - col 2 row 3-5 --}}
-        <div class="hp-section">
-            <div class="hp-container">
-                <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0" class="hp-current" />
-                <span class="hp-separator">/</span>
-                {{#if editMode}}
-                <input name="system.hp.max" type="number" value="{{system.hp.max}}" min="1" class="hp-max-input" />
-                {{else}}
-                <span class="hp-max">{{system.hp.max}}</span>
-                {{/if}}
-            </div>
-            <div class="hp-label">HP / MAX</div>
-        </div>
-
-        {{!-- Wounds Section - row 3 col 4 --}}
-        <div class="wounds-section">
-            <label class="label-small">Wounds</label>
-            <input name="system.wounds" type="number" value="{{system.wounds}}" min="0"
-                class="wounds-input input-base" />
-        </div>
-
-        {{!-- Trauma Section - row 4 col 4 --}}
-        <div class="trauma-section">
-            <button type="button" class="trauma-btn btn-base" data-action="trauma">Trauma</button>
-        </div>
-
-        {{!-- Torch & Move Section - row 5 col 4 --}}
-        <div class="torch-move-section">
-            <button type="button" class="torch-btn {{#if system.torch.lit}}torch-lit{{/if}}" data-action="torch">
-                <i class="fas fa-fire"></i>
-                <span>Torch</span>
-            </button>
+        <div class="level-part">
             {{#if editMode}}
-            <input name="system.details.movement" type="number" value="{{system.details.movement}}" min="0"
-                class="movement-input input-base" placeholder="Move" />
+            <label class="label-med">Level</label>
+            <input name="system.details.level" type="number" value="{{system.details.level}}" min="1"
+                class="level-input input-base" placeholder="Level" />
             {{else}}
-            <div class="movement-display clickable theme-btn" data-action="movement">
-                <span>Move</span>
-                {{#if system.details.effectiveMovement}}
-                {{system.details.effectiveMovement}}
-                {{#if (gt system.inventory.encumbrance 0)}}
-                <span class="encumbrance-penalty">({{system.details.movement}})</span>
-                {{/if}}
-                {{else}}
-                {{system.details.movement}}
-                {{/if}}
-            </div>
+            <div class="level-display">Lvl {{system.details.level}}</div>
             {{/if}}
         </div>
+    </div>
 
-        {{!-- Edit Toggle Button - absolute float top right --}}
-        <button type="button" class="edit-toggle btn-base"
-            title="{{#if editMode}}Exit Edit Mode{{else}}Edit Mode{{/if}}">
-            <i class="fas {{#if editMode}}fa-lock{{else}}fa-edit{{/if}}"></i>
+    {{!-- HP Section - col 2 row 3-5 --}}
+    <div class="hp-section">
+        <div class="hp-container">
+            <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0" class="hp-current" />
+            <span class="hp-separator">/</span>
+            {{#if editMode}}
+            <input name="system.hp.max" type="number" value="{{system.hp.max}}" min="1" class="hp-max-input" />
+            {{else}}
+            <span class="hp-max">{{system.hp.max}}</span>
+            {{/if}}
+        </div>
+        <div class="hp-label">HP / MAX</div>
+        {{#unless editMode}}
+        <button type="button" class="rest-btn btn-base" data-action="rest">Rest</button>
+        {{/unless}}
+    </div>
+
+    {{!-- Wounds Section - row 3 col 4 --}}
+    <div class="wounds-section">
+        <label class="label-small">Wounds</label>
+        <input name="system.wounds" type="number" value="{{system.wounds}}" min="0" class="wounds-input input-base" />
+    </div>
+
+    {{!-- Trauma Section - row 4 col 4 --}}
+    <div class="trauma-section">
+        <button type="button" class="trauma-btn btn-base" data-action="trauma">Trauma</button>
+    </div>
+
+    {{!-- Torch & Move Section - row 5 col 4 --}}
+    <div class="torch-move-section">
+        <button type="button" class="torch-btn {{#if system.torch.lit}}torch-lit{{/if}}" data-action="torch">
+            <i class="fas fa-fire"></i>
+            <span>Torch</span>
         </button>
-    </header>
+        {{#if editMode}}
+        <input name="system.details.movement" type="number" value="{{system.details.movement}}" min="0"
+            class="movement-input input-base" placeholder="Move" />
+        {{else}}
+        <div class="movement-display clickable theme-btn" data-action="movement">
+            <span>Move</span>
+            {{#if system.details.effectiveMovement}}
+            {{system.details.effectiveMovement}}
+            {{#if (gt system.inventory.encumbrance 0)}}
+            <span class="encumbrance-penalty">({{system.details.movement}})</span>
+            {{/if}}
+            {{else}}
+            {{system.details.movement}}
+            {{/if}}
+        </div>
+        {{/if}}
+    </div>
+
+    {{!-- Edit Toggle Button - absolute float top right --}}
+    <button type="button" class="edit-toggle btn-base" title="{{#if editMode}}Exit Edit Mode{{else}}Edit Mode{{/if}}">
+        <i class="fas {{#if editMode}}fa-lock{{else}}fa-edit{{/if}}"></i>
+    </button>
+</header>
