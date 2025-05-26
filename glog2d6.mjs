@@ -10,10 +10,6 @@ import { setupSystemHooks } from './scripts/system-hooks.mjs';
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
 
-    // Load all JSON data files
-    await loadSystemData();
-    await loadSpellData();
-
     // Register Handlebars helpers
     Handlebars.registerHelper('upperCase', function(str) {
         return str.toUpperCase();
@@ -23,6 +19,7 @@ Hooks.once('init', async function() {
         return str.charAt(0).toUpperCase() + str.slice(1);
     });
 
+    // Register game settinngs
     game.settings.register("glog2d6", "hasSetupDefaultFolders", {
         name: "Default Folders Created",
         hint: "Tracks whether default item folders have been created",
@@ -40,6 +37,11 @@ Hooks.once('init', async function() {
         type: Boolean,
         default: false
     });
+
+
+    // Load all JSON data files
+    await loadSystemData();
+    await loadSpellData();
 
     // Define custom Document classes
     CONFIG.Actor.documentClass = GLOG2D6Actor;
@@ -74,6 +76,7 @@ Hooks.once('init', async function() {
         "systems/glog2d6/templates/item/item-torch-sheet.hbs",
     ]);
 
+    // Register partials
     Handlebars.registerPartial('character-header',
         await getTemplate('systems/glog2d6/templates/actor/character-header.hbs'));
     Handlebars.registerPartial('character-stats',
@@ -87,7 +90,7 @@ Hooks.once('init', async function() {
     Handlebars.registerPartial('spells-tab',
         await getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
 
-    return
+    console.log('glog2d6 | System initialization complete');
 });
 
 // Load spell data from multiple files

@@ -1,7 +1,7 @@
-
 /**
- *  Torch related fucntions for actor-sheet handlers
- * */
+ * Torch related functions for actor-sheet handlers
+ */
+
 async function toggleTorch(sheet, event) {
     event.preventDefault();
     console.log("Main torch toggle clicked");
@@ -17,18 +17,19 @@ async function toggleTorch(sheet, event) {
             return;
         }
 
-        const result = await this.actor.toggleTorch();
+        // Call the actor's toggleTorch method
+        const result = await sheet.actor.toggleTorch();
         console.log("Torch toggle result:", result);
 
         // Force a re-render to update the UI state
-        this.render(false);
+        sheet.render(false);
     } catch (error) {
         console.error("Error toggling torch:", error);
         ui.notifications.error("Failed to toggle torch: " + error.message);
     }
 }
 
-// NEW: Individual torch item toggle method
+// Individual torch item toggle method
 async function toggleTorchItem(sheet, event) {
     event.preventDefault();
     event.stopPropagation(); // Prevent item edit from triggering
@@ -55,13 +56,13 @@ async function toggleTorchItem(sheet, event) {
 
         if (currentlyLit && currentActiveTorchId === torchId) {
             // This torch is currently active, turn it off
-            await this.actor.update({
+            await sheet.actor.update({
                 "system.torch.lit": false,
                 "system.torch.activeTorchId": null
             });
 
             // Turn off token lighting
-            await updateTokenLighting(false, null);
+            await updateTokenLighting(sheet, false, null);
 
             ui.notifications.info(`${torch.name} extinguished`);
         } else {
@@ -72,7 +73,7 @@ async function toggleTorchItem(sheet, event) {
             });
 
             // Update token lighting with this torch's properties
-            await updateTokenLighting(true, torch);
+            await updateTokenLighting(sheet, true, torch);
 
             ui.notifications.info(`${torch.name} lit`);
         }
@@ -86,7 +87,7 @@ async function toggleTorchItem(sheet, event) {
     }
 }
 
-// NEW: Helper method to update token lighting
+// Helper method to update token lighting - fixed parameter order
 async function updateTokenLighting(sheet, isLit, torch) {
     const tokens = sheet.actor.getActiveTokens();
     const updates = [];

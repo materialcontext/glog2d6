@@ -22,7 +22,7 @@ async function addClassFeatures(sheet, event) {
     if (!confirm) return;
 
     try {
-        await addClassFeaturesEnhanced(className, currentLevel);
+        await addClassFeaturesEnhanced(sheet, className, currentLevel);
         ui.notifications.info(`Added ${className} features for level ${currentLevel}`);
         sheet.render(); // Refresh the sheet
     } catch (error) {
@@ -75,7 +75,7 @@ async function addClassFeaturesEnhanced(sheet, className, currentLevel) {
 
         if (templateFeatures && Array.isArray(templateFeatures)) {
             for (const featureData of templateFeatures) {
-                // Check if sheet specific feature already exists
+                // Check if specific feature already exists
                 const exists = existingFeatures.some(f =>
                     f.system.template === template &&
                     f.name === featureData.name

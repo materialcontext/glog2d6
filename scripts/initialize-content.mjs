@@ -1,7 +1,15 @@
 // create the system folder structure
 export async function createDefaultFolders() {
     // Only run this once per world to avoid duplicates
-    const hasSetupFolders = game.settings.get("glog2d6", "hasSetupDefaultFolders");
+    // Add safety check for setting existence
+    let hasSetupFolders;
+    try {
+        hasSetupFolders = game.settings.get("glog2d6", "hasSetupDefaultFolders");
+    } catch (error) {
+        console.log('glog2d6 | Setting not found, assuming first run');
+        hasSetupFolders = false;
+    }
+
     if (hasSetupFolders) {
         console.log('glog2d6 | Default folders already created');
         return;
@@ -50,8 +58,12 @@ export async function createDefaultFolders() {
         // Create items from data files
         await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id, classFolders);
 
-        // Mark as completed
-        await game.settings.set("glog2d6", "hasSetupDefaultFolders", true);
+        // Mark as completed - use safe setting method
+        try {
+            await game.settings.set("glog2d6", "hasSetupDefaultFolders", true);
+        } catch (error) {
+            console.warn('glog2d6 | Could not save setting, but folders created successfully');
+        }
 
         ui.notifications.info("GLOG 2d6: Default items, features, and folders created successfully!");
 
@@ -61,6 +73,7 @@ export async function createDefaultFolders() {
     }
 }
 
+// Rest of the file remains the same...
 /**
  * Creates a folder if it doesn't already exist
  */
