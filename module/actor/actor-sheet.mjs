@@ -1,3 +1,11 @@
+import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
+import {
+    addClassFeatures,
+    getAvailableClasses,
+    toggleFeature,
+    hasAvailableClassFeatures,
+} from './handlers/feature-handlers.mjs'
+
 export class GLOG2D6ActorSheet extends ActorSheet {
 
     static get defaultOptions() {
@@ -84,6 +92,22 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         html.find('.feature-item').click(this._onFeatureToggle.bind(this));
     }
 
+    async _onAddClassFeatures(event) {
+        return addClassFeatures(this, event);
+    }
+
+    async _onFeatureToggle(event) {
+        return toggleFeature(this, event);
+    }
+
+    _hasAvailableClassFeatures() {
+        return hasAvailableClassFeatures(this);
+    }
+
+    async _getAvailableClasses() {
+        return getAvailableClasses(this);
+    }
+
     async _onAttributeRoll(event) {
         event.preventDefault();
         const element = event.currentTarget;
@@ -121,157 +145,11 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     async _onTorchToggle(event) {
-        event.preventDefault();
-        console.log("Main torch toggle clicked");
-
-        try {
-            const availableTorches = this.actor.items.filter(item =>
-                item.type === "torch" &&
-                (!item.system.duration.enabled || item.system.duration.remaining > 0)
-            );
-
-            if (availableTorches.length === 0) {
-                ui.notifications.warn("No torches available or all torches are burned out!");
-                return;
-            }
-
-            const result = await this.actor.toggleTorch();
-            console.log("Torch toggle result:", result);
-
-            // Force a re-render to update the UI state
-            this.render(false);
-        } catch (error) {
-            console.error("Error toggling torch:", error);
-            ui.notifications.error("Failed to toggle torch: " + error.message);
-        }
+        return toggleTorch(this, event);
     }
 
-    // NEW: Individual torch item toggle method
     async _onTorchItemToggle(event) {
-        event.preventDefault();
-        event.stopPropagation(); // Prevent item edit from triggering
-
-        const torchId = event.currentTarget.dataset.itemId;
-        const torch = this.actor.items.get(torchId);
-
-        if (!torch) {
-            ui.notifications.error("Torch not found!");
-            return;
-        }
-
-        console.log("Torch item clicked:", torch.name, torchId);
-
-        try {
-            // Check if this torch can be used
-            if (torch.system.duration.enabled && torch.system.duration.remaining <= 0) {
-                ui.notifications.warn(`${torch.name} is burned out!`);
-                return;
-            }
-
-            const currentlyLit = this.actor.system.torch?.lit || false;
-            const currentActiveTorchId = this.actor.system.torch?.activeTorchId;
-
-            if (currentlyLit && currentActiveTorchId === torchId) {
-                // This torch is currently active, turn it off
-                await this.actor.update({
-                    "system.torch.lit": false,
-                    "system.torch.activeTorchId": null
-                });
-
-                // Turn off token lighting
-                await this._updateTokenLighting(false, null);
-
-                ui.notifications.info(`${torch.name} extinguished`);
-            } else {
-                // Switch to this torch (or turn on if none active)
-                await this.actor.update({
-                    "system.torch.lit": true,
-                    "system.torch.activeTorchId": torchId
-                });
-
-                // Update token lighting with this torch's properties
-                await this._updateTokenLighting(true, torch);
-
-                ui.notifications.info(`${torch.name} lit`);
-            }
-
-            // Force re-render to update UI
-            this.render(false);
-
-        } catch (error) {
-            console.error("Error toggling torch item:", error);
-            ui.notifications.error("Failed to toggle torch: " + error.message);
-        }
-    }
-
-    // NEW: Helper method to update token lighting
-    async _updateTokenLighting(isLit, torch) {
-        const tokens = this.actor.getActiveTokens();
-        const updates = [];
-
-        for (let token of tokens) {
-            if (isLit && torch) {
-                // Turn on light with torch properties
-                const lightConfig = {
-                    alpha: 0.15,
-                    angle: torch.system.lightAngle || 360,
-                    bright: (torch.system.lightRadius.bright || 20) / canvas.dimensions.distance,
-                    coloration: 1,
-                    dim: (torch.system.lightRadius.dim || 40) / canvas.dimensions.distance,
-                    luminosity: 0.15,
-                    saturation: -0.3,
-                    contrast: 0.05,
-                    shadows: 0.1,
-                    animation: {
-                        type: torch.system.lightAnimation?.type || null,
-                        speed: Math.max(torch.system.lightAnimation?.speed || 1, 1),
-                        intensity: Math.min(torch.system.lightAnimation?.intensity || 1, 2),
-                        reverse: false
-                    },
-                    darkness: {
-                        min: 0,
-                        max: 1
-                    },
-                    color: torch.system.lightColor || "#ffbb77"
-                };
-
-                updates.push({
-                    _id: token.id,
-                    light: lightConfig
-                });
-            } else {
-                // Turn off light
-                updates.push({
-                    _id: token.id,
-                    light: {
-                        alpha: 0,
-                        angle: 360,
-                        bright: 0,
-                        coloration: 1,
-                        dim: 0,
-                        luminosity: 0,
-                        saturation: 0,
-                        contrast: 0,
-                        shadows: 0,
-                        animation: {
-                            type: null,
-                            speed: 5,
-                            intensity: 5,
-                            reverse: false
-                        },
-                        darkness: {
-                            min: 0,
-                            max: 1
-                        },
-                        color: null
-                    }
-                });
-            }
-        }
-
-        if (updates.length > 0) {
-            await canvas.scene.updateEmbeddedDocuments("Token", updates);
-        }
+        return toggleTorchItem(this, event);
     }
 
     async _onSaveRoll(event) {
@@ -317,225 +195,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         }
 
         this.render();
-    }
-
-    /**
- * Add class features based on comprehensive feature data
- */
-    async _onAddClassFeatures(event) {
-        event.preventDefault();
-
-        const className = this.actor.system.details.class;
-        const currentLevel = this.actor.system.details.level;
-
-        if (!className) {
-            ui.notifications.warn("No class selected. Set your class first.");
-            return;
-        }
-
-        // Confirm with user
-        const confirm = await Dialog.confirm({
-            title: "Add Class Features",
-            content: `<p>Add features for <strong>${className}</strong> up to level <strong>${currentLevel}</strong>?</p>
-             <p><small>This will add all appropriate template features with detailed descriptions. Existing features won't be duplicated.</small></p>`
-        });
-
-        if (!confirm) return;
-
-        try {
-            await this._addClassFeaturesEnhanced(className, currentLevel);
-            ui.notifications.info(`Added ${className} features for level ${currentLevel}`);
-            this.render(); // Refresh the sheet
-        } catch (error) {
-            console.error("Error adding class features:", error);
-            ui.notifications.error("Failed to add class features: " + error.message);
-        }
-    }
-
-    /**
-     * Enhanced class feature addition using detailed feature data
-     */
-    async _addClassFeaturesEnhanced(className, currentLevel) {
-        const classData = window.getGlogClassFeatures(className);
-        if (!classData || !classData.features) {
-            throw new Error(`No feature data found for class: ${className}`);
-        }
-
-        // Get existing features to avoid duplicates
-        const existingFeatures = this.actor.items.filter(i =>
-            i.type === "feature" &&
-            i.system.classSource === className
-        );
-
-        const featuresToAdd = [];
-
-        // Add level-0 feature if not already present
-        if (classData.features["level-0"] &&
-            !existingFeatures.some(f => f.system.template === "level-0")) {
-            const levelZeroFeature = classData.features["level-0"];
-            featuresToAdd.push({
-                name: levelZeroFeature.name,
-                type: "feature",
-                img: this._getFeatureIcon(className, "level-0"),
-                system: {
-                    classSource: className,
-                    template: "level-0",
-                    level: 1,
-                    description: levelZeroFeature.description,
-                    active: true,
-                    prerequisites: "None"
-                }
-            });
-        }
-
-        // Add template features based on current level
-        const templates = ["A", "B", "C", "D"];
-        for (let i = 0; i < Math.min(currentLevel, 4); i++) {
-            const template = templates[i];
-            const templateFeatures = classData.features[template];
-
-            if (templateFeatures && Array.isArray(templateFeatures)) {
-                for (const featureData of templateFeatures) {
-                    // Check if this specific feature already exists
-                    const exists = existingFeatures.some(f =>
-                        f.system.template === template &&
-                        f.name === featureData.name
-                    );
-
-                    if (!exists) {
-                        featuresToAdd.push({
-                            name: featureData.name,
-                            type: "feature",
-                            img: this._getFeatureIcon(className, template),
-                            system: {
-                                classSource: className,
-                                template: template,
-                                level: i + 1,
-                                description: featureData.description,
-                                active: true,
-                                prerequisites: `${className} Template ${template}`
-                            }
-                        });
-                    }
-                }
-            }
-        }
-
-        // Create the features on the actor
-        if (featuresToAdd.length > 0) {
-            await this.actor.createEmbeddedDocuments("Item", featuresToAdd);
-            console.log(`Added ${featuresToAdd.length} new features for ${className} level ${currentLevel}`);
-        } else {
-            ui.notifications.info("No new features to add - all appropriate features already exist.");
-        }
-    }
-
-    /**
-     * Updated _getAvailableClasses to use enhanced feature data
-     */
-    async _getAvailableClasses() {
-        const classes = window.getGlogFeatures();
-        return classes ? classes.map(cls => cls.name).sort() : [];
-    }
-
-    /**
-     * Toggle feature active state when clicked
-     */
-    async _onFeatureToggle(event) {
-        if (this.actor.getFlag("glog2d6", "editMode")) return; // Don't toggle in edit mode
-
-        event.preventDefault();
-        const itemId = event.currentTarget.dataset.itemId;
-        const feature = this.actor.items.get(itemId);
-
-        if (feature) {
-            const newState = !feature.system.active;
-            await feature.update({ "system.active": newState });
-
-            const message = newState ? "activated" : "deactivated";
-            ui.notifications.info(`${feature.name} ${message}`);
-        }
-    }
-
-    /**
- * Check if character has available class features to add
- */
-    _hasAvailableClassFeatures() {
-        const className = this.actor.system.details.class;
-        const currentLevel = this.actor.system.details.level;
-
-        if (!className || currentLevel < 1) return false;
-
-        const classData = window.getGlogClassFeatures(className);
-        if (!classData || !classData.features) return false;
-
-        // Get existing features
-        const existingFeatures = this.actor.items.filter(i =>
-            i.type === "feature" &&
-            i.system.classSource === className
-        );
-
-        // Check level-0 feature
-        if (classData.features["level-0"] &&
-            !existingFeatures.some(f => f.system.template === "level-0")) {
-            return true;
-        }
-
-        // Check template features
-        const templates = ["A", "B", "C", "D"];
-        for (let i = 0; i < Math.min(currentLevel, 4); i++) {
-            const template = templates[i];
-            const templateFeatures = classData.features[template];
-
-            if (templateFeatures && Array.isArray(templateFeatures)) {
-                for (const featureData of templateFeatures) {
-                    const exists = existingFeatures.some(f =>
-                        f.system.template === template &&
-                        f.name === featureData.name
-                    );
-                    if (!exists) return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Create feature data object
-     */
-    _createFeatureData(className, template, featureName, description, level = 1) {
-        return {
-            name: featureName,
-            type: "feature",
-            img: this._getFeatureIcon(className, template),
-            system: {
-                classSource: className,
-                template: template,
-                level: level,
-                description: description,
-                active: true,
-                prerequisites: template === "level-0" ? "None" : `${className} Template ${template}`
-            }
-        };
-    }
-
-    /**
-     * Get appropriate icon for features based on class and template
-     */
-    _getFeatureIcon(className, template) {
-        const classIcons = {
-            "Fighter": "icons/skills/melee/blade-tip-chipped-blood-red.webp",
-            "Wizard": "icons/magic/symbols/runes-star-pentagon-blue.webp",
-            "Thief": "icons/skills/social/theft-pickpocket-bribery-brown.webp",
-            "Barbarian": "icons/skills/melee/strike-hammer-destructive-orange.webp",
-            "Hunter": "icons/weapons/bows/bow-recurve-yellow.webp",
-            "Acrobat": "icons/skills/movement/feet-winged-boots-brown.webp",
-            "Assassin": "icons/weapons/daggers/dagger-curved-poison-green.webp",
-            "Courtier": "icons/skills/social/diplomacy-handshake.webp"
-        };
-
-        return classIcons[className] || "icons/sundries/scrolls/scroll-bound-brown.webp";
     }
 
     /**

@@ -63,7 +63,6 @@
             "spell": {}
         }
     },
-    "template": "template.json",
     "primaryTokenAttribute": "hp",
     "secondaryTokenAttribute": null,
     "url": "https://github.com/yourusername/glog2d6-foundry",

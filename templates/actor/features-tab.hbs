@@ -1,0 +1,66 @@
+{{!-- Features Tab - Enhanced Version --}}
+<div class="tab" data-group="primary" data-tab="features">
+    <div class="features-section">
+        <div class="features-header">
+            <div class="features-info">
+                Class Features & Abilities
+                {{#if system.details.class}}
+                <span class="feature-class-info">({{system.details.class}} Level
+                    {{system.details.level}})</span>
+                {{/if}}
+            </div>
+            {{#if editMode}}
+            <div class="item-controls">
+                <a class="item-control item-create" data-type="feature" title="Create Feature">
+                    <i class="fas fa-star"></i> Feature
+                </a>
+                {{#if system.details.class}}
+                <a class="item-control add-class-features" title="Add Class Features">
+                    <i class="fas fa-magic"></i> Add Class Features
+                </a>
+                {{/if}}
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="features-list">
+            {{#each actor.items as |item id|}}
+            {{#if (eq item.type "feature")}}
+            <div class="feature-item {{#unless item.system.active}}feature-inactive{{/unless}}"
+                data-item-id="{{item.id}}">
+                <div class="feature-header">
+                    <div class="feature-name">{{item.name}}</div>
+                    <div class="feature-badges">
+                        {{#if item.system.classSource}}
+                        <span class="feature-source">{{item.system.classSource}}</span>
+                        {{/if}}
+                        <span class="feature-template">{{item.system.template}}</span>
+                    </div>
+                </div>
+
+                <div class="feature-description">{{item.system.description}}</div>
+
+                {{#if ../editMode}}
+                <div class="item-controls">
+                    <a class="item-control item-edit" title="Edit Feature">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a class="item-control item-delete" title="Delete Feature">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+                {{/if}}
+            </div>
+            {{/if}}
+            {{else}}
+            <div class="empty-section">
+                <p>No features yet.</p>
+                {{#if editMode}}
+                <p>Click "Feature" above to add abilities, or "Add Class Features" to automatically add
+                    features for your current class and level.</p>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+{{!-- Tabbed Content Section --}}
+<div class="tabbed-content">
+    <nav class="sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="inventory">
+            <i class="fas fa-suitcase"></i> Inventory
+        </a>
+        <a class="item" data-tab="features">
+            <i class="fas fa-star"></i> Features
+        </a>
+        <a class="item" data-tab="spells">
+            <i class="fas fa-magic"></i> Spells
+        </a>
+    </nav>
+    {{> inventory-tab}}
+    {{> features-tab }}
+    {{> spells-tab}}
+</div>

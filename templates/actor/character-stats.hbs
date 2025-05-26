@@ -1,0 +1,62 @@
+{{!-- Attributes Section --}}
+<div class="attributes-section">
+    <h3>Attributes</h3>
+    <div class="attributes-grid">
+        {{#each system.attributes as |attr key|}}
+        <div class="attribute-card {{#unless ../editMode}}clickable{{/unless}}" {{#unless
+            ../editMode}}data-attribute="{{key}}" {{/unless}}>
+            <div class="attribute-main">
+                <div class="attribute-name">{{upperCase key}}</div>
+                {{#if ../editMode}}
+                <input name="system.attributes.{{key}}.value" type="number" value="{{attr.value}}" min="2" max="12"
+                    class="attribute-input" />
+                {{else}}
+                <div class="attribute-value normal" data-base-value="{{attr.value}}"
+                    data-effective-mod="{{attr.effectiveMod}}" data-original-mod="{{attr.mod}}">
+                    {{attr.value}}
+                </div>
+                {{/if}}
+
+                {{#unless ../editMode}}
+                <div class="attribute-modifier">
+                    <span class="modifier-current">{{numberFormat attr.mod decimals=0 sign=true}}</span>
+                    {{#if attr.effectiveMod}}
+                    {{#unless (eq attr.effectiveMod attr.mod)}}
+                    <span class="modifier-original">{{numberFormat attr.mod decimals=0 sign=true}}</span>
+                    {{/unless}}
+                    {{/if}}
+                </div>
+                {{/unless}}
+            </div>
+            <div class="attribute-save" data-attribute="{{key}}">
+                <span class="save-label">SAVE</span>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
+
+{{!-- Combat Section --}}
+<div class="combat-section">
+    <h3>Combat</h3>
+    <div class="combat-actions">
+        <div class="combat-card {{#unless editMode}}clickable{{/unless}}" data-action="attack">
+            <div class="combat-main">
+                <div class="combat-name">Attack</div>
+                {{#if editMode}}
+                <input name="system.combat.attack.value" type="number" value="{{system.combat.attack.value}}"
+                    class="combat-input" />
+                {{else}}
+                <div class="combat-value">{{system.combat.attack.value}}</div>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="combat-card {{#unless editMode}}clickable{{/unless}}" data-action="defend">
+            <div class="combat-main">
+                <div class="combat-name">Defend</div>
+                <div class="combat-value">{{system.defense.total}}</div>
+            </div>
+        </div>
+    </div>
+</div>
