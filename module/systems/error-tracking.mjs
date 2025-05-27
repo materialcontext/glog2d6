@@ -17,11 +17,14 @@ export const ErrorTrackingMixin = {
 
     _wrapCriticalMethods() {
         const criticalMethods = [
-            'getData',
-            'activateListeners',
-            '_render',
-            '_onSubmit',
-            '_updateObject'
+            'getData',           // Already there
+            'activateListeners', // Already there
+            '_render',          // Already there
+            '_onSubmit',        // Already there
+            '_updateObject',    // Already there
+            'getWeaponAnalysis', // Add this
+            'hasAvailableFeatures', // Add this
+            'getAvailableClasses'   // Add this
         ];
 
         criticalMethods.forEach(methodName => {
@@ -166,6 +169,14 @@ export const ErrorTrackingMixin = {
         console.log('Context:', errorInfo.context);
         console.log('Args:', errorInfo.args);
         console.log('Timestamp:', errorInfo.timestamp);
+
+        // Add this for getData specifically
+        if (errorInfo.method === 'getData') {
+            console.log('Actor System:', errorInfo.context.systemData);
+            console.log('Edit Mode:', errorInfo.context.editMode);
+            console.log('Rendered:', errorInfo.context.rendered);
+        }
+
         console.groupEnd();
     },
 

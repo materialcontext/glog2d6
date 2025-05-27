@@ -31,9 +31,6 @@ async function addClassFeatures(sheet, event) {
     }
 }
 
-/**
- * Enhanced class feature addition using detailed feature data
- */
 async function addClassFeaturesEnhanced(sheet, className, currentLevel) {
     const classData = window.getGlogClassFeatures(className);
     if (!classData || !classData.features) {
@@ -109,9 +106,6 @@ async function addClassFeaturesEnhanced(sheet, className, currentLevel) {
     }
 }
 
-/**
- * Updated _getAvailableClasses to use enhanced feature data
- */
 async function getAvailableClasses() {
     const classes = window.getGlogFeatures();
     return classes ? classes.map(cls => cls.name).sort() : [];
@@ -136,12 +130,15 @@ async function toggleFeature(sheet, event) {
     }
 }
 
-/**
-* Check if character has available class features to add
-*/
-function hasAvailableClassFeatures(sheet) {
-    const className = sheet.actor.system.details.class;
-    const currentLevel = sheet.actor.system.details.level;
+function hasAvailableClassFeatures(actor) {
+    // Guard clause - if no actor provided, return false
+    if (!actor) {
+        console.warn('hasAvailableClassFeatures called without actor parameter');
+        return false;
+    }
+
+    const className = actor.system.details.class;
+    const currentLevel = actor.system.details.level;
 
     if (!className || currentLevel < 1) return false;
 
@@ -149,7 +146,7 @@ function hasAvailableClassFeatures(sheet) {
     if (!classData || !classData.features) return false;
 
     // Get existing features
-    const existingFeatures = sheet.actor.items.filter(i =>
+    const existingFeatures = actor.items.filter(i =>
         i.type === "feature" &&
         i.system.classSource === className
     );

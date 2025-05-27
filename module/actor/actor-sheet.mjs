@@ -42,10 +42,11 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             context: 'loading-available-classes'
         })(() => getAvailableClasses());
 
+        // FIXED: Pass actor parameter to hasAvailableClassFeatures
         this.hasAvailableFeatures = safely({
-            fallback: [],
+            fallback: false, // Changed from [] to false to match expected return type
             context: 'loading-available-features'
-        })(() => hasAvailableClassFeatures());
+        })((actor) => hasAvailableClassFeatures(actor));
     }
 
     _addDebugMethods() {
@@ -81,13 +82,14 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
         // Get available classes from compendium pack
-        context.availableClasses = await this.getAvailableClasses();
+        context.availableClasses = this.getAvailableClasses();
 
-        // Check if character has available class features
-        context.hasAvailableFeatures = this.hasAvailableFeatures();
+        // Check if character has available class features - pass the actor
+        context.hasAvailableFeatures = this.hasAvailableFeatures(this.actor);
 
-        // Analyze equipped weapons for smart button display
-        context.weaponAnalysis = this.getWeaponAnalysis();
+        // Analyze equipped weapons for smart button display - use correct variable name
+        const weaponAnalysis = this.getWeaponAnalysis();
+        context.weaponAnalysis = weaponAnalysis;
 
         // Properly detect Acrobat training with robust fallback
         context.hasAcrobatTraining = this.hasFeature("Acrobat Training");
@@ -107,40 +109,53 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     activateListeners(html) {
         super.activateListeners(html);
 
-        // FIXED: Enhance attribute display regardless of edit mode
-        this._enhanceAttributeDisplay(html);
+        // Always do visual enhancements first
+        this._updateVisualDisplay(html);
 
-        // Everything below here is only needed if the sheet is editable
+        // Only add our listeners if sheet is editable
         if (!this.isEditable) return;
 
-        // Attribute rolls - click on card when not in edit mode
+        // All event listeners in one place
+        this._addAllEventListeners(html);
+    }
+
+    _updateVisualDisplay(html) {
+        // Only visual updates - no event listeners
+        const editMode = this.actor.getFlag("glog2d6", "editMode") === true;
+
+        if (!editMode) {
+            html.find('.attribute-card[data-attribute]').addClass('clickable');
+            html.find('.combat-card[data-action]').addClass('clickable');
+            html.find('.action-card[data-action]').addClass('clickable');
+            html.find('.movement-display').addClass('clickable');
+        }
+
+        // Use the existing methods that actually exist
+        html.find('.attribute-card[data-attribute]').each((index, element) => {
+            const $card = $(element);
+            const attributeKey = $card.attr('data-attribute');
+            if (attributeKey && this.actor.system.attributes[attributeKey]) {
+                const attribute = this.actor.system.attributes[attributeKey];
+                this._updateAttributeDisplay($card, attribute);
+            }
+        });
+
+        this._updateMovementDisplay(html);
+    }
+
+    _addAllEventListeners(html) {
+        // Attribute and combat clicks
         html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
-
-        // Combat action buttons
-        html.find('.action-card.clickable').each((i, element) => {
-            const action = element.dataset.action;
-            if (action) {
-                $(element).click(this._getActionHandler(action).bind(this));
-            }
-        });
-
-        // Combat rolls - click on card when not in edit mode
-        html.find('.combat-card.clickable').each((i, element) => {
-            const action = element.dataset.action;
-            if (action) {
-                $(element).click(this._getCombatHandler(action).bind(this));
-            }
-        });
-
-        // Movement roll
+        html.find('.attribute-save').click(this._onSaveRoll.bind(this));
+        html.find('.combat-card.clickable').click(this._getCombatClickHandler.bind(this));
+        html.find('.action-card.clickable').click(this._getActionClickHandler.bind(this));
         html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
 
-        // Always active elements (regardless of edit mode)
-        html.find('.attribute-save').click(this._onSaveRoll.bind(this));
+        // Weapon and spell actions
         html.find('.weapon-attack-btn').click(this._onWeaponAttack.bind(this));
         html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
 
-        // Equipment and UI controls
+        // Equipment toggles
         html.find('.equipped-toggle').change(this._onEquippedToggle.bind(this));
         html.find('.edit-toggle').click(this._onEditToggle.bind(this));
 
@@ -149,19 +164,13 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         html.find('.item-edit').click(this._onItemEdit.bind(this));
         html.find('.item-delete').click(this._onItemDelete.bind(this));
 
-        // Torch controls
+        // Feature and torch controls
         html.find('.torch-btn').click(this._onTorchToggle.bind(this));
         html.find('.torch-icon[data-action="toggle-torch"]').click(this._onTorchItemToggle.bind(this));
-
-        // Feature management
         html.find('.add-class-features').click(this._onAddClassFeatures.bind(this));
         html.find('.feature-item').click(this._onFeatureToggle.bind(this));
-
-        // Auto-update hireling stats when type changes
-        html.find('.hireling-type-select').change(this._onHirelingTypeChange.bind(this));
+        html.find('.rest-btn').click(this._onRest.bind(this));
     }
-
-
 
     async _onAddClassFeatures(event) {
         return addClassFeatures(this, event);
@@ -411,42 +420,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         return handlers[action] || (() => {
             console.warn(`No handler for combat action: ${action}`);
         });
-    }
-
-    /**
-    * Enhance attribute display with proper coloring, effective values, and modifier handling
-    */
-    _enhanceAttributeDisplay(html) {
-        const editMode = this.actor.getFlag("glog2d6", "editMode") === true;
-
-        if (editMode) {
-            // In edit mode, ensure no clickable styling
-            html.find('.attribute-card').removeClass('clickable');
-            html.find('.combat-card').removeClass('clickable');
-            html.find('.action-card').removeClass('clickable');
-            html.find('.movement-display').removeClass('clickable');
-            return;
-        }
-
-        // FIXED: Add clickable class to interactive elements
-        html.find('.attribute-card[data-attribute]').addClass('clickable');
-        html.find('.combat-card[data-action]').addClass('clickable');
-        html.find('.action-card[data-action]').addClass('clickable');
-        html.find('.movement-display').addClass('clickable');
-
-        // Update attribute values and modifiers
-        html.find('.attribute-card[data-attribute]').each((index, element) => {
-            const $card = $(element);
-            const attributeKey = $card.attr('data-attribute');
-
-            if (attributeKey && this.actor.system.attributes[attributeKey]) {
-                const attribute = this.actor.system.attributes[attributeKey];
-                this._updateAttributeDisplay($card, attribute);
-            }
-        });
-
-        // Update movement display
-        this._updateMovementDisplay(html);
     }
 
     _updateAttributeDisplay($card, attribute) {
