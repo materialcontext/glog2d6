@@ -24,7 +24,6 @@ export const ErrorTrackingMixin = {
             '_updateObject',    // Already there
             'getWeaponAnalysis', // Add this
             'hasAvailableFeatures', // Add this
-            'getAvailableClasses'   // Add this
         ];
 
         criticalMethods.forEach(methodName => {

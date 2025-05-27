@@ -1,54 +1,46 @@
-import {
-    GLOG_CLASSES,
-    GLOG_WEAPONS,
-    GLOG_ARMOR,
-    GLOG_FEATURES,
-    GLOG_TORCHES,
-    GLOG_SPELLS,
-    getDefaultClasses
-} from '../data/data-loader.mjs';
+const GLOG = CONFIG.GLOG;
 
 export function setupGlobalUtils() {
     // Set up global functions
     window.getGlogClasses = function() {
-        return GLOG_CLASSES || getDefaultClasses();
+        return GLOG.CLASSES || [];
     };
 
     window.getGlogClass = function(className) {
-        if (!GLOG_CLASSES) return null;
-        return GLOG_CLASSES.find(cls => cls.name === className);
+        if (!GLOG.CLASSES) return null;
+        return GLOG.CLASSES.find(cls => cls.name === className);
     };
 
     window.getGlogFeatures = function() {
-        return GLOG_FEATURES || [];
+        return GLOG.FEATURES || [];
     };
 
     window.getGlogClassFeatures = function(className) {
-        if (!GLOG_FEATURES) return null;
-        return GLOG_FEATURES.find(cls => cls.name === className);
+        if (!GLOG.FEATURES) return null;
+        return GLOG.FEATURES.find(cls => cls.name === className);
     };
 
     window.getGlogWeapons = function() {
-        return GLOG_WEAPONS || { weapons: [], ammunition: [] };
+        return GLOG.WEAPONS || { weapons: [], ammunition: [] };
     };
 
     window.getGlogArmor = function() {
-        return GLOG_ARMOR || { armor: [], shields: [] };
+        return GLOG.ARMOR || { armor: [], shields: [] };
     };
 
     window.getGlogTorches = function() {
-        return GLOG_TORCHES || { torches: [] };
+        return GLOG.TORCHES || { torches: [] };
     };
 
     window.getGlogSpells = function() {
-        return GLOG_SPELLS || { spells: [] };
+        return GLOG.SPELLS || { spells: [] };
     };
 
     window.getGlogItems = function() {
-        const weapons = GLOG_WEAPONS || { weapons: [], ammunition: [] };
-        const armor = GLOG_ARMOR || { armor: [], shields: [] };
-        const torches = GLOG_TORCHES || { torches: [] };
-        const spells = GLOG_SPELLS || { spells: [] };
+        const weapons = GLOG.WEAPONS || { weapons: [], ammunition: [] };
+        const armor = GLOG.ARMOR || { armor: [], shields: [] };
+        const torches = GLOG.TORCHES || { torches: [] };
+        const spells = GLOG.SPELLS || { spells: [] };
 
         return [
             ...weapons.weapons,

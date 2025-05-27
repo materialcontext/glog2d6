@@ -12,6 +12,10 @@ import { setupGlobalErrorHandler } from './module/systems/global-error-handler.m
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
 
+    // Load all JSON data files
+    await loadSystemData();
+    await loadSpellData();
+
     setupGlobalErrorHandler();
 
     // Register Handlebars helpers
@@ -60,14 +64,17 @@ Hooks.once('init', async function() {
         default: false
     });
 
-
-    // Load all JSON data files
-    await loadSystemData();
-    await loadSpellData();
-
     // Define custom Document classes
     CONFIG.Actor.documentClass = GLOG2D6Actor;
     CONFIG.Item.documentClass = GLOG2D6Item;
+
+    console.log('glog2d6 | System initialization complete');
+});
+
+// Load spell data from multiple files
+Hooks.once("ready", async function() {
+    console.log('glog2d6 | System Ready');
+    setupGlobalUtils();
 
     // Register sheet application classes
     Actors.unregisterSheet("core", ActorSheet);
@@ -112,13 +119,9 @@ Hooks.once('init', async function() {
     Handlebars.registerPartial('spells-tab',
         await getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
 
-    console.log('glog2d6 | System initialization complete');
-});
 
-// Load spell data from multiple files
-Hooks.once("ready", async function() {
-    console.log('glog2d6 | System Ready');
-    setupGlobalUtils();
+    game.glog2d6 = game.glog2d6 || {};
+    game.glog2d6.templatesReady = true;
 
     if (game.user.isGM) {
         await createDefaultFolders();
