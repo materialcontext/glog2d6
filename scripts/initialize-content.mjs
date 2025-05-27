@@ -1,3 +1,5 @@
+const GLOG = CONFIG.GLOG
+
 // create the system folder structure
 export async function createDefaultFolders() {
     // Only run this once per world to avoid duplicates
@@ -16,7 +18,6 @@ export async function createDefaultFolders() {
     }
 
     console.log('glog2d6 | Creating default item folders and items...');
-
     try {
         // Create folder structure
         const weaponFolder = await createFolderIfNotExists("Weapons", "Item", "#8B4513");
@@ -31,7 +32,7 @@ export async function createDefaultFolders() {
 
         // FIXED: Create class subfolders for features using the loaded data
         const classFolders = {};
-        const featureData = window.getGlogFeatures(); // Get the loaded feature data
+        const featureData = GLOG.FEATURES; // Get the loaded feature data
 
         console.log('glog2d6 | Creating class folders for', featureData ? featureData.length : 0, 'classes');
 
@@ -108,12 +109,11 @@ async function createFolderIfNotExists(name, type, color = "#000000", parentId =
  * Creates items from the loaded JSON data and organizes them into folders
  */
 async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId, classFolders) {
-    const weaponData = window.getGlogWeapons();
-    const armorData = window.getGlogArmor();
-    const torchData = window.getGlogTorches();
-    const spellData = window.getGlogSpells();
-    const featureData = window.getGlogFeatures();
-
+    const weaponData = GLOG.WEAPONS;
+    const armorData = GLOG.ARMOR;
+    const torchData = GLOG.TORCHES;
+    const spellData = GLOG.SPELLS;
+    const featureData = GLOG.FEATURES;
     const itemsToCreate = [];
 
     // Process weapons

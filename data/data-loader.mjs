@@ -1,27 +1,33 @@
-// systyem data management helpers
-
-let GLOG_CLASSES = null;
-let GLOG_WEAPONS = null;
-let GLOG_ARMOR = null;
-let GLOG_FEATURES = null;
-let GLOG_TORCHES = null;
-let GLOG_SPELLS = null;
+CONFIG.GLOG = {};
+const glog = CONFIG.GLOG;
 
 async function loadSystemData() {
     try {
-        // Load features (classes)
+        const classesResponse = await fetch('systems/glog2d6/data/classes.json')
+        if (classesResponse.ok) {
+            const classesData = await classesResponse.json();
+            glog.CLASSES = classesData.classes;
+            console.log('glog2d6 | Loaded', glog.Classes.length, 'classes with template details')
+        }
+    } catch(error) {
+        console.log('glog2d6 | Errpr loading classes.json')
+        glog.CLASSES = getDefaultClasses();
+    }
+
+    try {
+        // Load features (featrues data)
         const featuresResponse = await fetch('systems/glog2d6/data/features.json');
         if (featuresResponse.ok) {
             const featureData = await featuresResponse.json();
-            GLOG_FEATURES = featureData.classes;
-            console.log('glog2d6 | Loaded', GLOG_FEATURES.length, 'classes with detailed features');
+            glog.FEATURES = featureData.classes;
+            console.log('glog2d6 | Loaded', glog.FEATURES.length, 'features from classes');
         } else {
             console.warn('glog2d6 | Could not load features.json, status:', featuresResponse.status);
-            GLOG_FEATURES = getDefaultClasses();
+            glog.FEATURES = getDefaultClasses();
         }
     } catch (error) {
         console.error('glog2d6 | Error loading features.json:', error);
-        GLOG_FEATURES = getDefaultClasses();
+        glog.FEATURES = getDefaultClasses();
     }
 
     // Load weapons
@@ -29,15 +35,15 @@ async function loadSystemData() {
         const weaponsResponse = await fetch('systems/glog2d6/data/weapons.json');
         if (weaponsResponse.ok) {
             const weaponData = await weaponsResponse.json();
-            GLOG_WEAPONS = weaponData;
+            glog.WEAPONS = weaponData;
             console.log('glog2d6 | Loaded', weaponData.weapons.length, 'weapons and', weaponData.ammunition.length, 'ammunition types');
         } else {
             console.warn('glog2d6 | Could not load weapons.json');
-            GLOG_WEAPONS = { weapons: [], ammunition: [] };
+            glog.WEAPONS = { weapons: [], ammunition: [] };
         }
     } catch (error) {
         console.error('glog2d6 | Error loading weapons.json:', error);
-        GLOG_WEAPONS = { weapons: [], ammunition: [] };
+        glog.WEAPONS = { weapons: [], ammunition: [] };
     }
 
     // Load armor
@@ -45,15 +51,15 @@ async function loadSystemData() {
         const armorResponse = await fetch('systems/glog2d6/data/armor.json');
         if (armorResponse.ok) {
             const armorData = await armorResponse.json();
-            GLOG_ARMOR = armorData;
+            glog.ARMOR = armorData;
             console.log('glog2d6 | Loaded', armorData.armor.length, 'armor pieces and', armorData.shields.length, 'shields');
         } else {
             console.warn('glog2d6 | Could not load armor.json');
-            GLOG_ARMOR = { armor: [], shields: [] };
+            glog.ARMOR = { armor: [], shields: [] };
         }
     } catch (error) {
         console.error('glog2d6 | Error loading armor.json:', error);
-        GLOG_ARMOR = { armor: [], shields: [] };
+        glog.ARMOR = { armor: [], shields: [] };
     }
 
     // Load torches
@@ -61,15 +67,15 @@ async function loadSystemData() {
         const torchesResponse = await fetch('systems/glog2d6/data/torches.json');
         if (torchesResponse.ok) {
             const torchData = await torchesResponse.json();
-            GLOG_TORCHES = torchData;
+            glog.TORCHES = torchData;
             console.log('glog2d6 | Loaded', torchData.torches.length, 'torch types');
         } else {
             console.warn('glog2d6 | Could not load torches.json');
-            GLOG_TORCHES = { torches: [] };
+            glog.TORCHES = { torches: [] };
         }
     } catch (error) {
         console.error('glog2d6 | Error loading torches.json:', error);
-        GLOG_TORCHES = { torches: [] };
+        glog.TORCHES = { torches: [] };
     }
 
     // Load spells from multiple files
@@ -77,7 +83,7 @@ async function loadSystemData() {
 }
 
 async function loadSpellData() {
-    GLOG_SPELLS = { spells: [] };
+    glog.SPELLS = { spells: [] };
 
     // List of spell files to load (add more as needed)
     const spellFiles = [
@@ -93,7 +99,7 @@ async function loadSpellData() {
             if (response.ok) {
                 const spellData = await response.json();
                 if (spellData.spells && Array.isArray(spellData.spells)) {
-                    GLOG_SPELLS.spells.push(...spellData.spells);
+                    glog.SPELLS.spells.push(...spellData.spells);
                     console.log(`glog2d6 | Loaded ${spellData.spells.length} spells from ${filename}`);
                 }
             } else if (response.status !== 404) {
@@ -105,7 +111,7 @@ async function loadSpellData() {
         }
     }
 
-    console.log(`glog2d6 | Total spells loaded: ${GLOG_SPELLS.spells.length}`);
+    console.log(`glog2d6 | Total spells loaded: ${glog.SPELLS.spells.length}`);
 }
 
 // Fallback class data
@@ -125,12 +131,6 @@ function getDefaultClasses() {
 
 
 export {
-    GLOG_CLASSES,
-    GLOG_WEAPONS,
-    GLOG_ARMOR,
-    GLOG_FEATURES,
-    GLOG_TORCHES,
-    GLOG_SPELLS,
     loadSystemData,
     loadSpellData,
     getDefaultClasses

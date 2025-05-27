@@ -3,7 +3,6 @@ import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
 import {
     addClassFeatures,
-    getAvailableClasses,
     toggleFeature,
     hasAvailableClassFeatures,
 } from './handlers/feature-handlers.mjs'
@@ -37,12 +36,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             (featureName) => this.actor.hasFeature(featureName)
         );
 
-        this.getAvailableClasses = safely({
-            fallback: [],
-            context: 'loading-available-classes'
-        })(() => getAvailableClasses());
-
-        // FIXED: Pass actor parameter to hasAvailableClassFeatures
         this.hasAvailableFeatures = safely({
             fallback: false, // Changed from [] to false to match expected return type
             context: 'loading-available-features'
@@ -81,8 +74,9 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Add edit mode
         context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
-        // Get available classes from compendium pack
-        context.availableClasses = this.getAvailableClasses();
+        // Get available classes from config data
+        let classes = CONFIG.GLOG.CLASSES;
+        context.availableClasses = classes.map((cls) => cls.name);
 
         // Check if character has available class features - pass the actor
         context.hasAvailableFeatures = this.hasAvailableFeatures(this.actor);
@@ -147,8 +141,8 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Attribute and combat clicks
         html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
         html.find('.attribute-save').click(this._onSaveRoll.bind(this));
-        html.find('.combat-card.clickable').click(this._getCombatClickHandler.bind(this));
-        html.find('.action-card.clickable').click(this._getActionClickHandler.bind(this));
+        html.find('.combat-card.clickable').click(this._getCombatHandler.bind(this));
+        html.find('.action-card.clickable').click(this._getActionHandler.bind(this));
         html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
 
         // Weapon and spell actions
@@ -178,10 +172,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async _onFeatureToggle(event) {
         return toggleFeature(this, event);
-    }
-
-    async _getAvailableClasses() {
-        return getAvailableClasses(this);
     }
 
     async _onAttributeRoll(event) {

@@ -32,7 +32,7 @@ async function addClassFeatures(sheet, event) {
 }
 
 async function addClassFeaturesEnhanced(sheet, className, currentLevel) {
-    const classData = window.getGlogClassFeatures(className);
+    const classData = CONFIG.GLOG.FEATURES.find(cls => cls.name === className);
     if (!classData || !classData.features) {
         throw new Error(`No feature data found for class: ${className}`);
     }
@@ -106,11 +106,6 @@ async function addClassFeaturesEnhanced(sheet, className, currentLevel) {
     }
 }
 
-async function getAvailableClasses() {
-    const classes = window.getGlogFeatures();
-    return classes ? classes.map(cls => cls.name).sort() : [];
-}
-
 /**
  * Toggle feature active state when clicked
  */
@@ -142,7 +137,7 @@ function hasAvailableClassFeatures(actor) {
 
     if (!className || currentLevel < 1) return false;
 
-    const classData = window.getGlogClassFeatures(className);
+    const classData = CONFIG.GLOG.FEATURES.find(cls => cls.name === className);
     if (!classData || !classData.features) return false;
 
     // Get existing features
@@ -217,7 +212,6 @@ function getFeatureIcon(className, _template) {
 export {
     addClassFeatures,
     addClassFeaturesEnhanced,
-    getAvailableClasses,
     toggleFeature,
     hasAvailableClassFeatures,
     createFeatureData,

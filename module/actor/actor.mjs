@@ -693,20 +693,43 @@ export class GLOG2D6Actor extends Actor {
      * Create a standardized chat message for rolls with special effects support
      */
     _createRollChatMessage(title, roll, extraContent = '') {
-        // Get the individual dice results for 2d6 rolls
-        const diceResults = this._getDiceResults(roll);
-        const diceDisplay = diceResults.length > 0 ?
-            `[${diceResults.join(', ')}] + modifiers` : roll.result;
+        // Better roll display logic
+        let rollDisplay = '';
+
+        if (roll.terms && roll.terms.length > 0) {
+            const parts = [];
+
+            for (const term of roll.terms) {
+                if (term.results && Array.isArray(term.results)) {
+                    // This is dice - show individual results
+                    const diceResults = term.results.map(r => r.result);
+                    parts.push(`[${diceResults.join(', ')}]`);
+                } else if (term.number !== undefined && term.operator) {
+                    // This is a modifier with operator
+                    const sign = term.operator === '+' ? '+' : term.operator;
+                    parts.push(`${sign}${Math.abs(term.number)}`);
+                } else if (typeof term === 'string' && (term === '+' || term === '-')) {
+                    // Skip standalone operators, they're handled above
+                    continue;
+                }
+            }
+
+            rollDisplay = parts.join(' ');
+        }
+
+        // Fallback to formula if we couldn't parse terms
+        if (!rollDisplay) {
+            rollDisplay = roll.formula || roll.result;
+        }
 
         const specialEffectsHtml = roll.specialEffects?.length > 0 ?
             `<div class="special-effects-notice">
-       <i class="fas fa-star"></i> <em>${roll.specialEffects.join(', ')}</em>
-     </div>` : '';
+           <i class="fas fa-star"></i> <em>${roll.specialEffects.join(', ')}</em>
+         </div>` : '';
 
-        // auto trigger critical
+        // Auto trigger critical effects
         if (roll.isCriticalHit && title.includes("Attack")) {
             console.log(`${this.name} scored a critical hit - target should make trauma save`);
-            // Just log for now, since we don't track targets yet
         }
 
         if (roll.isCriticalFailure && title.includes("Defense")) {
@@ -716,16 +739,16 @@ export class GLOG2D6Actor extends Actor {
         return ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: `
-      <div class="glog2d6-roll">
-        <h3>${title}</h3>
-        <div class="roll-result">
-          <strong>Roll:</strong> ${diceDisplay}
-          <br><strong>Result:</strong> ${roll.total}
-          ${extraContent}
-          ${specialEffectsHtml}
-        </div>
-      </div>
-    `,
+          <div class="glog2d6-roll">
+            <h3>${title}</h3>
+            <div class="roll-result">
+              <strong>Roll:</strong> ${rollDisplay}
+              <br><strong>Total:</strong> ${roll.total}
+              ${extraContent}
+              ${specialEffectsHtml}
+            </div>
+          </div>
+        `,
             roll: roll
         });
     }

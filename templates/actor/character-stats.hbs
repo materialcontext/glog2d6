@@ -89,7 +89,7 @@
                 {{#if weaponAnalysis.hasThrowable}}
                 <div class="combat-card attack-split" data-action="attack" data-attack-type="thrown">
                     <div class="combat-main">
-                        <div class="combat-name">Throw</div>
+                        <div class="combat-name">Thrown</div>
                         <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
@@ -121,8 +121,8 @@
                 {{!-- Generic attack button --}}
                 <div class="combat-card" data-action="attack">
                     <div class="combat-main">
-                        <div class="combat-name">Attack</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
+                        <div class="combat-name">Unarmed Attack</div>
+                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
             {{/if}}

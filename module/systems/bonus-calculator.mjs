@@ -99,7 +99,7 @@ export class BonusCalculator {
  */
 const FEATURE_BONUSES = {
     "Acrobat Training": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Acrobat");
+        const templates = actor.getClassTemplateCount("Acrobat") - 1;
         const bonus = Math.floor(templates / 2);
 
         // Only apply if not encumbered
@@ -121,7 +121,7 @@ const FEATURE_BONUSES = {
 
     // Barbarian gets +1 HP per template
     "Barbarian Heritage": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Barbarian");
+        const templates = actor.getClassTemplateCount("Barbarian") - 1;
         return [
             { target: "hp.bonus", value: templates, type: "untyped" }
         ];
@@ -129,7 +129,7 @@ const FEATURE_BONUSES = {
 
     // Thief gets stealth bonuses
     "Thievery Training": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Thief");
+        const templates = actor.getClassTemplateCount("Thief") - 1;
         return [
             { target: "skills.stealth.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
@@ -142,7 +142,7 @@ const FEATURE_BONUSES = {
 
     // Courtier gets reaction bonuses
     "Noble Bearing": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Courtier");
+        const templates = actor.getClassTemplateCount("Courtier") - 1;
         return [
             { target: "skills.reaction.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
@@ -150,13 +150,13 @@ const FEATURE_BONUSES = {
 
     // Hunter gets archery bonuses
     "Archery Training": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Hunter");
+        const templates = actor.getClassTemplateCount("Hunter") - 1;
         return [
             { target: "combat.archery.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
     },
     "Magical Training": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Wizard");
+        const templates = actor.getClassTemplateCount("Wizard") - 1;
         const intMod = actor.system.attributes.int.mod;
         const spellSlots = templates + Math.max(0, intMod);
         return [
@@ -166,10 +166,10 @@ const FEATURE_BONUSES = {
     },
     // Intellect Fortress - already partially there, just need to fix it
     "Intellect Fortress": (actor, feature) => {
-        const templates = actor.getClassTemplateCount("Wizard");
+        const templates = actor.getClassTemplateCount("Wizard") - 1;
         return [
-            { target: "saves.int.bonus", value: templates, type: "untyped" },
-            { target: "saves.wis.bonus", value: templates, type: "untyped" }
+            { target: "saves.int.bonus", value: Math.floor(templates / 2), type: "untyped" },
+            { target: "saves.wis.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
     },
 };

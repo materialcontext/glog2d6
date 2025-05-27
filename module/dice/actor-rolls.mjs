@@ -29,19 +29,41 @@ export class ActorRolls {
     async rollSave(attributeKey) {
         const attribute = this.actor.system.attributes[attributeKey];
 
+        // Get save-specific bonuses (like from Intellect Fortress)
+        let saveBonus = 0;
+        if (this.actor.system.saves?.[attributeKey]?.bonus) {
+            saveBonus = this.actor.system.saves[attributeKey].bonus;
+        }
+
         // Determine context based on attribute
         let context = 'save';
         if (attributeKey === 'str') context = 'strength';
         if (attributeKey === 'cha') context = 'social';
 
-        const roll = this.actor.createRoll("2d6 + @mod", { mod: attribute.mod }, context);
+        const roll = this.actor.createRoll("2d6 + @mod + @saveBonus", {
+            mod: attribute.mod,
+            saveBonus: saveBonus
+        }, context);
         await roll.evaluate();
 
         const success = roll.total >= 10;
-        const extraContent = `
-            <br><strong>Target:</strong> 10
-            <br><strong>Result:</strong> ${success ? "Success" : "Failure"}
-        `;
+
+        let extraContent = `
+        <br><strong>Target:</strong> 10
+        <br><strong>Result:</strong> ${success ? "Success" : "Failure"}
+    `;
+
+        // Show save bonus breakdown if present
+        if (saveBonus > 0) {
+            extraContent += `<br><small>Save bonus: +${saveBonus}</small>`;
+
+            // Show breakdown if available
+            const breakdown = this.actor.system.saves?.[attributeKey]?.breakdown;
+            if (breakdown && breakdown.length > 0) {
+                const sources = breakdown.map(b => `${b.source}: +${b.value}`).join(', ');
+                extraContent += `<br><small>Bonus from: ${sources}</small>`;
+            }
+        }
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - ${attributeKey.toUpperCase()} Save`,

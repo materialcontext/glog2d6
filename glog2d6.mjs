@@ -14,6 +14,10 @@ Hooks.once('init', async function() {
 
     setupGlobalErrorHandler();
 
+    // Load all JSON data files
+    await loadSystemData();
+    await loadSpellData();
+
     // Register Handlebars helpers
     Handlebars.registerHelper('upperCase', function(str) {
         return str.toUpperCase();
@@ -61,28 +65,16 @@ Hooks.once('init', async function() {
     });
 
 
-    // Load all JSON data files
-    await loadSystemData();
-    await loadSpellData();
-
     // Define custom Document classes
     CONFIG.Actor.documentClass = GLOG2D6Actor;
     CONFIG.Item.documentClass = GLOG2D6Item;
 
-    // Register sheet application classes
-    Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Actor"
-    });
+    console.log('glog2d6 | System initialization complete');
+});
 
-    Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Item"
-    });
+// Load spell data from multiple files
+Hooks.once("ready", async function() {
+    console.log('glog2d6 | System Ready');
 
     // Preload templates
     await loadTemplates([
@@ -112,12 +104,21 @@ Hooks.once('init', async function() {
     Handlebars.registerPartial('spells-tab',
         await getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
 
-    console.log('glog2d6 | System initialization complete');
-});
+    // Register sheet application classes
+    Actors.unregisterSheet("core", ActorSheet);
+    Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
+        types: ["character", "npc"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Actor"
+    });
 
-// Load spell data from multiple files
-Hooks.once("ready", async function() {
-    console.log('glog2d6 | System Ready');
+    Items.unregisterSheet("core", ItemSheet);
+    Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Item"
+    });
+
     setupGlobalUtils();
 
     if (game.user.isGM) {
@@ -125,44 +126,6 @@ Hooks.once("ready", async function() {
     }
 
     setupSystemHooks();
-
-    Hooks.on("renderChatMessage", (message, html) => {
-        html.find('.magic-die-btn').click(async (event) => {
-            event.preventDefault();
-            const button = event.currentTarget;
-            const diceCount = parseInt(button.dataset.diceCount);
-            const spellId = button.dataset.spellId;
-            const actorId = message.flags?.glog2d6?.actorId;
-
-            const actor = game.actors.get(actorId);
-            const spell = actor?.items.get(spellId);
-
-            if (actor && spell) {
-                await actor.castSpellWithDice(spell, diceCount);
-                // Disable all buttons in this message
-                html.find('.magic-die-btn').prop('disabled', true).text('Cast!');
-            }
-        });
-
-        html.find('.damage-roll-btn').click(async (event) => {
-            event.preventDefault();
-            const button = event.currentTarget;
-            const actorId = button.dataset.actorId;
-            const weaponId = button.dataset.weaponId;
-            const attackResult = parseInt(button.dataset.attackResult);
-
-            const actor = game.actors.get(actorId);
-            const weapon = actor?.items.get(weaponId);
-
-            if (actor && weapon) {
-                await actor.rollWeaponDamage(weapon, attackResult);
-                button.disabled = true;
-                button.textContent = "Rolled";
-            } else {
-                ui.notifications.error("Actor or weapon not found!");
-            }
-        });
-    });
 
     // Add torch burn macro for GMs
     if (game.user.isGM) {
@@ -190,4 +153,42 @@ Hooks.once("ready", async function() {
             }
         };
     }
+});
+
+Hooks.on("renderChatMessage", (message, html) => {
+    html.find('.magic-die-btn').click(async (event) => {
+        event.preventDefault();
+        const button = event.currentTarget;
+        const diceCount = parseInt(button.dataset.diceCount);
+        const spellId = button.dataset.spellId;
+        const actorId = message.flags?.glog2d6?.actorId;
+
+        const actor = game.actors.get(actorId);
+        const spell = actor?.items.get(spellId);
+
+        if (actor && spell) {
+            await actor.castSpellWithDice(spell, diceCount);
+            // Disable all buttons in this message
+            html.find('.magic-die-btn').prop('disabled', true).text('Cast!');
+        }
+    });
+
+    html.find('.damage-roll-btn').click(async (event) => {
+        event.preventDefault();
+        const button = event.currentTarget;
+        const actorId = button.dataset.actorId;
+        const weaponId = button.dataset.weaponId;
+        const attackResult = parseInt(button.dataset.attackResult);
+
+        const actor = game.actors.get(actorId);
+        const weapon = actor?.items.get(weaponId);
+
+        if (actor && weapon) {
+            await actor.rollWeaponDamage(weapon, attackResult);
+            button.disabled = true;
+            button.textContent = "Rolled";
+        } else {
+            ui.notifications.error("Actor or weapon not found!");
+        }
+    });
 });
