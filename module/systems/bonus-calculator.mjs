@@ -157,8 +157,11 @@ const FEATURE_BONUSES = {
     },
     "Magical Training": (actor, feature) => {
         const templates = actor.getClassTemplateCount("Wizard");
+        const intMod = actor.system.attributes.int.mod;
+        const spellSlots = templates + Math.max(0, intMod);
         return [
-            { target: "magicDiceMax", value: templates, type: "untyped" }
+            { target: "magicDiceMax", value: templates, type: "untyped" },
+            { target: "spellSlots", value: spellSlots, type: "untyped" }
         ];
     },
     // Intellect Fortress - already partially there, just need to fix it

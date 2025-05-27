@@ -195,15 +195,30 @@
 /* HP Section - spans rows 3-5, column 2 */
 .glog2d6 .hp-section {
     grid-column: 2;
-    grid-row: 3 / 6;
+    grid-row: 3 / 5;
+    /* Changed from 3 / 6 */
     background: var(--background-section);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-large);
     padding: 8px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    /* Changed from space-between */
     height: 100%;
+}
+
+.glog2d6 .rest-section {
+    grid-column: 2;
+    grid-row: 5;
+    background: var(--secondary-color);
+    border: 1px solid var(--secondry-color);
+    border-radius: var(--border-radius-large);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 2px;
 }
 
 /* Wounds Section - row 3, column 4 */
@@ -389,35 +404,78 @@
     gap: 4px;
 }
 
+.glog2d6 .hp-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+/* Redesigned HP Current Input */
 .glog2d6 .hp-current {
-    font-size: 18px;
-    font-weight: bold;
-    width: 50px;
+    font-size: 20px;
+    font-weight: 900;
     text-align: center;
-    padding: 6px;
     border: 2px solid var(--primary-color);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-large);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    color: var(--primary-color);
+}
+
+.glog2d6 .hp-current:focus {
+    outline: none;
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 8px rgba(120, 46, 34, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.glog2d6 .hp-current:focus {
+    outline: none;
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 8px rgba(120, 46, 34, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
     background: white;
 }
 
 .glog2d6 .hp-separator {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--primary-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* HP Max styling */
 .glog2d6 .hp-max {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--secondary-color);
+    min-width: 30px;
     text-align: center;
-    color: #333;
 }
 
 .glog2d6 .hp-max-input {
-    font-size: 14px;
-    width: 40px;
+    font-size: 16px;
+    font-weight: 700;
+    width: 50px;
+    height: 32px;
     text-align: center;
     padding: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: white;
+    color: var(--secondary-color);
+}
+
+/* HP Label */
+.glog2d6 .hp-label {
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .glog2d6 .hp-label,
@@ -1166,18 +1224,39 @@
     }
 }
 
+/* Rest Button - redesigned for its own section */
 .glog2d6 .rest-btn {
-    background: var(--success-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
     color: white;
-    font-size: 10px;
-    padding: 4px 8px;
-    margin-top: 4px;
-    width: 100%;
+    font-size: 11px;
+    font-weight: bold;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .glog2d6 .rest-btn:hover {
-    background: var(--success-hover);
+    background: var(--secondary-hover);
+    transform: translateY(-1px);
+}
+
+.glog2d6 .rest-btn:active {
+    transform: translateY(0);
+}
+
+.glog2d6 .rest-btn:hover {
+    background: var(--secondary-hover);
 }
 
 /* Enhanced Feature and Spell Cards */

@@ -1,11 +1,13 @@
 import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
 import { ActorRolls } from "../dice/actor-rolls.mjs";
 import { BonusCalculator } from "../systems/bonus-calculator.mjs";
+import { safely } from "../systems/safely.mjs";
 
 export class GLOG2D6Actor extends Actor {
     constructor(data, context) {
         super(data, context);
         this.rolls = new ActorRolls(this);
+        this._setupSafePublicMethods();
     }
 
     async _preCreate(data, options, user) {
@@ -14,6 +16,22 @@ export class GLOG2D6Actor extends Actor {
         await this.updateSource({
             "flags.glog2d6.editMode": false
         });
+    }
+
+    _setupSafePublicMethods() {
+        // Create safe public versions of risky methods
+        this.analyzeEquippedWeapons = safely({
+            fallback: { hasWeapons: false, attackButtonType: 'generic' },
+            context: 'actor-weapon-analysis'
+        })(this._analyzeEquippedWeapons.bind(this));
+
+        this.hasFeature = safely.silent(false)(
+            this._hasFeature.bind(this)
+        );
+
+        this.getClassTemplateCount = safely.silent(0)(
+            this._getClassTemplateCount.bind(this)
+        );
     }
 
     prepareData() {
@@ -48,7 +66,7 @@ export class GLOG2D6Actor extends Actor {
             const maxSlots = this.system.inventory.slots.max;
             const slotEncumbrance = Math.max(0, usedSlots - maxSlots);
 
-            // FIXED: Calculate equipment-based encumbrance penalties
+            // Calculate equipment-based encumbrance penalties
             let equipmentEncumbrance = 0;
 
             // Check equipped armor for encumbrance penalty
@@ -87,117 +105,109 @@ export class GLOG2D6Actor extends Actor {
             console.log(`  Equipment penalties: ${equipmentEncumbrance}`);
             console.log(`  Total encumbrance: ${this.system.inventory.encumbrance}`);
         }
-    }
-
-    prepareDerivedData() {
-        // Set effective modifiers for all attributes first
-        for (let [_key, attribute] of Object.entries(this.system.attributes)) {
-            attribute.effectiveMod = attribute.mod; // Default to original mod
-            attribute.effectiveValue = attribute.value; // Default to original value
-        }
-
-        console.log("bonusing")
-        // calculate bonuses
-        if (this.type === "character") {
-            this.bonusCalculator = new BonusCalculator(this);
-            const bonuses = this.bonusCalculator.calculateBonuses();
-            this._applyBonuses(bonuses);
-        }
-
-        console.log("adjusting for weight")
-        // Apply encumbrance penalty to dexterity VALUE (not modifier)
-        if (this.type === "character" && this.system.inventory.encumbrance > 0) {
-            const dexAttribute = this.system.attributes.dex;
-            const originalValue = dexAttribute.value;
-            const encumbrancePenalty = this.system.inventory.encumbrance;
-
-            // Reduce the effective dexterity VALUE by encumbrance
-            const effectiveValue = Math.max(1, originalValue - encumbrancePenalty); // Don't go below 1
-            dexAttribute.effectiveValue = effectiveValue;
-
-            // Recalculate the modifier based on the new effective value
-            if (effectiveValue == 7) dexAttribute.effectiveMod = 0;
-            else if (effectiveValue < 7) dexAttribute.effectiveMod = Math.floor((8 - effectiveValue) / 2) * -1;
-            else if (effectiveValue > 7) dexAttribute.effectiveMod = Math.floor((effectiveValue - 6) / 2);
-
-            console.log(`Dex encumbrance applied: Value ${originalValue} -> ${effectiveValue}, Mod ${dexAttribute.mod} -> ${dexAttribute.effectiveMod}`);
-        }
-
-        // calculate effective movement, reduced by encumbrance on a 2:1 basis
-        if (this.type === "character") {
-            const baseMovement = this.system.details.movement;
-            const movementBonus = this.system.details.movementBonus || 0;
-            const encumbrance = this.system.inventory.encumbrance || 0;
-            const movePenalty = Math.floor(encumbrance / 2);
-
-            this.system.details.effectiveMovement = Math.max(0, baseMovement + movementBonus - movePenalty);
-
-            if (movePenalty > 0 || movementBonus > 0) {
-                console.log(`Movement calculation: ${baseMovement} base + ${movementBonus} bonus - ${movePenalty} penalty = ${this.system.details.effectiveMovement}`);
-            }
-        }
 
         if (this.type === "character") {
             const level = this.system.details.level || 1;
+
+            // Ensure structure exists
+            if (!this.system.combat) this.system.combat = {};
+            if (!this.system.combat.attack) this.system.combat.attack = { value: 0, bonus: 0, breakdown: [] };
+
             this.system.combat.attack.value = level;
 
-            console.log(`Attack calculation for ${this.name}: Base = ${level} (level), Bonus = ${this.system.combat.attack.bonus || 0}`);
+            console.log(`Attack calculation for ${this.name}: Base = ${level} (level)`);
         }
+    }
 
-        // Calculate spell slots for wizards
-        if (this.type === "character") {
-            const wizardLevel = this.getClassTemplateCount("Wizard");
-            if (wizardLevel > 0) {
-                const intMod = this.system.attributes.int.mod;
-                this.system.spellSlots = wizardLevel + Math.max(0, intMod);
-                console.log(`Spell slots for ${this.name}: ${this.system.spellSlots}`);
-            } else {
-                this.system.spellSlots = 0;
+    prepareDerivedData() {
+        try {
+            // Set effective modifiers for all attributes first
+            for (let [_key, attribute] of Object.entries(this.system.attributes)) {
+                attribute.effectiveMod = attribute.mod; // Default to original mod
+                attribute.effectiveValue = attribute.value; // Default to original value
             }
 
-            // Ensure magicDiceCurrent is always defined
-            if (this.system.magicDiceCurrent === undefined) {
-                this.system.magicDiceCurrent = 0;
-            }
-        }
-
-        // Calculate defense value from armor and shields
-        if (this.type === "character") {
-            let armorBonus = 0;
-            let armorEncumbrance = 0;
-
-            // Find equipped armor
-            const armor = this.items.find(item => item.type === "armor" && item.system.equipped);
-            if (armor) {
-                armorBonus += armor.system.armorBonus;
-                armorEncumbrance += armor.system.encumbrancePenalty;
+            console.log("bonusing")
+            // calculate bonuses
+            if (this.type === "character") {
+                this.bonusCalculator = new BonusCalculator(this);
+                const bonuses = this.bonusCalculator.calculateBonuses();
+                this._applyBonuses(bonuses);
             }
 
-            // Find equipped shields
-            const shield = this.items.find(item => item.type === "shield" && item.system.equipped);
-            if (shield) {
-                armorBonus += shield.system.armorBonus;
+            console.log("adjusting for weight")
+            // Apply encumbrance penalty to dexterity VALUE (not modifier)
+            if (this.type === "character" && this.system.inventory.encumbrance > 0) {
+                const dexAttribute = this.system.attributes.dex;
+                const originalValue = dexAttribute.value;
+                const encumbrancePenalty = this.system.inventory.encumbrance;
+
+                // Reduce the effective dexterity VALUE by encumbrance
+                const effectiveValue = Math.max(1, originalValue - encumbrancePenalty); // Don't go below 1
+                dexAttribute.effectiveValue = effectiveValue;
+
+                // Recalculate the modifier based on the new effective value
+                if (effectiveValue == 7) dexAttribute.effectiveMod = 0;
+                else if (effectiveValue < 7) dexAttribute.effectiveMod = Math.floor((8 - effectiveValue) / 2) * -1;
+                else if (effectiveValue > 7) dexAttribute.effectiveMod = Math.floor((effectiveValue - 6) / 2);
+
+                console.log(`Dex encumbrance applied: Value ${originalValue} -> ${effectiveValue}, Mod ${dexAttribute.mod} -> ${dexAttribute.effectiveMod}`);
             }
 
-            // Defense = Armor + Shield + Dex mod (use effective mod)
-            const dexMod = this.system.attributes.dex.effectiveMod;
-            const dexBonus = dexMod > 0 ? dexMod : 0;
+            // calculate effective movement, reduced by encumbrance on a 2:1 basis
+            if (this.type === "character") {
+                const baseMovement = this.system.details.movement;
+                const movementBonus = this.system.details.movementBonus || 0;
+                const encumbrance = this.system.inventory.encumbrance || 0;
+                const movePenalty = Math.floor(encumbrance / 2);
 
-            // Get melee/ranged bonuses from features (like Acrobat Training)
-            const meleeBonus = this.system.defense?.meleeBonus || 0;
-            const rangedBonus = this.system.defense?.rangedBonus || 0;
+                this.system.details.effectiveMovement = Math.max(0, baseMovement + movementBonus - movePenalty);
 
-            this.system.defense = {
-                armor: armor?.system.armorBonus || 0,
-                shield: shield?.system.armorBonus || 0,
-                dexBonus: dexBonus,
-                meleeBonus: meleeBonus,
-                rangedBonus: rangedBonus,
-                meleeTotal: armorBonus + dexBonus + meleeBonus,
-                rangedTotal: armorBonus + dexBonus + rangedBonus,
-                total: armorBonus + dexBonus, // Backwards compatibility
-                armorEncumbrance: armorEncumbrance
-            };
+                if (movePenalty > 0 || movementBonus > 0) {
+                    console.log(`Movement calculation: ${baseMovement} base + ${movementBonus} bonus - ${movePenalty} penalty = ${this.system.details.effectiveMovement}`);
+                }
+            }
+
+            // Calculate defense value from armor and shields
+            if (this.type === "character") {
+                let armorBonus = 0;
+                let armorEncumbrance = 0;
+
+                // Find equipped armor
+                const armor = this.items.find(item => item.type === "armor" && item.system.equipped);
+                if (armor) {
+                    armorBonus += armor.system.armorBonus;
+                    armorEncumbrance += armor.system.encumbrancePenalty;
+                }
+
+                // Find equipped shields
+                const shield = this.items.find(item => item.type === "shield" && item.system.equipped);
+                if (shield) {
+                    armorBonus += shield.system.armorBonus;
+                }
+
+                // Defense = Armor + Shield + Dex mod (use effective mod)
+                const dexMod = this.system.attributes.dex.effectiveMod;
+                const dexBonus = dexMod > 0 ? dexMod : 0;
+
+                // Get melee/ranged bonuses from features (like Acrobat Training)
+                const meleeBonus = this.system.defense?.meleeBonus || 0;
+                const rangedBonus = this.system.defense?.rangedBonus || 0;
+
+                this.system.defense = {
+                    armor: armor?.system.armorBonus || 0,
+                    shield: shield?.system.armorBonus || 0,
+                    dexBonus: dexBonus,
+                    meleeBonus: meleeBonus,
+                    rangedBonus: rangedBonus,
+                    meleeTotal: armorBonus + dexBonus + meleeBonus,
+                    rangedTotal: armorBonus + dexBonus + rangedBonus,
+                    total: armorBonus + dexBonus, // Backwards compatibility
+                    armorEncumbrance: armorEncumbrance
+                };
+            }
+        } catch (error) {
+            console.error("Error in prepareDerivedData for", this.name, ":", error);
         }
     }
 
@@ -270,7 +280,7 @@ export class GLOG2D6Actor extends Actor {
     /**
     * Get the number of templates this character has for a specific class
     */
-    getClassTemplateCount(className) {
+    _getClassTemplateCount(className) {
         const classFeatures = this.items.filter(i =>
             i.type === "feature" &&
             i.system.active &&
@@ -346,12 +356,17 @@ export class GLOG2D6Actor extends Actor {
                 this.system.defense.meleeBreakdown = breakdown;
                 break;
 
-            case "magicDice.max":
-                this.system.magicDiceMax = (this.system.magicDiceMax || 0) + totalBonus;
+            case "spellSlots":
+                this.system.spellSlots = (this.system.spellSlots || 0) + totalBonus;
+                this.system.spellSlotsBreakdown = breakdown;
+                break;
+
+            case "magicDiceMax":
+                this.system.magicDiceMax = Math.max(0, (this.system.magicDiceMax || 0) + totalBonus);
                 this.system.magicDiceMaxBreakdown = breakdown;
-                // Initialize current if not set or if max increased
-                if (this.system.magicDiceCurrent === undefined || this.system.magicDiceCurrent < totalBonus) {
-                    this.system.magicDiceCurrent = totalBonus;
+                // Safe initialization
+                if (this.system.magicDiceCurrent === undefined) {
+                    this.system.magicDiceCurrent = this.system.magicDiceMax;
                 }
                 break;
 
@@ -372,7 +387,7 @@ export class GLOG2D6Actor extends Actor {
     /**
      * Check if this actor has any levels in a specific class
      */
-    hasClass(className) {
+    _hasClass(className) {
         return this.items.some(i =>
             i.type === "feature" &&
             i.system.active &&
@@ -383,7 +398,7 @@ export class GLOG2D6Actor extends Actor {
     /**
      * Check if this actor has specific features (can check multiple)
      */
-    hasFeature(...featureNames) {
+    _hasFeature(...featureNames) {
         return featureNames.some(name =>
             this.items.some(i =>
                 i.type === "feature" &&
@@ -580,17 +595,61 @@ export class GLOG2D6Actor extends Actor {
 
     async rest() {
         const updates = {};
+        let restMessages = [];
 
-        // Restore magic dice to maximum
-        if (this.system.magicDiceMax > 0) {
-            updates["system.magicDiceCurrent"] = this.system.magicDiceMax;
+        // Restore HP to maximum
+        const currentHP = this.system.hp.value;
+        const maxHP = this.system.hp.max;
+
+        if (currentHP < maxHP) {
+            updates["system.hp.value"] = maxHP;
+            const healedAmount = maxHP - currentHP;
+            restMessages.push(`Restored ${healedAmount} HP (${currentHP} → ${maxHP})`);
+        } else {
+            restMessages.push("Already at full HP");
         }
 
-        // TODO: Add other rest benefits later (HP recovery, etc.)
+        // Restore magic dice to maximum
+        const currentMD = this.system.magicDiceCurrent || 0;
+        const maxMD = this.system.magicDiceMax || 0;
 
+        if (maxMD > 0) {
+            if (currentMD < maxMD) {
+                updates["system.magicDiceCurrent"] = maxMD;
+                const restoredMD = maxMD - currentMD;
+                restMessages.push(`Restored ${restoredMD} Magic Dice (${currentMD} → ${maxMD})`);
+            } else {
+                restMessages.push("Magic Dice already at maximum");
+            }
+        }
+
+        // Apply updates if any
         if (Object.keys(updates).length > 0) {
             await this.update(updates);
         }
+
+        // Create a nice rest message
+        const restSummary = restMessages.length > 0 ? restMessages.join(" • ") : "No recovery needed";
+
+        ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+            <div class="glog2d6-roll rest-message">
+                <h3><i class="fas fa-bed"></i> ${this.name} takes a rest</h3>
+                <div class="roll-result">
+                    <strong>Recovery:</strong><br>
+                    ${restSummary}
+                </div>
+            </div>
+        `,
+            type: CONST.CHAT_MESSAGE_TYPES.OTHER
+        });
+
+        return {
+            hpRestored: updates["system.hp.value"] ? (maxHP - currentHP) : 0,
+            mdRestored: updates["system.magicDiceCurrent"] ? (maxMD - currentMD) : 0,
+            message: restSummary
+        };
     }
 
     async castSpellWithDice(spell, diceCount) {
@@ -690,6 +749,65 @@ export class GLOG2D6Actor extends Actor {
         }
 
         return diceResults;
+    }
+
+    /**
+     * Analyze equipped weapons for UI display
+     */
+    _analyzeEquippedWeapons() {
+        const equippedWeapons = this.items.filter(i =>
+            i.type === "weapon" && i.system.equipped
+        );
+
+        const analysis = {
+            hasWeapons: equippedWeapons.length > 0,
+            weaponCount: equippedWeapons.length,
+            primaryWeapon: null,
+            weaponTypes: new Set(),
+            hasThrowable: false,
+            attackButtonType: 'generic',
+            throwableWeapon: null,
+            meleeWeapons: [],
+            rangedWeapons: []
+        };
+
+        if (equippedWeapons.length === 0) {
+            return analysis;
+        }
+
+        // Categorize weapons
+        for (const weapon of equippedWeapons) {
+            const type = weapon.system.weaponType || 'melee';
+            analysis.weaponTypes.add(type);
+
+            if (type === 'thrown') {
+                analysis.hasThrowable = true;
+                analysis.throwableWeapon = weapon;
+                analysis.meleeWeapons.push(weapon);
+            } else if (type === 'ranged') {
+                analysis.rangedWeapons.push(weapon);
+            } else {
+                analysis.meleeWeapons.push(weapon);
+            }
+        }
+
+        // Determine primary weapon using our existing method
+        analysis.primaryWeapon = this._getBestWeapon(equippedWeapons);
+
+        // Determine attack button type
+        if (analysis.hasThrowable && analysis.meleeWeapons.length > 1) {
+            analysis.attackButtonType = 'split';
+        } else if (analysis.rangedWeapons.length > 0 && analysis.meleeWeapons.length === 0) {
+            analysis.attackButtonType = 'ranged';
+        } else if (analysis.meleeWeapons.length > 0 && analysis.rangedWeapons.length === 0) {
+            analysis.attackButtonType = 'melee';
+        } else if (analysis.weaponTypes.size > 1) {
+            analysis.attackButtonType = 'split';
+        } else {
+            analysis.attackButtonType = 'generic';
+        }
+
+        return analysis;
     }
 
     _getBestWeapon(weapons) {

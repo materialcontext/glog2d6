@@ -1,3 +1,5 @@
+import { safely } from "../systems/safely.mjs";
+import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
 import {
     addClassFeatures,
@@ -7,15 +9,61 @@ import {
 } from './handlers/feature-handlers.mjs'
 
 export class GLOG2D6ActorSheet extends ActorSheet {
+    constructor(...args) {
+        super(...args);
+        Object.assign(this, ErrorTrackingMixin);
+        this._initializeErrorTracking();
+        this._setupSafeMethods();
+        this._addDebugMethods();
+    }
 
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ["glog2d6", "sheet", "actor"],
             width: 520,
             height: 760,
-            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "features" }]
+            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "inventory" }]
         });
     }
+
+    _setupSafeMethods() {
+        // Wrap risky methods in safety wrapper
+        this.getWeaponAnalysis = safely({
+            fallback: { hasWeapons: false, attackButtonType: 'generic' },
+            context: 'weapon-analysis'
+        })(() => this.actor.analyzeEquippedWeapons());
+
+        this.hasFeature = safely.silent(false)(
+            (featureName) => this.actor.hasFeature(featureName)
+        );
+
+        this.getAvailableClasses = safely({
+            fallback: [],
+            context: 'loading-available-classes'
+        })(() => getAvailableClasses());
+
+        this.hasAvailableFeatures = safely({
+            fallback: [],
+            context: 'loading-available-features'
+        })(() => hasAvailableClassFeatures());
+    }
+
+    _addDebugMethods() {
+        // Add global debug access
+        window.debugSheet = this;
+
+        // Add console commands
+        window.getSheetErrors = () => this.getErrorHistory();
+        window.clearSheetErrors = () => this.clearErrorHistory();
+        window.generateErrorReport = () => this.generateErrorReport();
+
+        console.log('Debug methods available:');
+        console.log('- getSheetErrors() - View error history');
+        console.log('- clearSheetErrors() - Clear error history');
+        console.log('- generateErrorReport() - Generate detailed report');
+        console.log('- debugSheet - Access to sheet instance');
+    }
+
 
     get template() {
         return `systems/glog2d6/templates/actor/actor-${this.actor.type}-sheet.hbs`;
@@ -33,19 +81,16 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
 
         // Get available classes from compendium pack
-        context.availableClasses = await this._getAvailableClasses();
+        context.availableClasses = await this.getAvailableClasses();
 
         // Check if character has available class features
-        context.hasAvailableFeatures = this._hasAvailableClassFeatures();
+        context.hasAvailableFeatures = this.hasAvailableFeatures();
 
         // Analyze equipped weapons for smart button display
-        const weaponAnalysis = this._analyzeEquippedWeapons();
-        context.weaponAnalysis = weaponAnalysis;
+        context.weaponAnalysis = this.getWeaponAnalysis();
 
         // Properly detect Acrobat training with robust fallback
-        context.hasAcrobatTraining = this.actor.hasFeature ?
-            this.actor.hasFeature("Acrobat Training") :
-            this.actor.items.some(i => i.type === "feature" && i.system.active && i.name === "Acrobat Training");
+        context.hasAcrobatTraining = this.hasFeature("Acrobat Training");
 
         // Debug logging
         if (this.actor.type === "character") {
@@ -68,38 +113,32 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Everything below here is only needed if the sheet is editable
         if (!this.isEditable) return;
 
-        // FIXED: Only activate clickable elements when NOT in edit mode
-        const editMode = this.actor.getFlag("glog2d6", "editMode") === true;
+        // Attribute rolls - click on card when not in edit mode
+        html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
 
-        if (!editMode) {
-            // Attribute rolls - click on card when not in edit mode
-            html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
+        // Combat action buttons
+        html.find('.action-card.clickable').each((i, element) => {
+            const action = element.dataset.action;
+            if (action) {
+                $(element).click(this._getActionHandler(action).bind(this));
+            }
+        });
 
-            // Combat action buttons
-            html.find('.action-card.clickable').each((i, element) => {
-                const action = element.dataset.action;
-                if (action) {
-                    $(element).click(this._getActionHandler(action).bind(this));
-                }
-            });
+        // Combat rolls - click on card when not in edit mode
+        html.find('.combat-card.clickable').each((i, element) => {
+            const action = element.dataset.action;
+            if (action) {
+                $(element).click(this._getCombatHandler(action).bind(this));
+            }
+        });
 
-            // Combat rolls - click on card when not in edit mode
-            html.find('.combat-card.clickable').each((i, element) => {
-                const action = element.dataset.action;
-                if (action) {
-                    $(element).click(this._getCombatHandler(action).bind(this));
-                }
-            });
-
-            // Movement roll
-            html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
-        }
+        // Movement roll
+        html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
 
         // Always active elements (regardless of edit mode)
         html.find('.attribute-save').click(this._onSaveRoll.bind(this));
         html.find('.weapon-attack-btn').click(this._onWeaponAttack.bind(this));
         html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
-        html.find('.rest-btn').click(this._onRest.bind(this));
 
         // Equipment and UI controls
         html.find('.equipped-toggle').change(this._onEquippedToggle.bind(this));
@@ -122,16 +161,14 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         html.find('.hireling-type-select').change(this._onHirelingTypeChange.bind(this));
     }
 
+
+
     async _onAddClassFeatures(event) {
         return addClassFeatures(this, event);
     }
 
     async _onFeatureToggle(event) {
         return toggleFeature(this, event);
-    }
-
-    _hasAvailableClassFeatures() {
-        return hasAvailableClassFeatures(this);
     }
 
     async _getAvailableClasses() {
@@ -241,9 +278,23 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async _onRest(event) {
         event.preventDefault();
-        await this.actor.rest();
-        ui.notifications.info(`${this.actor.name} rests and recovers magic dice.`);
-        this.render(); // Refresh to show updated MD
+        console.log("Rest button clicked");
+
+        try {
+            const restResult = await this.actor.rest();
+
+            // Provide appropriate notification based on what was restored
+            if (restResult.hpRestored > 0 || restResult.mdRestored > 0) {
+                ui.notifications.info(`${this.actor.name} rests and recovers!`);
+            } else {
+                ui.notifications.info(`${this.actor.name} rests but is already fully recovered.`);
+            }
+
+            this.render(); // Refresh to show updated values
+        } catch (error) {
+            console.error("Error during rest:", error);
+            ui.notifications.error("Failed to rest: " + error.message);
+        }
     }
 
     async _onTorchToggle(event) {
@@ -252,68 +303,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async _onTorchItemToggle(event) {
         return toggleTorchItem(this, event);
-    }
-
-    _analyzeEquippedWeapons() {
-        const equippedWeapons = this.actor.items.filter(i =>
-            i.type === "weapon" && i.system.equipped
-        );
-
-        const analysis = {
-            hasWeapons: equippedWeapons.length > 0,
-            weaponCount: equippedWeapons.length,
-            primaryWeapon: null,
-            weaponTypes: new Set(),
-            hasThrowable: false,
-            attackButtonType: 'generic', // 'generic', 'melee', 'ranged', 'split'
-            throwableWeapon: null,
-            meleeWeapons: [],
-            rangedWeapons: []
-        };
-
-        if (equippedWeapons.length === 0) {
-            return analysis;
-        }
-
-        // Categorize weapons
-        for (const weapon of equippedWeapons) {
-            const type = weapon.system.weaponType || 'melee';
-            analysis.weaponTypes.add(type);
-
-            if (type === 'thrown') {
-                analysis.hasThrowable = true;
-                analysis.throwableWeapon = weapon;
-                analysis.meleeWeapons.push(weapon); // Thrown weapons can be melee
-            } else if (type === 'ranged') {
-                analysis.rangedWeapons.push(weapon);
-            } else {
-                analysis.meleeWeapons.push(weapon);
-            }
-        }
-
-        // Determine primary weapon
-        analysis.primaryWeapon = this.actor._getBestWeapon(equippedWeapons);
-
-        // FIXED: Better attack button type logic
-        if (analysis.hasThrowable && analysis.meleeWeapons.length > 1) {
-            // Has throwable + another melee weapon = split buttons
-            analysis.attackButtonType = 'split';
-        } else if (analysis.rangedWeapons.length > 0 && analysis.meleeWeapons.length === 0) {
-            // Only ranged weapons
-            analysis.attackButtonType = 'ranged';
-        } else if (analysis.meleeWeapons.length > 0 && analysis.rangedWeapons.length === 0) {
-            // Only melee weapons
-            analysis.attackButtonType = 'melee';
-        } else if (analysis.weaponTypes.size > 1) {
-            // Mixed weapon types
-            analysis.attackButtonType = 'split';
-        } else {
-            // Default to generic
-            analysis.attackButtonType = 'generic';
-        }
-
-        console.log(`Weapon Analysis for ${this.actor.name}:`, analysis);
-        return analysis;
     }
 
     async _onSaveRoll(event) {
@@ -355,7 +344,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         await this.actor.setFlag("glog2d6", "editMode", !currentMode);
 
         // Force a complete re-render to ensure all elements update properly
-        this.render(true);
+        this.render();
     }
 
     async _onDefenseRoll(event) {

@@ -1,4 +1,5 @@
 {{!-- Header --}}
+{{!-- Header --}}
 <header class="sheet-header">
     {{!-- Name Bar - col 1 row 1 --}}
     <div class="name-bar">
@@ -41,7 +42,7 @@
         </div>
     </div>
 
-    {{!-- HP Section - col 2 row 3-5 --}}
+    {{!-- HP Section - col 2 row 3-4 (reduced from 3-5) --}}
     <div class="hp-section">
         <div class="hp-container">
             <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0" class="hp-current" />
@@ -52,24 +53,33 @@
             <span class="hp-max">{{system.hp.max}}</span>
             {{/if}}
         </div>
-        <div class="hp-label">HP / MAX</div>
-        {{#unless editMode}}
-        <button type="button" class="rest-btn btn-base" data-action="rest">Rest</button>
-        {{/unless}}
+        <div class="hp-label">Hit Points</div>
     </div>
 
-    {{!-- Wounds Section - row 3 col 4 --}}
+    {{!-- Rest Section - NEW: col 2 row 5 --}}
+    {{#unless editMode}}
+    <div class="rest-section">
+        <button type="button" class="rest-btn" data-action="rest">
+            <i class="fas fa-bed"></i> Rest
+        </button>
+    </div>
+    {{/unless}}
+
+    {{!-- Wounds Section - row 2 col 3 --}}
     <div class="wounds-section">
         <label class="label-small">Wounds</label>
         <input name="system.wounds" type="number" value="{{system.wounds}}" min="0" class="wounds-input input-base" />
     </div>
 
-    {{!-- Trauma Section - row 4 col 4 --}}
+    {{!-- Trauma Section - row 3-4 col 3 --}}
     <div class="trauma-section">
-        <button type="button" class="trauma-btn btn-base" data-action="trauma">Trauma</button>
+        <button type="button" class="trauma-btn btn-base theme-btn" data-action="trauma">
+            <i class="fas fa-skull"></i>
+            <span>Trauma</span>
+        </button>
     </div>
 
-    {{!-- Torch & Move Section - row 5 col 4 --}}
+    {{!-- Torch & Move Section - row 5 col 3 --}}
     <div class="torch-move-section">
         <button type="button" class="torch-btn {{#if system.torch.lit}}torch-lit{{/if}}" data-action="torch">
             <i class="fas fa-fire"></i>

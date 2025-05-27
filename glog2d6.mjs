@@ -7,9 +7,12 @@ import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { GLOG2D6Roll } from "./module/dice/glog-roll.mjs";
+import { setupGlobalErrorHandler } from './module/systems/global-error-handler.mjs';
 
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
+
+    setupGlobalErrorHandler();
 
     // Register Handlebars helpers
     Handlebars.registerHelper('upperCase', function(str) {
