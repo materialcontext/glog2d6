@@ -2,6 +2,7 @@ import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
 import { ActorRolls } from "../dice/actor-rolls.mjs";
 import { BonusCalculator } from "../systems/bonus-calculator.mjs";
 import { safely } from "../systems/safely.mjs";
+import { updateTokenLighting } from "./handlers/torch-handlers.mjs";
 
 export class GLOG2D6Actor extends Actor {
     constructor(data, context) {
@@ -100,7 +101,6 @@ export class GLOG2D6Actor extends Actor {
             this.system.inventory.slotEncumbrance = slotEncumbrance;
             this.system.inventory.equipmentEncumbrance = equipmentEncumbrance;
 
-            console.log(`Encumbrance Debug - ${this.name}:`);
             console.log(`  Slots: ${usedSlots}/${maxSlots} (overflow: ${slotEncumbrance})`);
             console.log(`  Equipment penalties: ${equipmentEncumbrance}`);
             console.log(`  Total encumbrance: ${this.system.inventory.encumbrance}`);
@@ -408,9 +408,6 @@ export class GLOG2D6Actor extends Actor {
         );
     }
 
-    /**
-     * Toggle torch lighting for this actor's tokens
-     */
     async toggleTorch() {
         if (this.type !== "character") return;
 
@@ -441,73 +438,7 @@ export class GLOG2D6Actor extends Actor {
             "system.torch.activeTorchId": activeTorch?.id || null
         });
 
-        // Update all tokens for this actor
-        const tokens = this.getActiveTokens();
-        const updates = [];
-
-        for (let token of tokens) {
-            if (newState && activeTorch) {
-                // Turn on light with torch properties
-                const lightConfig = {
-                    alpha: 0.15,
-                    angle: activeTorch.system.lightAngle || 360,
-                    bright: (activeTorch.system.lightRadius.bright || 20) / canvas.dimensions.distance,
-                    coloration: 1,
-                    dim: (activeTorch.system.lightRadius.dim || 40) / canvas.dimensions.distance,
-                    luminosity: 0.15,
-                    saturation: -0.3,
-                    contrast: 0.05,
-                    shadows: 0.1,
-                    animation: {
-                        type: activeTorch.system.lightAnimation?.type || null,
-                        speed: Math.max(activeTorch.system.lightAnimation?.speed || 1, 1),
-                        intensity: Math.min(activeTorch.system.lightAnimation?.intensity || 1, 2),
-                        reverse: false
-                    },
-                    darkness: {
-                        min: 0,
-                        max: 1
-                    },
-                    color: "#ffbb77"
-                };
-
-                updates.push({
-                    _id: token.id,
-                    light: lightConfig
-                });
-            } else {
-                // Turn off light
-                updates.push({
-                    _id: token.id,
-                    light: {
-                        alpha: 0,
-                        angle: 360,
-                        bright: 0,
-                        coloration: 1,
-                        dim: 0,
-                        luminosity: 0,
-                        saturation: 0,
-                        contrast: 0,
-                        shadows: 0,
-                        animation: {
-                            type: null,
-                            speed: 5,
-                            intensity: 5,
-                            reverse: false
-                        },
-                        darkness: {
-                            min: 0,
-                            max: 1
-                        },
-                        color: null
-                    }
-                });
-            }
-        }
-
-        if (updates.length > 0) {
-            await canvas.scene.updateEmbeddedDocuments("Token", updates);
-        }
+        updateTokenLighting(this, newState, newState ? activeTorch : null)
 
         // Provide feedback
         if (newState) {
@@ -597,38 +528,29 @@ export class GLOG2D6Actor extends Actor {
         const updates = {};
         let restMessages = [];
 
-        // Restore HP to maximum
-        const currentHP = this.system.hp.value;
-        const maxHP = this.system.hp.max;
-
-        if (currentHP < maxHP) {
-            updates["system.hp.value"] = maxHP;
-            const healedAmount = maxHP - currentHP;
-            restMessages.push(`Restored ${healedAmount} HP (${currentHP} → ${maxHP})`);
-        } else {
-            restMessages.push("Already at full HP");
-        }
-
-        // Restore magic dice to maximum
-        const currentMD = this.system.magicDiceCurrent || 0;
-        const maxMD = this.system.magicDiceMax || 0;
-
-        if (maxMD > 0) {
-            if (currentMD < maxMD) {
-                updates["system.magicDiceCurrent"] = maxMD;
-                const restoredMD = maxMD - currentMD;
-                restMessages.push(`Restored ${restoredMD} Magic Dice (${currentMD} → ${maxMD})`);
-            } else {
-                restMessages.push("Magic Dice already at maximum");
+        const recoverStat = (current, max, label, key) => {
+            if (max > 0) {
+                if (current < max) {
+                    updates[key] = max;
+                    restMessages.push(`Restored ${max - current} ${label} (${current} → ${max})`);
+                    return max - current;
+                } else {
+                    restMessages.push(`${label} already at maximum`);
+                }
             }
-        }
+            return 0;
+        };
 
-        // Apply updates if any
-        if (Object.keys(updates).length > 0) {
-            await this.update(updates);
-        }
+        const hpRestored = recoverStat(this.system.hp.value, this.system.hp.max, "HP", "system.hp.value");
+        const mdRestored = recoverStat(
+            this.system.magicDiceCurrent || 0,
+            this.system.magicDiceMax || 0,
+            "Magic Dice",
+            "system.magicDiceCurrent"
+        );
 
-        // Create a nice rest message
+        if (Object.keys(updates).length > 0) await this.update(updates);
+
         const restSummary = restMessages.length > 0 ? restMessages.join(" • ") : "No recovery needed";
 
         ChatMessage.create({
@@ -645,43 +567,32 @@ export class GLOG2D6Actor extends Actor {
             type: CONST.CHAT_MESSAGE_TYPES.OTHER
         });
 
-        return {
-            hpRestored: updates["system.hp.value"] ? (maxHP - currentHP) : 0,
-            mdRestored: updates["system.magicDiceCurrent"] ? (maxMD - currentMD) : 0,
-            message: restSummary
-        };
+        return { hpRestored, mdRestored, message: restSummary };
     }
 
     async castSpellWithDice(spell, diceCount) {
-        // Roll the magic dice
         const roll = new Roll(`${diceCount}d6`);
         await roll.evaluate();
-
         const results = roll.terms[0].results.map(r => r.result);
-        const sum = roll.total;
 
-        // Determine which dice are exhausted (4-6) vs returned (1-3)
         const exhausted = results.filter(r => r >= 4).length;
-        const returned = results.filter(r => r <= 3).length;
-
-        // Update magic dice
+        const returned = results.length - exhausted;
         const newCurrent = Math.max(0, this.system.magicDiceCurrent - exhausted);
         await this.update({ "system.magicDiceCurrent": newCurrent });
 
-        // Create result message
         ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: `
         <div class="glog2d6-spell-result">
             <h3>${this.name} casts ${spell.name}!</h3>
             <div class="magic-dice-result">
-                <strong>Magic Dice:</strong> [${results.join(', ')}] = ${sum}<br>
+                <strong>Magic Dice:</strong> [${results.join(', ')}] = ${roll.total}<br>
                 <strong>Dice Exhausted:</strong> ${exhausted} (rolled 4-6)<br>
                 <strong>Dice Returned:</strong> ${returned} (rolled 1-3)<br>
                 <strong>Remaining MD:</strong> ${newCurrent}/${this.system.magicDiceMax}
             </div>
             <div class="spell-effect">
-                <p><strong>Spell Effect:</strong> Use [dice] = ${diceCount} and [sum] = ${sum} in spell description</p>
+                <p><strong>Spell Effect:</strong> Use [dice] = ${diceCount} and [sum] = ${roll.total} in spell description</p>
             </div>
         </div>
     `,
@@ -689,45 +600,24 @@ export class GLOG2D6Actor extends Actor {
         });
     }
 
-    /**
-     * Create a standardized chat message for rolls with special effects support
-     */
     _createRollChatMessage(title, roll, extraContent = '') {
-        // Better roll display logic
-        let rollDisplay = '';
-
-        if (roll.terms && roll.terms.length > 0) {
+        const parseRoll = () => {
             const parts = [];
-
-            for (const term of roll.terms) {
-                if (term.results && Array.isArray(term.results)) {
-                    // This is dice - show individual results
-                    const diceResults = term.results.map(r => r.result);
-                    parts.push(`[${diceResults.join(', ')}]`);
+            for (const term of roll.terms || []) {
+                if (Array.isArray(term.results)) {
+                    parts.push(`[${term.results.map(r => r.result).join(', ')}]`);
                 } else if (term.number !== undefined && term.operator) {
-                    // This is a modifier with operator
-                    const sign = term.operator === '+' ? '+' : term.operator;
-                    parts.push(`${sign}${Math.abs(term.number)}`);
-                } else if (typeof term === 'string' && (term === '+' || term === '-')) {
-                    // Skip standalone operators, they're handled above
-                    continue;
+                    parts.push(`${term.operator}${Math.abs(term.number)}`);
                 }
             }
+            return parts.join(' ') || roll.formula || roll.result;
+        };
 
-            rollDisplay = parts.join(' ');
-        }
+        const rollDisplay = parseRoll();
+        const specialEffectsHtml = roll.specialEffects?.length
+            ? `<div class="special-effects-notice"><i class="fas fa-star"></i> <em>${roll.specialEffects.join(', ')}</em></div>`
+            : '';
 
-        // Fallback to formula if we couldn't parse terms
-        if (!rollDisplay) {
-            rollDisplay = roll.formula || roll.result;
-        }
-
-        const specialEffectsHtml = roll.specialEffects?.length > 0 ?
-            `<div class="special-effects-notice">
-           <i class="fas fa-star"></i> <em>${roll.specialEffects.join(', ')}</em>
-         </div>` : '';
-
-        // Auto trigger critical effects
         if (roll.isCriticalHit && title.includes("Attack")) {
             console.log(`${this.name} scored a critical hit - target should make trauma save`);
         }
@@ -738,12 +628,12 @@ export class GLOG2D6Actor extends Actor {
 
         return ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: `
+            content: `9
           <div class="glog2d6-roll">
             <h3>${title}</h3>
             <div class="roll-result">
-              <strong>Roll:</strong> ${rollDisplay}
-              <br><strong>Total:</strong> ${roll.total}
+              <strong>Roll:</strong> ${rollDisplay}<br>
+              <strong>Total:</strong> ${roll.total}
               ${extraContent}
               ${specialEffectsHtml}
             </div>

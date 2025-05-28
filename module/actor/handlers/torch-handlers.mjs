@@ -1,164 +1,129 @@
-/**
- * Torch related functions for actor-sheet handlers
- */
-
-async function toggleTorch(sheet, event) {
+async function toggleTorch(actor, event) {
     event.preventDefault();
     console.log("Main torch toggle clicked");
 
     try {
-        const availableTorches = sheet.actor.items.filter(item =>
+        const availableTorches = actor.items.filter(item =>
             item.type === "torch" &&
             (!item.system.duration.enabled || item.system.duration.remaining > 0)
         );
 
         if (availableTorches.length === 0) {
-            ui.notifications.warn("No torches available or all torches are burned out!");
-            return;
+            return ui.notifications.warn("No torches available or all are burned out!");
         }
 
-        // Call the actor's toggleTorch method
-        const result = await sheet.actor.toggleTorch();
+        const result = await actor.toggleTorch();
         console.log("Torch toggle result:", result);
-
-        // Force a re-render to update the UI state
-        sheet.render(false);
-    } catch (error) {
-        console.error("Error toggling torch:", error);
-        ui.notifications.error("Failed to toggle torch: " + error.message);
+        return { "ok": true }
+        sheet.render(false); // MOVE MEEEEE Re-render sheet UI
+    } catch (err) {
+        console.error("Error toggling torch:", err);
+        ui.notifications.error("Failed to toggle torch: " + err.message);
+        return { "ok": false }
     }
+
 }
 
-// Individual torch item toggle method
-async function toggleTorchItem(sheet, event) {
+async function toggleTorchItem(actor, event) {
     event.preventDefault();
-    event.stopPropagation(); // Prevent item edit from triggering
+    event.stopPropagation();
 
     const torchId = event.currentTarget.dataset.itemId;
-    const torch = sheet.actor.items.get(torchId);
+    const torch = actor.items.get(torchId);
 
-    if (!torch) {
-        ui.notifications.error("Torch not found!");
-        return;
-    }
+    if (!torch) return ui.notifications.error("Torch not found!");
 
     console.log("Torch item clicked:", torch.name, torchId);
 
     try {
-        // Check if this torch can be used
         if (torch.system.duration.enabled && torch.system.duration.remaining <= 0) {
-            ui.notifications.warn(`${torch.name} is burned out!`);
-            return;
+            return ui.notifications.warn(`${torch.name} is burned out!`);
         }
 
-        const currentlyLit = sheet.actor.system.torch?.lit || false;
-        const currentActiveTorchId = sheet.actor.system.torch?.activeTorchId;
+        const { lit, activeTorchId } = actor.system.torch || {};
+        const isActive = lit && activeTorchId === torchId;
 
-        if (currentlyLit && currentActiveTorchId === torchId) {
-            // This torch is currently active, turn it off
-            await sheet.actor.update({
-                "system.torch.lit": false,
-                "system.torch.activeTorchId": null
-            });
+        await actor.update({
+            "system.torch.lit": !isActive,
+            "system.torch.activeTorchId": isActive ? null : torchId
+        });
 
-            // Turn off token lighting
-            await updateTokenLighting(sheet, false, null);
+        await updateTokenLighting(actor, !isActive, isActive ? null : torch);
 
-            ui.notifications.info(`${torch.name} extinguished`);
-        } else {
-            // Switch to this torch (or turn on if none active)
-            await sheet.actor.update({
-                "system.torch.lit": true,
-                "system.torch.activeTorchId": torchId
-            });
-
-            // Update token lighting with this torch's properties
-            await updateTokenLighting(sheet, true, torch);
-
-            ui.notifications.info(`${torch.name} lit`);
-        }
-
-        // Force re-render to update UI
-        sheet.render(false);
-
-    } catch (error) {
-        console.error("Error toggling torch item:", error);
-        ui.notifications.error("Failed to toggle torch: " + error.message);
+        ui.notifications.info(`${torch.name} ${isActive ? "extinguished" : "lit"}`);
+        return { "ok": true }
+        sheet.render(false); // MOVE MEEEEE
+    } catch (err) {
+        console.error("Error toggling torch item:", err);
+        ui.notifications.error("Failed to toggle torch: " + err.message);
+        return { "ok": false}
     }
 }
 
-// Helper method to update token lighting - fixed parameter order
-async function updateTokenLighting(sheet, isLit, torch) {
-    const tokens = sheet.actor.getActiveTokens();
-    const updates = [];
+async function updateTokenLighting(actor, isLit, torch) {
+    const tokens = actor.getActiveTokens();
+    const updates = tokens.map(token => ({
+        _id: token.id,
+        light: isLit && torch ? getTorchLightConfig(torch) : lightsOff
+    }));
 
-    for (let token of tokens) {
-        if (isLit && torch) {
-            // Turn on light with torch properties
-            const lightConfig = {
-                alpha: 0.15,
-                angle: torch.system.lightAngle || 360,
-                bright: (torch.system.lightRadius.bright || 20) / canvas.dimensions.distance,
-                coloration: 1,
-                dim: (torch.system.lightRadius.dim || 40) / canvas.dimensions.distance,
-                luminosity: 0.15,
-                saturation: -0.3,
-                contrast: 0.05,
-                shadows: 0.1,
-                animation: {
-                    type: torch.system.lightAnimation?.type || null,
-                    speed: Math.max(torch.system.lightAnimation?.speed || 1, 1),
-                    intensity: Math.min(torch.system.lightAnimation?.intensity || 1, 2),
-                    reverse: false
-                },
-                darkness: {
-                    min: 0,
-                    max: 1
-                },
-                color: torch.system.lightColor || "#ffbb77"
-            };
-
-            updates.push({
-                _id: token.id,
-                light: lightConfig
-            });
-        } else {
-            // Turn off light
-            updates.push({
-                _id: token.id,
-                light: {
-                    alpha: 0,
-                    angle: 360,
-                    bright: 0,
-                    coloration: 1,
-                    dim: 0,
-                    luminosity: 0,
-                    saturation: 0,
-                    contrast: 0,
-                    shadows: 0,
-                    animation: {
-                        type: null,
-                        speed: 5,
-                        intensity: 5,
-                        reverse: false
-                    },
-                    darkness: {
-                        min: 0,
-                        max: 1
-                    },
-                    color: null
-                }
-            });
-        }
-    }
-
-    if (updates.length > 0) {
+    if (updates.length) {
         await canvas.scene.updateEmbeddedDocuments("Token", updates);
     }
 }
 
+function getTorchLightConfig(torch, canvasDistance) {
+    return {
+        alpha: 0.15,
+        angle: torch.system.lightAngle || 360,
+        bright: (torch.system.lightRadius?.bright || 20) / canvasDistance,
+        coloration: 1,
+        dim: (torch.system.lightRadius?.dim || 40) / canvasDistance,
+        luminosity: 0.15,
+        saturation: -0.3,
+        contrast: 0.05,
+        shadows: 0.1,
+        animation: {
+            type: torch.system.lightAnimation?.type || null,
+            speed: Math.max(torch.system.lightAnimation?.speed || 1, 1),
+            intensity: Math.min(torch.system.lightAnimation?.intensity || 1, 2),
+            reverse: false
+        },
+        darkness: {
+            min: 0,
+            max: 1
+        },
+        color: "#ffbb77"
+    };
+}
+
+const lightsOff = {
+    alpha: 0,
+    angle: 360,
+    bright: 0,
+    coloration: 1,
+    dim: 0,
+    luminosity: 0,
+    saturation: 0,
+    contrast: 0,
+    shadows: 0,
+    animation: {
+        type: null,
+        speed: 5,
+        intensity: 5,
+        reverse: false
+    },
+    darkness: {
+        min: 0,
+        max: 1
+    },
+    color: null
+};
+
 export {
     toggleTorch,
     toggleTorchItem,
-    updateTokenLighting
+    updateTokenLighting,
+    getTorchLightConfig,
+    lightsOff
 }

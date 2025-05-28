@@ -295,11 +295,13 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     async _onTorchToggle(event) {
-        return toggleTorch(this, event);
+        const result = toggleTorch(this.actor, event);
+        if (result.ok) this.render();
     }
 
     async _onTorchItemToggle(event) {
-        return toggleTorchItem(this, event);
+        const result = toggleTorchItem(this.actor, event);
+        if (result.ok) this.render();
     }
 
     async _onSaveRoll(event) {
