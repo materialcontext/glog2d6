@@ -1,19 +1,21 @@
+// module/actor/actor-sheet.mjs - Refactored
 import { safely } from "../systems/safely.mjs";
 import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
-import {
-    addClassFeatures,
-    toggleFeature,
-    hasAvailableClassFeatures,
-} from './handlers/feature-handlers.mjs'
+import { addClassFeatures, toggleFeature, hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
+
+import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
+import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
+import { SheetStateManager } from './sheet-state-manager.mjs';
+import { EquipmentHandler } from './handlers/equipment-handler.mjs';
+import { ItemManagementHandler } from './handlers/item-management-handler.mjs';
+import { DataContextBuilder } from './data-context-builder.mjs';
 
 export class GLOG2D6ActorSheet extends ActorSheet {
     constructor(...args) {
         super(...args);
-        Object.assign(this, ErrorTrackingMixin);
-        this._initializeErrorTracking();
-        this._setupSafeMethods();
-        this._addDebugMethods();
+        this.initializeMixinsAndComponents();
+        this.setupDebugInterface();
     }
 
     static get defaultOptions() {
@@ -25,8 +27,23 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         });
     }
 
-    _setupSafeMethods() {
-        // Wrap risky methods in safety wrapper
+    initializeMixinsAndComponents() {
+        Object.assign(this, ErrorTrackingMixin);
+        this._initializeErrorTracking();
+
+        // Component initialization
+        this.eventRegistry = new EventHandlerRegistry(this);
+        this.actionMap = new ActionHandlerMap(this);
+        this.rollHandler = new SheetRollHandler(this);
+        this.stateManager = new SheetStateManager(this);
+        this.equipmentHandler = new EquipmentHandler(this.actor);
+        this.itemManager = new ItemManagementHandler(this);
+        this.dataContextBuilder = new DataContextBuilder(this.actor);
+
+        this.setupSafeMethodWrappers();
+    }
+
+    setupSafeMethodWrappers() {
         this.getWeaponAnalysis = safely({
             fallback: { hasWeapons: false, attackButtonType: 'generic' },
             context: 'weapon-analysis'
@@ -37,27 +54,27 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         );
 
         this.hasAvailableFeatures = safely({
-            fallback: false, // Changed from [] to false to match expected return type
+            fallback: false,
             context: 'loading-available-features'
         })((actor) => hasAvailableClassFeatures(actor));
     }
 
-    _addDebugMethods() {
-        // Add global debug access
+    setupDebugInterface() {
         window.debugSheet = this;
-
-        // Add console commands
-        window.getSheetErrors = () => this.getErrorHistory();
-        window.clearSheetErrors = () => this.clearErrorHistory();
-        window.generateErrorReport = () => this.generateErrorReport();
-
-        console.log('Debug methods available:');
-        console.log('- getSheetErrors() - View error history');
-        console.log('- clearSheetErrors() - Clear error history');
-        console.log('- generateErrorReport() - Generate detailed report');
-        console.log('- debugSheet - Access to sheet instance');
+        this.addGlobalDebugMethods();
     }
 
+    addGlobalDebugMethods() {
+        const debugMethods = {
+            getSheetErrors: () => this.getErrorHistory(),
+            clearSheetErrors: () => this.clearErrorHistory(),
+            generateErrorReport: () => this.generateErrorReport()
+        };
+
+        Object.assign(window, debugMethods);
+
+        console.log('Debug methods available:', Object.keys(debugMethods));
+    }
 
     get template() {
         return `systems/glog2d6/templates/actor/actor-${this.actor.type}-sheet.hbs`;
@@ -65,587 +82,257 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async getData() {
         const context = super.getData();
-
-        // Add roll data for formulas
-        context.rollData = context.actor.getRollData();
-        context.system = context.actor.system;
-        context.flags = context.actor.flags;
-
-        // Add edit mode
-        context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
-
-        // Get available classes from config data
-        let classes = CONFIG.GLOG.CLASSES;
-        context.availableClasses = classes.map((cls) => cls.name);
-
-        // Check if character has available class features - pass the actor
-        context.hasAvailableFeatures = this.hasAvailableFeatures(this.actor);
-
-        // Analyze equipped weapons for smart button display - use correct variable name
-        const weaponAnalysis = this.getWeaponAnalysis();
-        context.weaponAnalysis = weaponAnalysis;
-
-        // Properly detect Acrobat training with robust fallback
-        context.hasAcrobatTraining = this.hasFeature("Acrobat Training");
-
-        // Debug logging
-        if (this.actor.type === "character") {
-            console.log(`Sheet getData - ${this.actor.name}:`);
-            console.log(`  Edit Mode: ${context.editMode}`);
-            console.log(`  Weapon Analysis:`, weaponAnalysis);
-            console.log(`  Has Acrobat Training: ${context.hasAcrobatTraining}`);
-            console.log(`  Encumbrance: ${context.system.inventory.encumbrance}`);
-        }
-
-        return context;
+        return this.dataContextBuilder.buildCompleteContext(context);
     }
 
     activateListeners(html) {
         super.activateListeners(html);
 
-        // Always do visual enhancements first
-        this._updateVisualDisplay(html);
+        this.stateManager.updateAllVisualElements(html);
 
-        // Only add our listeners if sheet is editable
-        if (!this.isEditable) return;
-
-        // All event listeners in one place
-        this._addAllEventListeners(html);
-    }
-
-    _updateVisualDisplay(html) {
-        // Only visual updates - no event listeners
-        const editMode = this.actor.getFlag("glog2d6", "editMode") === true;
-
-        if (!editMode) {
-            html.find('.attribute-card[data-attribute]').addClass('clickable');
-            html.find('.combat-card[data-action]').addClass('clickable');
-            html.find('.action-card[data-action]').addClass('clickable');
-            html.find('.movement-display').addClass('clickable');
+        if (this.isEditable) {
+            this.eventRegistry.registerAllEventHandlers(html);
         }
-
-        // Use the existing methods that actually exist
-        html.find('.attribute-card[data-attribute]').each((index, element) => {
-            const $card = $(element);
-            const attributeKey = $card.attr('data-attribute');
-            if (attributeKey && this.actor.system.attributes[attributeKey]) {
-                const attribute = this.actor.system.attributes[attributeKey];
-                this._updateAttributeDisplay($card, attribute);
-            }
-        });
-
-        this._updateMovementDisplay(html);
     }
 
-    _addAllEventListeners(html) {
-        // Attribute and combat clicks
-        html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
-        html.find('.attribute-save').click(this._onSaveRoll.bind(this));
-        html.find('.combat-card.clickable, .action-card.clickable').click(this._onClickAction.bind(this));
-        html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
-
-        // Weapon and spell actions
-        html.find('.weapon-attack-btn').click(this._onWeaponAttack.bind(this));
-        html.find('.spell-cast-btn').click(this._onSpellCast.bind(this));
-
-        // Equipment toggles
-        html.find('.equipped-toggle').change(this._onEquippedToggle.bind(this));
-        html.find('.edit-toggle').click(this._onEditToggle.bind(this));
-
-        // Item management
-        html.find('.item-create').click(this._onItemCreate.bind(this));
-        html.find('.item-edit').click(this._onItemEdit.bind(this));
-        html.find('.item-delete').click(this._onItemDelete.bind(this));
-
-        // Feature and torch controls
-        html.find('.torch-btn').click(this._onTorchToggle.bind(this));
-        html.find('.torch-icon[data-action="toggle-torch"]').click(this._onTorchItemToggle.bind(this));
-        html.find('.add-class-features').click(this._onAddClassFeatures.bind(this));
-        html.find('.feature-item').click(this._onFeatureToggle.bind(this));
-        html.find('.rest-btn').click(this._onRest.bind(this));
-    }
-
-    async _onAddClassFeatures(event) {
-        return addClassFeatures(this, event);
-    }
-
-    async _onFeatureToggle(event) {
-        return toggleFeature(this, event);
-    }
-
+    // Direct event handlers that delegate to roll handler
     async _onAttributeRoll(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const attribute = element.dataset.attribute;
-
-        // Use default target of 7, DM will declare if different
-        this.actor.rollAttribute(attribute, 7);
-    }
-
-    // Action roll handlers
-    async _onSneakRoll(event) {
-        event.preventDefault();
-        this.actor.rollSneak();
-    }
-
-    async _onHideRoll(event) {
-        event.preventDefault();
-        this.actor.rollHide();
-    }
-
-    async _onDisguiseRoll(event) {
-        event.preventDefault();
-        this.actor.rollDisguise();
-    }
-
-    async _onReactionRoll(event) {
-        event.preventDefault();
-        this.actor.rollReaction();
-    }
-
-    async _onDiplomacyRoll(event) {
-        event.preventDefault();
-        this.actor.rollDiplomacy();
-    }
-
-    async _onIntimidateRoll(event) {
-        event.preventDefault();
-        this.actor.rollIntimidate();
-    }
-
-    async _onMeleeDefenseRoll(event) {
-        event.preventDefault();
-        this.actor.rollMeleeDefense();
-    }
-
-    async _onRangedDefenseRoll(event) {
-        event.preventDefault();
-        this.actor.rollRangedDefense();
-    }
-
-    async _onSpellCast(event) {
-        event.preventDefault();
-        const itemId = event.currentTarget.dataset.itemId;
-        const spell = this.actor.items.get(itemId);
-
-        if (spell) {
-            const currentMD = this.actor.system.magicDiceCurrent || 0;
-            const maxMD = this.actor.system.magicDiceMax || 0;
-
-            // Create dice buttons for available magic dice
-            let diceButtons = '';
-            for (let i = 1; i <= currentMD; i++) {
-                diceButtons += `<button type="button" class="magic-die-btn" data-dice-count="${i}" data-spell-id="${spell.id}">
-                ${i} Die${i > 1 ? 's' : ''}
-            </button>`;
-            }
-
-            if (currentMD === 0) {
-                diceButtons = '<p><em>No magic dice available!</em></p>';
-            }
-
-            ChatMessage.create({
-                speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                content: `
-            <div class="glog2d6-spell-cast">
-                <h3>${this.actor.name} prepares to cast ${spell.name}</h3>
-                <div class="spell-info">
-                    ${spell.system.school ? `<strong>School:</strong> ${spell.system.school}<br>` : ''}
-                    ${spell.system.range ? `<strong>Range:</strong> ${spell.system.range}<br>` : ''}
-                    ${spell.system.duration ? `<strong>Duration:</strong> ${spell.system.duration}<br>` : ''}
-                    ${spell.system.components ? `<strong>Components:</strong> ${spell.system.components}<br>` : ''}
-                    <br><strong>Description:</strong><br>
-                    ${spell.system.description || 'No description available.'}
-                </div>
-                <div class="magic-dice-selection">
-                    <p><strong>Choose Magic Dice to invest:</strong></p>
-                    ${diceButtons}
-                </div>
-            </div>
-        `,
-                flags: {
-                    glog2d6: {
-                        actorId: this.actor.id,
-                        spellId: spell.id
-                    }
-                }
-            });
-        }
-    }
-
-    async _onRest(event) {
-        event.preventDefault();
-        console.log("Rest button clicked");
-
-        try {
-            const restResult = await this.actor.rest();
-
-            // Provide appropriate notification based on what was restored
-            if (restResult.hpRestored > 0 || restResult.mdRestored > 0) {
-                ui.notifications.info(`${this.actor.name} rests and recovers!`);
-            } else {
-                ui.notifications.info(`${this.actor.name} rests but is already fully recovered.`);
-            }
-
-            this.render(); // Refresh to show updated values
-        } catch (error) {
-            console.error("Error during rest:", error);
-            ui.notifications.error("Failed to rest: " + error.message);
-        }
-    }
-
-    async _onTorchToggle(event) {
-        const result = toggleTorch(this.actor, event);
-        if (result.ok) this.render();
-    }
-
-    async _onTorchItemToggle(event) {
-        const result = toggleTorchItem(this.actor, event);
-        if (result.ok) this.render();
+        return this.rollHandler.handleAttributeRoll(event);
     }
 
     async _onSaveRoll(event) {
-        event.preventDefault();
-        event.stopPropagation(); // Prevent the event from bubbling up to the attribute card
-        const element = event.currentTarget;
-        const attribute = element.dataset.attribute;
-        this.actor.rollSave(attribute);
-    }
-
-    async _onAttackRoll(event) {
-        event.preventDefault();
-
-        const analysis = this.actor.analyzeEquippedWeapons();
-
-        if (!analysis.hasWeapons) {
-            // No weapons equipped, prompt for attack type
-            const attackType = await this._getAttackType();
-            if (attackType === null) return;
-            this.actor.rollAttack(attackType);
-        } else if (analysis.attackButtonType === 'split') {
-            // Multiple attack options available
-            const attackType = await this._getAttackType();
-            if (attackType === null) return;
-            this.actor.rollAttack(attackType);
-        } else {
-            // Single attack type, use primary weapon
-            if (analysis.primaryWeapon) {
-                this.actor.rollWeaponAttack(analysis.primaryWeapon);
-            } else {
-                this.actor.rollAttack();
-            }
-        }
-    }
-
-    async _onEditToggle(event) {
-        event.preventDefault();
-        const currentMode = this.actor.getFlag("glog2d6", "editMode") || false;
-        await this.actor.setFlag("glog2d6", "editMode", !currentMode);
-
-        // Force a complete re-render to ensure all elements update properly
-        this.render();
-    }
-
-    async _onDefenseRoll(event) {
-        event.preventDefault();
-        this.actor.rollDefense();
-    }
-
-    async _onEquippedToggle(event) {
-        event.preventDefault();
-        const itemId = event.currentTarget.dataset.itemId;
-        const item = this.actor.items.get(itemId);
-        const isEquipping = event.currentTarget.checked;
-
-        if (item && isEquipping) {
-            await this._handleEquipment(item);
-        } else if (item) {
-            await item.update({ "system.equipped": false });
-        }
-
-        this.render();
-    }
-
-    async _onHirelingTypeChange(event) {
-        const newType = event.target.value;
-        const updates = { "system.details.type": newType };
-
-        if (newType === "henchman") {
-            updates["system.details.dailyWage"] = 1;
-            updates["system.combat.attack.value"] = 0;
-            updates["system.combat.attack.bonus"] = 0;
-        } else if (newType === "mercenary") {
-            updates["system.details.dailyWage"] = 10;
-            updates["system.combat.attack.value"] = 1; // Level 0 fighter
-            updates["system.combat.attack.bonus"] = 1; // Fighter bonus
-        }
-
-        await this.actor.update(updates);
-        this.render();
-    }
-
-    async _onClickAction(event) {
-        event.preventDefault();
-        const action = event.currentTarget.dataset.action;
-
-        const allHandlers = {
-            'attack': this._onAttackRoll,
-            'defend': this._onDefenseRoll,
-            'defend-melee': this._onMeleeDefenseRoll,
-            'defend-ranged': this._onRangedDefenseRoll,
-            'sneak': this._onSneakRoll,
-            'hide': this._onHideRoll,
-            'disguise': this._onDisguiseRoll,
-            'reaction': this._onReactionRoll,
-            'diplomacy': this._onDiplomacyRoll,
-            'intimidate': this._onIntimidateRoll
-        };
-
-        const handler = allHandlers[action];
-        if (handler) {
-            return handler.call(this, event);
-        }
-
-        console.warn(`No handler for action: ${action}`);
-    }
-
-    _updateAttributeDisplay($card, attribute) {
-        const originalMod = attribute.mod;
-        const effectiveMod = attribute.effectiveMod !== undefined ? attribute.effectiveMod : attribute.mod;
-        const baseValue = attribute.value;
-        const effectiveValue = attribute.effectiveValue !== undefined ? attribute.effectiveValue : attribute.value;
-
-        // Show effective attribute value when different from base
-        const $attributeValue = $card.find('.attribute-value');
-        if (effectiveValue !== baseValue) {
-            $attributeValue.html(`
-                <span class="effective-attr-value">${effectiveValue}</span>
-                <span class="original-attr-value">(${baseValue})</span>
-            `);
-        } else {
-            $attributeValue.text(baseValue);
-        }
-
-        // Update the modifier display
-        const $modifierCurrent = $card.find('.modifier-current');
-        $modifierCurrent.text((effectiveMod >= 0 ? '+' : '') + effectiveMod);
-
-        // Handle original modifier display
-        const $modifierOriginal = $card.find('.modifier-original');
-        if (effectiveMod !== originalMod) {
-            $modifierOriginal.text((originalMod >= 0 ? '+' : '') + originalMod).show();
-        } else {
-            $modifierOriginal.hide();
-        }
-
-        // Apply coloring
-        $attributeValue.removeClass('normal negatively-impacted positively-impacted');
-        if (effectiveValue < baseValue || effectiveMod < originalMod) {
-            $attributeValue.addClass('negatively-impacted');
-        } else if (effectiveValue > baseValue || effectiveMod > originalMod) {
-            $attributeValue.addClass('positively-impacted');
-        } else {
-            $attributeValue.addClass('normal');
-        }
-    }
-
-    _updateMovementDisplay(html) {
-        const $movementDisplay = html.find('.movement-display');
-        if ($movementDisplay.length > 0 && this.actor.type === "character") {
-            const baseMovement = this.actor.system.details.movement;
-            const effectiveMovement = this.actor.system.details.effectiveMovement;
-
-            if (effectiveMovement !== undefined && effectiveMovement !== baseMovement) {
-                $movementDisplay.html(`
-                    <span>Move</span>
-                    <span class="effective-value">${effectiveMovement}</span>
-                    <span class="original-value">(${baseMovement})</span>
-                `);
-                $movementDisplay.addClass('negatively-impacted');
-            } else {
-                $movementDisplay.html(`
-                    <span>Move</span>
-                    ${baseMovement || 4}
-                `);
-                $movementDisplay.removeClass('negatively-impacted');
-            }
-        }
-    }
-
-    async _handleEquipment(newItem) {
-        const items = this.actor.items;
-        const updates = [];
-
-        if (newItem.type === "weapon") {
-            const equippedWeapons = items.filter(i => i.type === "weapon" && i.system.equipped);
-            const equippedShields = items.filter(i => i.type === "shield" && i.system.equipped);
-            const equippedHeavyWeapons = equippedWeapons.filter(w => w.system.size === "heavy");
-
-            // NEW: Check for weapon type conflicts (can't mix melee and ranged)
-            const newWeaponType = newItem.system.weaponType;
-            for (let weapon of equippedWeapons) {
-                const existingType = weapon.system.weaponType;
-                if ((newWeaponType === "ranged" && existingType !== "ranged" && existingType !== "thrown") ||
-                    (newWeaponType !== "ranged" && newWeaponType !== "thrown" && existingType === "ranged")) {
-                    // Weapon type conflict - unequip conflicting weapon
-                    updates.push({ _id: weapon.id, "system.equipped": false });
-                }
-            }
-
-            if (newItem.system.size === "heavy") {
-                // Heavy weapon unequips all other weapons and shields
-                for (let item of [...equippedWeapons, ...equippedShields]) {
-                    updates.push({ _id: item.id, "system.equipped": false });
-                }
-            } else {
-                // Light/medium weapon
-                // First, unequip any heavy weapons (they can't coexist with other weapons)
-                for (let weapon of equippedHeavyWeapons) {
-                    updates.push({ _id: weapon.id, "system.equipped": false });
-                }
-
-                // Then handle normal weapon limits
-                const remainingWeapons = equippedWeapons.filter(w =>
-                    w.system.size !== "heavy" &&
-                    !updates.some(u => u._id === w.id) // Don't count weapons we're about to unequip
-                );
-
-                if (equippedShields.length > 0) {
-                    // Shield prevents second weapon
-                    if (remainingWeapons.length >= 1) {
-                        // Unequip weakest weapon
-                        const weakest = this._findWeakestWeapon(remainingWeapons);
-                        updates.push({ _id: weakest.id, "system.equipped": false });
-                    }
-                } else if (remainingWeapons.length >= 2) {
-                    // Two weapons already equipped, unequip weakest
-                    const weakest = this._findWeakestWeapon(remainingWeapons);
-                    updates.push({ _id: weakest.id, "system.equipped": false });
-                }
-            }
-        }
-        // ... rest of your existing shield and armor logic stays exactly the same ...
-        else if (newItem.type === "shield") {
-            const equippedWeapons = items.filter(i => i.type === "weapon" && i.system.equipped);
-            const equippedShields = items.filter(i => i.type === "shield" && i.system.equipped);
-            const equippedHeavyWeapons = equippedWeapons.filter(w => w.system.size === "heavy");
-
-            // Unequip existing shields
-            for (let shield of equippedShields) {
-                updates.push({ _id: shield.id, "system.equipped": false });
-            }
-
-            // Heavy weapons prevent shields
-            for (let weapon of equippedHeavyWeapons) {
-                updates.push({ _id: weapon.id, "system.equipped": false });
-            }
-
-            // If 2 weapons equipped, unequip one
-            const remainingWeapons = equippedWeapons.filter(w => w.system.size !== "heavy");
-            if (remainingWeapons.length >= 2) {
-                const weakest = this._findWeakestWeapon(remainingWeapons);
-                updates.push({ _id: weakest.id, "system.equipped": false });
-            }
-        } else if (newItem.type === "armor") {
-            const equippedArmor = items.filter(i => i.type === "armor" && i.system.equipped);
-
-            // Unequip existing armor
-            for (let armor of equippedArmor) {
-                updates.push({ _id: armor.id, "system.equipped": false });
-            }
-        }
-
-        // Apply all updates
-        if (updates.length > 0) {
-            await this.actor.updateEmbeddedDocuments("Item", updates);
-        }
-
-        // Equip the new item
-        await newItem.update({ "system.equipped": true });
-    }
-
-    _findWeakestWeapon(weapons) {
-        // Simple logic: heavy > medium > light, then by damage string length
-        const priority = { heavy: 3, medium: 2, light: 1 };
-
-        return weapons.reduce((weakest, current) => {
-            const weakestPriority = priority[weakest.system.size] || 1;
-            const currentPriority = priority[current.system.size] || 1;
-
-            if (currentPriority < weakestPriority) {
-                return current;
-            } else if (currentPriority === weakestPriority) {
-                // Same size, compare damage (rough approximation)
-                const weakestDamage = weakest.system.damage?.length || 0;
-                const currentDamage = current.system.damage?.length || 0;
-                return currentDamage < weakestDamage ? current : weakest;
-            }
-            return weakest;
-        });
-    }
-
-    async _onWeaponAttack(event) {
-        event.preventDefault();
-        const itemId = event.currentTarget.dataset.itemId;
-        const weapon = this.actor.items.get(itemId);
-
-        if (weapon) {
-            this.actor.rollWeaponAttack(weapon);
-        }
+        return this.rollHandler.handleSaveRoll(event);
     }
 
     async _onMovementRoll(event) {
-        event.preventDefault();
-        this.actor.rollMovement();
+        return this.rollHandler.handleMovementRoll(event);
     }
 
-    async _getAttackType() {
-        return new Promise((resolve) => {
-            new Dialog({
-                title: "Attack Type",
-                content: `<p>Choose your attack type:</p>`,
-                buttons: {
-                    melee: {
-                        label: "Melee",
-                        callback: () => resolve("melee")
-                    },
-                    ranged: {
-                        label: "Ranged",
-                        callback: () => resolve("ranged")
-                    }
-                },
-                default: "melee",
-                close: () => resolve(null)
-            }).render(true);
+    async _onWeaponAttack(event) {
+        return this.rollHandler.handleWeaponAttack(event);
+    }
+
+    // Action handlers - now just delegation
+    async handleCombatAction(event) {
+        event.preventDefault();
+        const action = event.currentTarget.dataset.action;
+        return this.actionMap.executeAction(action, event);
+    }
+
+    async handleGenericAction(event) {
+        event.preventDefault();
+        const action = event.currentTarget.dataset.action;
+        return this.actionMap.executeAction(action, event);
+    }
+
+    // Equipment handling
+    async handleEquipmentToggle(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.dataset.itemId;
+        const isEquipping = event.currentTarget.checked;
+
+        await this.equipmentHandler.handleEquipmentToggle(itemId, isEquipping);
+        this.render();
+    }
+
+    // UI state handlers
+    async handleEditModeToggle(event) {
+        event.preventDefault();
+        const currentEditMode = this.actor.getFlag("glog2d6", "editMode") || false;
+
+        await this.actor.setFlag("glog2d6", "editMode", !currentEditMode);
+        this.render();
+    }
+
+    // Feature and torch handlers - delegation to existing modules
+    async handleAddClassFeatures(event) {
+        return addClassFeatures(this, event);
+    }
+
+    async handleFeatureToggle(event) {
+        return toggleFeature(this, event);
+    }
+
+    async handleTorchToggle(event) {
+        const result = await toggleTorch(this.actor, event);
+        if (result.ok) this.render();
+    }
+
+    async handleTorchItemToggle(event) {
+        const result = await toggleTorchItem(this.actor, event);
+        if (result.ok) this.render();
+    }
+
+    // Rest handling
+    async handleRest(event) {
+        event.preventDefault();
+
+        try {
+            const restResult = await this.actor.rest();
+            this.notifyRestResult(restResult);
+            this.render();
+        } catch (error) {
+            this.handleRestError(error);
+        }
+    }
+
+    notifyRestResult(restResult) {
+        const hasRecovery = restResult.hpRestored > 0 || restResult.mdRestored > 0;
+        const message = hasRecovery
+            ? `${this.actor.name} rests and recovers!`
+            : `${this.actor.name} rests but is already fully recovered.`;
+
+        ui.notifications.info(message);
+    }
+
+    handleRestError(error) {
+        console.error("Error during rest:", error);
+        ui.notifications.error("Failed to rest: " + error.message);
+    }
+
+    // Item management - delegation
+    async handleItemCreate(event) {
+        return this.itemManager.handleItemCreate(event);
+    }
+
+    async handleItemEdit(event) {
+        return this.itemManager.handleItemEdit(event);
+    }
+
+    async handleItemDelete(event) {
+        return this.itemManager.handleItemDelete(event);
+    }
+
+    // Spell casting
+    async handleSpellCast(event) {
+        event.preventDefault();
+        const spell = this.extractSpellFromEvent(event);
+
+        if (spell) {
+            await this.createSpellCastingMessage(spell);
+        }
+    }
+
+    extractSpellFromEvent(event) {
+        const itemId = event.currentTarget.dataset.itemId;
+        return this.actor.items.get(itemId);
+    }
+
+    async createSpellCastingMessage(spell) {
+        const magicDiceData = this.getMagicDiceData();
+        const spellCastingMessage = new SpellCastingMessageBuilder(this.actor, spell, magicDiceData);
+
+        await spellCastingMessage.createAndSendMessage();
+    }
+
+    getMagicDiceData() {
+        return {
+            current: this.actor.system.magicDiceCurrent || 0,
+            max: this.actor.system.magicDiceMax || 0
+        };
+    }
+}
+
+class SpellCastingMessageBuilder {
+    constructor(actor, spell, magicDiceData) {
+        this.actor = actor;
+        this.spell = spell;
+        this.magicDiceData = magicDiceData;
+    }
+
+    async createAndSendMessage() {
+        const messageContent = this.buildMessageContent();
+        const messageFlags = this.buildMessageFlags();
+
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: messageContent,
+            flags: messageFlags
         });
     }
 
-    async _onItemCreate(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const type = element.dataset.type;
+    buildMessageContent() {
+        const spellInfo = this.buildSpellInfoSection();
+        const diceSelection = this.buildDiceSelectionSection();
 
-        const itemData = {
-            name: `New ${type.capitalize()}`,
-            type: type,
-            system: {}
+        return `
+            <div class="glog2d6-spell-cast">
+                <h3>${this.actor.name} prepares to cast ${this.spell.name}</h3>
+                ${spellInfo}
+                ${diceSelection}
+            </div>
+        `;
+    }
+
+    buildSpellInfoSection() {
+        const spellProperties = this.extractSpellProperties();
+        const description = this.spell.system.description || 'No description available.';
+
+        return `
+            <div class="spell-info">
+                ${spellProperties}
+                <br><strong>Description:</strong><br>
+                ${description}
+            </div>
+        `;
+    }
+
+    extractSpellProperties() {
+        const properties = [];
+        const propertyMapping = {
+            school: 'School',
+            range: 'Range',
+            duration: 'Duration',
+            components: 'Components'
         };
 
-        const cls = getDocumentClass("Item");
-        return cls.create(itemData, { parent: this.actor });
+        for (const [key, label] of Object.entries(propertyMapping)) {
+            const value = this.spell.system[key];
+            if (value) {
+                properties.push(`<strong>${label}:</strong> ${value}<br>`);
+            }
+        }
+
+        return properties.join('');
     }
 
-    _onItemEdit(event) {
-        event.preventDefault();
-        const li = $(event.currentTarget).parents(".item");
-        const item = this.actor.items.get(li.data("itemId"));
-        item.sheet.render(true);
+    buildDiceSelectionSection() {
+        const diceButtons = this.generateDiceButtons();
+
+        return `
+            <div class="magic-dice-selection">
+                <p><strong>Choose Magic Dice to invest:</strong></p>
+                ${diceButtons}
+            </div>
+        `;
     }
 
-    async _onItemDelete(event) {
-        event.preventDefault();
-        const li = $(event.currentTarget).parents(".item, .feature-item");
-        const item = this.actor.items.get(li.data("itemId"));
-        return item.delete();
+    generateDiceButtons() {
+        if (this.magicDiceData.current === 0) {
+            return '<p><em>No magic dice available!</em></p>';
+        }
+
+        const buttons = [];
+        for (let i = 1; i <= this.magicDiceData.current; i++) {
+            const buttonText = `${i} Die${i > 1 ? 's' : ''}`;
+            buttons.push(`
+                <button type="button" class="magic-die-btn"
+                        data-dice-count="${i}"
+                        data-spell-id="${this.spell.id}">
+                    ${buttonText}
+                </button>
+            `);
+        }
+
+        return buttons.join('');
+    }
+
+    buildMessageFlags() {
+        return {
+            glog2d6: {
+                actorId: this.actor.id,
+                spellId: this.spell.id
+            }
+        };
     }
 }

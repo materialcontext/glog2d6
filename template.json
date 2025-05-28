@@ -36,6 +36,32 @@
                         "value": 7,
                         "mod": 0
                     }
+                },
+                "saves": {
+                    "str": {
+                        "bonus": 0,
+                        "breakdown": []
+                    },
+                    "dex": {
+                        "bonus": 0,
+                        "breakdown": []
+                    },
+                    "con": {
+                        "bonus": 0,
+                        "breakdown": []
+                    },
+                    "int": {
+                        "bonus": 0,
+                        "breakdown": []
+                    },
+                    "wis": {
+                        "bonus": 0,
+                        "breakdown": []
+                    },
+                    "cha": {
+                        "bonus": 0,
+                        "breakdown": []
+                    }
                 }
             }
         },
@@ -69,11 +95,27 @@
                 "total": 0
             },
             "skills": {
-                "stealth": {
+                "sneak": {
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "hide": {
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "disguise": {
                     "bonus": 0,
                     "breakdown": []
                 },
                 "reaction": {
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "diplomacy": {
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "intimidate": {
                     "bonus": 0,
                     "breakdown": []
                 }
