@@ -31,11 +31,7 @@ export class GLOG2D6ItemSheet extends ItemSheet {
     }
 
     if (this.item.type === "weapon") {
-      context.weaponSizes = {
-        "small": "Small",
-        "medium": "Medium",
-        "large": "Large"
-      };
+      context.weaponSizes = CONFIG.GLOG.CONSTANTS.WEAPON_SIZES;
     }
 
     if (this.item.type === "gear") {

@@ -156,6 +156,7 @@ export class ActorRolls {
 
     // Private helper: Get weapon-specific attack context
     _getWeaponContext(weapon) {
+        console.log(weapon);
         const weaponType = weapon.system.weaponType || "melee";
         const penalty = weapon.system.attackPenalty || 0;
 

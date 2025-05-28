@@ -79,12 +79,50 @@ class WeaponEquipmentRules {
         });
     }
 
+    findCapacityConflicts(currentlyEquipped) {
+        const conflicts = [];
+        const { weapons, shields } = currentlyEquipped;
+
+        // RULE 1: Maximum 1 shield
+        if (shields.length > 1) {
+            // Keep the "best" shield (most armor bonus), unequip others
+            const bestShield = this.findBestShield(shields);
+            conflicts.push(...shields.filter(s => s.id !== bestShield.id));
+        }
+
+        // RULE 2: Heavy weapons conflict with everything
+        const heavyWeapons = weapons.filter(w => w.system.size === 'heavy');
+        if (heavyWeapons.length >= 1) {
+            conflicts.push(...shields); // Heavy weapon = no shields
+        }
+
+        // RULE 3: Hand capacity (if no heavy weapons)
+        if (heavyWeapons.length === 0) {
+            const oneHandedItems = [...weapons, ...shields];
+            if (oneHandedItems.length > 2) {
+                const excess = oneHandedItems.length - 2;
+                const weakest = this.selectWeakestItems(oneHandedItems, excess);
+                conflicts.push(...weakest);
+            }
+        }
+
+        return conflicts;
+    }
+
+    findBestShield(shields) {
+        return shields.reduce((best, current) => {
+            const bestBonus = best.system.armorBonus || 0;
+            const currentBonus = current.system.armorBonus || 0;
+            return currentBonus > bestBonus ? current : best;
+        });
+    }
+
     weaponTypesConflict(typeA, typeB) {
         const rangedTypes = new Set(["ranged"]);
         const meleeTypes = new Set(["melee", "thrown"]);
 
         return (rangedTypes.has(typeA) && meleeTypes.has(typeB)) ||
-               (meleeTypes.has(typeA) && rangedTypes.has(typeB));
+            (meleeTypes.has(typeA) && rangedTypes.has(typeB));
     }
 
     getCurrentlyEquippedItems() {

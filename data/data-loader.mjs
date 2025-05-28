@@ -1,6 +1,26 @@
 CONFIG.GLOG = {};
 const glog = CONFIG.GLOG;
 
+glog.CONSTANTS = {
+    WEAPON_SIZES: {
+        LIGHT: 'light',
+        MEDIUM: 'medium',
+        HEAVY: 'heavy'
+    },
+    WEAPON_TYPES: {
+        MELEE: 'melee',
+        RANGED: 'ranged',
+        THROWN: 'thrown'
+    },
+
+    // UI Labels
+    WEAPON_SIZE_LABELS: {
+        'light': 'Light',
+        'medium': 'Medium',
+        'heavy': 'Heavy'
+    }
+};
+
 async function loadSystemData() {
     try {
         const classesResponse = await fetch('systems/glog2d6/data/classes.json')
@@ -9,7 +29,7 @@ async function loadSystemData() {
             glog.CLASSES = classesData.classes;
             console.log('glog2d6 | Loaded', glog.Classes.length, 'classes with template details')
         }
-    } catch(error) {
+    } catch (error) {
         console.log('glog2d6 | Errpr loading classes.json')
         glog.CLASSES = getDefaultClasses();
     }

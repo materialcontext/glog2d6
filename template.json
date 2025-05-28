@@ -193,12 +193,13 @@
             "templates": [
                 "base"
             ],
-            "damage": "1d6+1",
+            "damage": "1d6",
             "weaponType": "melee",
             "size": "medium",
             "attackPenalty": 0,
             "encumbrancePenalty": 0,
-            "properties": ""
+            "properties": "",
+            "equipped": false
         },
         "armor": {
             "description": "",

@@ -300,9 +300,15 @@ class WeaponRanker {
             return priorityA > priorityB;
         }
 
-        const damageA = weaponA.system.damage?.length || 0;
-        const damageB = weaponB.system.damage?.length || 0;
+        const damageA = this.calculateDamageScore(weaponA.system.damage);
+        const damageB = this.calculateDamageScore(weaponB.system.damage);
         return damageA > damageB;
+    }
+
+    calculateDamageScore(damage) {
+        if (!damage) return 0;
+        const numbers = damage.match(/\d+/g) || [];
+        return numbers.reduce((sum, n) => sum + parseInt(n), 0);
     }
 }
 

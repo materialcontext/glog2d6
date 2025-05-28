@@ -1,5 +1,17 @@
 # Dependencies
 node_modules/
+coverage/
+*.coverage
+.nyc_output/
+
+# Test reports and artifacts
+test-results/
+html/
+junit.xml
+*.lcov
+
+# Vitest specific
+vitest.config.js.timestamp-*
 
 # Foundry Content
 content/

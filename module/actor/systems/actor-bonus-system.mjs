@@ -8,10 +8,20 @@ export class ActorBonusSystem {
     }
 
     calculateAndApplyAllBonuses() {
-        if (this.actor.type !== "character") return;
+        try {
+            if (this.actor.type !== "character") return;
 
-        const bonuses = this.bonusCalculator.calculateBonuses();
-        this.applyBonusesToActorData(bonuses);
+            const bonuses = this.bonusCalculator.calculateBonuses();
+            this.applyBonusesToActorData(bonuses);
+        } catch (error) { // we need to keep running but be made VERY aware
+            console.error(`🚨 BONUS CALCULATION FAILED FOR ${this.actor.name.toUpperCase()}! 🚨`);
+            console.error('Error details:', error);
+            console.error('Stack trace:', error.stack);
+
+            if (globalThis.ui?.notifications) {
+                ui.notifications.error(`Bonus calculation failed for ${this.actor.name}: ${error.message}`, { permanent: true });
+            }
+        }
     }
 
     applyBonusesToActorData(bonuses) {
@@ -41,13 +51,13 @@ class BonusTargetApplier {
         };
     }
 
-    applyBonus(targetPath, totalBonus, breakdown) {
+    applyBonus(target, totalBonus, breakdown) {
         const specialHandler = this.targetHandlers[target];
 
         if (specialHandler) {
-            handler(totalBonus, breakdown);
+            specialHandler(totalBonus, breakdown);
         } else {
-            const targetStat = this.getTargetStatObjectFromString(this.system, targetPath);
+            const targetStat = this.getTargetStatObjectFromString(this.system, target);
             targetStat.bonus = (target.bonus || 0) + totalBonus;
             targetStat.breakdown = breakdown;
         }
