@@ -74,162 +74,197 @@ export class ActorRolls {
         return roll;
     }
 
-    // Combat rolls
-    async rollAttack(attackType = null) {
-        const strMod = this.actor.system.attributes.str.mod;
-        const atkValue = this.actor.system.combat.attack.value;
-        const atkBonus = this.actor.system.combat.attack.bonus || 0;
+    // Main attack method - handles all attack scenarios
+    async rollAttack(weapon = null, attackType = null) {
+        const attackData = this._buildAttackData(weapon, attackType);
 
-        // Find equipped weapons
-        const equippedWeapons = this.actor.items.filter(i => i.type === "weapon" && i.system.equipped);
-        const bestWeapon = this.actor._getBestWeapon(equippedWeapons);
-
-        let roll;
-        let description;
-        let dualWieldBonus = 0;
-
-        // Check for dual wielding bonus (2 weapons, no shield)
-        const equippedShields = this.actor.items.filter(i => i.type === "shield" && i.system.equipped);
-        if (equippedWeapons.length === 2 && equippedShields.length === 0) {
-            dualWieldBonus = 1;
+        if (!attackData) {
+            console.warn("Could not determine attack data");
+            return;
         }
 
-        if (bestWeapon) {
-            // Use best weapon's properties
-            const weaponType = bestWeapon.system.weaponType || "melee";
-            const weaponPenalty = bestWeapon.system.attackPenalty || 0;
-
-            let archeryBonus = 0;
-            if (weaponType === "ranged") {
-                archeryBonus = this.actor.system.combat.archery?.bonus || 0;
-            }
-
-            if (weaponType === "melee" || weaponType === "thrown") {
-                roll = this.actor.createRoll("2d6 + @atk + @str - @penalty + @dual", {
-                    atk: atkValue,
-                    bonus: atkBonus,
-                    str: strMod,
-                    penalty: weaponPenalty,
-                    dual: dualWieldBonus
-                }, 'attack');
-                description = `${bestWeapon.name} Attack (${weaponType})`;
-            } else {
-                roll = this.actor.createRoll("2d6 + @atk - @penalty + @dual", {
-                    atk: atkValue,
-                    bonus: atkBonus,
-                    archery: archeryBonus,
-                    penalty: weaponPenalty,
-                    dual: dualWieldBonus
-                }, 'attack');
-                description = `${bestWeapon.name} Attack (ranged)`;
-            }
-
-            await roll.evaluate();
-
-            // Create damage roll button
-            const damageButton = `<button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${bestWeapon.id}" data-attack-result="${roll.total}">Roll Damage</button>`;
-
-            let bonusText = '';
-            if (atkBonus > 0) bonusText += `<br><small>Attack bonus: +${atkBonus}</small>`;
-            if (archeryBonus > 0) bonusText += `<br><small>Archery bonus: +${archeryBonus}</small>`;
-
-            const extraContent = `
-            ${dualWieldBonus > 0 ? '<br><small>Dual wielding: +1</small>' : ''}
-            ${bonusText}
-            <br><small>Damage: ${bestWeapon.system.damage} + base damage</small>
-            <br>${damageButton}
-        `;
-
-            this.actor._createRollChatMessage(
-                `${this.actor.name} - ${description}`,
-                roll,
-                extraContent
-            );
-        } else {
-            // No weapon equipped, prompt for attack type
-            if (!attackType) {
-                // This would be called from the dialog system
-                return;
-            }
-
-            if (attackType === "melee") {
-                roll = this.actor.createRoll("2d6 + @atk + @str + @dual", {
-                    atk: atkValue,
-                    str: strMod,
-                    dual: dualWieldBonus
-                }, 'attack');
-                description = "Unarmed Attack";
-            } else {
-                roll = this.actor.createRoll("2d6 + @atk + @dual", {
-                    atk: atkValue,
-                    dual: dualWieldBonus
-                }, 'attack');
-                description = "Ranged Attack";
-            }
-
-            await roll.evaluate();
-
-            const extraContent = `
-                ${dualWieldBonus > 0 ? '<br><small>Dual wielding: +1</small>' : ''}
-                <br><small>Damage: Base damage only</small>
-            `;
-
-            this.actor._createRollChatMessage(
-                `${this.actor.name} - ${description}`,
-                roll,
-                extraContent
-            );
-        }
-
-        return roll;
-    }
-
-    async rollWeaponAttack(weapon) {
-        const strMod = this.actor.system.attributes.str.mod;
-        const atkValue = this.actor.system.combat.attack.value;
-        const atkBonus = this.actor.system.combat.attack.bonus || 0;
-        const weaponPenalty = weapon.system.attackPenalty || 0;
-
-        // Determine attack type
-        const weaponType = weapon.system.weaponType || "melee";
-
-        let roll;
-        let description;
-
-        if (weaponType === "melee" || weaponType === "thrown") {
-            roll = this.actor.createRoll("2d6 + @atk + @str - @penalty", {
-                atk: atkValue,
-                bonus: atkBonus,
-                str: strMod,
-                penalty: weaponPenalty
-            }, 'attack');
-            description = `${weapon.name} Attack (${weaponType})`;
-        } else {
-            roll = this.actor.createRoll("2d6 + @atk - @penalty", {
-                atk: atkValue,
-                bonus: atkBonus,
-                penalty: weaponPenalty
-            }, 'attack');
-            description = `${weapon.name} Attack (ranged)`;
-        }
-
+        const roll = this.actor.createRoll(attackData.formula, attackData.data, 'attack');
         await roll.evaluate();
 
-        // Create damage roll button
-        const damageButton = `<button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${weapon.id}" data-attack-result="${roll.total}">Roll Damage</button>`;
-
-        const extraContent = `
-            <br><small>Damage: ${weapon.system.damage} + base damage</small>
-            <br>${damageButton}
-        `;
+        const extraContent = this._buildAttackChatContent(attackData);
 
         this.actor._createRollChatMessage(
-            `${this.actor.name} - ${description}`,
+            `${this.actor.name} - ${attackData.description}`,
             roll,
             extraContent
         );
 
         return roll;
+    }
+
+    // Specific weapon attack (now just calls main method)
+    async rollWeaponAttack(weapon) {
+        return this.rollAttack(weapon);
+    }
+
+    // Private helper: Build all attack data based on context
+    _buildAttackData(weapon = null, attackType = null) {
+        const baseStats = this._getBaseAttackStats();
+
+        // Determine what we're attacking with
+        const attackContext = this._determineAttackContext(weapon, attackType);
+        if (!attackContext) return null;
+
+        // Build the roll formula and data
+        const formula = this._buildAttackFormula(attackContext, baseStats);
+        const rollData = this._buildRollData(attackContext, baseStats);
+
+        return {
+            formula: formula,
+            data: rollData,
+            description: attackContext.description,
+            weapon: attackContext.weapon,
+            weaponType: attackContext.weaponType,
+            damageFormula: attackContext.damageFormula,
+            bonuses: attackContext.bonuses
+        };
+    }
+
+    // Private helper: Get base attack stats (same for all attacks)
+    _getBaseAttackStats() {
+        return {
+            strMod: this.actor.system.attributes.str.mod,
+            atkValue: this.actor.system.combat.attack.value,
+            atkBonus: this.actor.system.combat.attack.bonus || 0,
+            archeryBonus: this.actor.system.combat.archery?.bonus || 0,
+            dualWieldBonus: this._getDualWieldBonus()
+        };
+    }
+
+    // Private helper: Figure out what kind of attack this is
+    _determineAttackContext(weapon, attackType) {
+        if (weapon) {
+            return this._getWeaponContext(weapon);
+        }
+
+        // No specific weapon - analyze equipped weapons
+        const equippedWeapons = this.actor.items.filter(i => i.type === "weapon" && i.system.equipped);
+
+        if (equippedWeapons.length === 0) {
+            return this._getUnarmedContext(attackType);
+        }
+
+        // Use best equipped weapon
+        const bestWeapon = this.actor._getBestWeapon(equippedWeapons);
+        return this._getWeaponContext(bestWeapon);
+    }
+
+    // Private helper: Get weapon-specific attack context
+    _getWeaponContext(weapon) {
+        const weaponType = weapon.system.weaponType || "melee";
+        const penalty = weapon.system.attackPenalty || 0;
+
+        return {
+            weapon: weapon,
+            weaponType: weaponType,
+            description: `${weapon.name} Attack (${weaponType})`,
+            damageFormula: weapon.system.damage || "0",
+            bonuses: {
+                penalty: penalty,
+                useStr: weaponType === "melee" || weaponType === "thrown",
+                useArchery: weaponType === "ranged"
+            }
+        };
+    }
+
+    // Private helper: Get unarmed attack context
+    _getUnarmedContext(attackType) {
+        if (!attackType) {
+            // Need to prompt for attack type - this could be handled by the sheet
+            console.warn("Unarmed attack requires attack type specification");
+            return null;
+        }
+
+        return {
+            weapon: null,
+            weaponType: attackType,
+            description: attackType === "melee" ? "Unarmed Attack" : "Ranged Attack",
+            damageFormula: "0",
+            bonuses: {
+                penalty: 0,
+                useStr: attackType === "melee",
+                useArchery: false
+            }
+        };
+    }
+
+    // Private helper: Build the dice formula string
+    _buildAttackFormula(context, baseStats) {
+        let formula = "2d6 + @atk + @bonus + @dual";
+
+        if (context.bonuses.useStr) {
+            formula += " + @str";
+        }
+
+        if (context.bonuses.useArchery) {
+            formula += " + @archery";
+        }
+
+        if (context.bonuses.penalty > 0) {
+            formula += " - @penalty";
+        }
+
+        return formula;
+    }
+
+    // Private helper: Build roll data object
+    _buildRollData(context, baseStats) {
+        const data = {
+            atk: baseStats.atkValue,
+            bonus: baseStats.atkBonus,
+            dual: baseStats.dualWieldBonus,
+            str: context.bonuses.useStr ? baseStats.strMod : 0,
+            archery: context.bonuses.useArchery ? baseStats.archeryBonus : 0,
+            penalty: context.bonuses.penalty || 0
+        };
+
+        return data;
+    }
+
+    // Private helper: Build chat message content
+    _buildAttackChatContent(attackData) {
+        const parts = [];
+
+        // Dual wield bonus
+        if (attackData.data.dual > 0) {
+            parts.push(`<br><small>Dual wielding: +${attackData.data.dual}</small>`);
+        }
+
+        // Attack bonus breakdown
+        if (attackData.data.bonus > 0) {
+            parts.push(`<br><small>Attack bonus: +${attackData.data.bonus}</small>`);
+        }
+
+        // Archery bonus
+        if (attackData.data.archery > 0) {
+            parts.push(`<br><small>Archery bonus: +${attackData.data.archery}</small>`);
+        }
+
+        // Damage info
+        const damageText = attackData.damageFormula === "0" ? "Base damage only" :
+            `${attackData.damageFormula} + base damage`;
+        parts.push(`<br><small>Damage: ${damageText}</small>`);
+
+        // Damage button
+        if (attackData.weapon) {
+            const damageButton = `<button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${attackData.weapon.id}" data-attack-result="{{roll.total}}">Roll Damage</button>`;
+            parts.push(`<br>${damageButton}`);
+        }
+
+        return parts.join('');
+    }
+
+    // Private helper: Check for dual wielding bonus
+    _getDualWieldBonus() {
+        const equippedWeapons = this.actor.items.filter(i => i.type === "weapon" && i.system.equipped);
+        const equippedShields = this.actor.items.filter(i => i.type === "shield" && i.system.equipped);
+
+        return (equippedWeapons.length === 2 && equippedShields.length === 0) ? 1 : 0;
     }
 
     // Defense rolls - separate melee and ranged

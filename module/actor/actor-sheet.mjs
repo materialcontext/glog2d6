@@ -141,8 +141,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         // Attribute and combat clicks
         html.find('.attribute-card.clickable').click(this._onAttributeRoll.bind(this));
         html.find('.attribute-save').click(this._onSaveRoll.bind(this));
-        html.find('.combat-card.clickable').click(this._getCombatHandler.bind(this));
-        html.find('.action-card.clickable').click(this._getActionHandler.bind(this));
+        html.find('.combat-card.clickable, .action-card.clickable').click(this._onClickAction.bind(this));
         html.find('.movement-display.clickable').click(this._onMovementRoll.bind(this));
 
         // Weapon and spell actions
@@ -251,7 +250,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             <div class="glog2d6-spell-cast">
                 <h3>${this.actor.name} prepares to cast ${spell.name}</h3>
                 <div class="spell-info">
-                    ${spell.system.level ? `<strong>Level:</strong> ${spell.system.level}<br>` : ''}
                     ${spell.system.school ? `<strong>School:</strong> ${spell.system.school}<br>` : ''}
                     ${spell.system.range ? `<strong>Range:</strong> ${spell.system.range}<br>` : ''}
                     ${spell.system.duration ? `<strong>Duration:</strong> ${spell.system.duration}<br>` : ''}
@@ -315,7 +313,7 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     async _onAttackRoll(event) {
         event.preventDefault();
 
-        const analysis = this._analyzeEquippedWeapons();
+        const analysis = this.actor.analyzeEquippedWeapons();
 
         if (!analysis.hasWeapons) {
             // No weapons equipped, prompt for attack type
@@ -384,8 +382,15 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.render();
     }
 
-    _getActionHandler(action) {
-        const handlers = {
+    async _onClickAction(event) {
+        event.preventDefault();
+        const action = event.currentTarget.dataset.action;
+
+        const allHandlers = {
+            'attack': this._onAttackRoll,
+            'defend': this._onDefenseRoll,
+            'defend-melee': this._onMeleeDefenseRoll,
+            'defend-ranged': this._onRangedDefenseRoll,
             'sneak': this._onSneakRoll,
             'hide': this._onHideRoll,
             'disguise': this._onDisguiseRoll,
@@ -394,22 +399,12 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             'intimidate': this._onIntimidateRoll
         };
 
-        return handlers[action] || (() => {
-            console.warn(`No handler for action: ${action}`);
-        });
-    }
+        const handler = allHandlers[action];
+        if (handler) {
+            return handler.call(this, event);
+        }
 
-    _getCombatHandler(action) {
-        const handlers = {
-            'attack': this._onAttackRoll,
-            'defend': this._onDefenseRoll,
-            'defend-melee': this._onMeleeDefenseRoll,
-            'defend-ranged': this._onRangedDefenseRoll
-        };
-
-        return handlers[action] || (() => {
-            console.warn(`No handler for combat action: ${action}`);
-        });
+        console.warn(`No handler for action: ${action}`);
     }
 
     _updateAttributeDisplay($card, attribute) {
