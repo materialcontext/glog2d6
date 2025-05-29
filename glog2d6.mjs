@@ -9,6 +9,11 @@ import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { GLOG2D6Roll } from "./module/dice/glog-roll.mjs";
 import { setupGlobalErrorHandler } from './module/systems/global-error-handler.mjs';
 
+
+// Define custom Document classes
+CONFIG.Actor.documentClass = GLOG2D6Actor;
+CONFIG.Item.documentClass = GLOG2D6Item;
+
 Hooks.once('init', async function() {
     console.log('glog2d6 | Initializing GLOG 2d6 System');
 
@@ -45,6 +50,21 @@ Hooks.once('init', async function() {
         return a < b;
     });
 
+    // Register sheet application classes
+    Actors.unregisterSheet("core", ActorSheet);
+    Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
+        types: ["character", "npc"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Actor"
+    });
+
+    Items.unregisterSheet("core", ItemSheet);
+    Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Item"
+    });
+
     // Register game settinngs
     game.settings.register("glog2d6", "hasSetupDefaultFolders", {
         name: "Default Folders Created",
@@ -63,11 +83,6 @@ Hooks.once('init', async function() {
         type: Boolean,
         default: false
     });
-
-
-    // Define custom Document classes
-    CONFIG.Actor.documentClass = GLOG2D6Actor;
-    CONFIG.Item.documentClass = GLOG2D6Item;
 
     console.log('glog2d6 | System initialization complete');
 });
@@ -103,21 +118,6 @@ Hooks.once("ready", async function() {
         await getTemplate('systems/glog2d6/templates/actor/features-tab.hbs'));
     Handlebars.registerPartial('spells-tab',
         await getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
-
-    // Register sheet application classes
-    Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Actor"
-    });
-
-    Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Item"
-    });
 
     setupGlobalUtils();
 

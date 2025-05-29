@@ -1,3 +1,5 @@
+import { analyzeEquippedWeapons } from "../../utils/actor-analysis.mjs";
+
 export class SheetRollHandler {
     constructor(sheet) {
         this.sheet = sheet;
@@ -23,7 +25,7 @@ export class SheetRollHandler {
     async handleAttackRoll(event) {
         event.preventDefault();
 
-        const weaponAnalysis = this.actor.analyzeEquippedWeapons();
+        const weaponAnalysis = analyzeEquippedWeapons();
         const attackStrategy = this.determineAttackStrategy(weaponAnalysis);
 
         await attackStrategy.execute();
@@ -118,10 +120,8 @@ class UnarmedAttackStrategy {
     }
 
     async execute() {
-        const attackType = await this.promptForAttackType();
-        if (attackType) {
-            await this.actor.rollAttack(attackType);
-        }
+        console.log("Executing unarmed attack!")
+        await this.actor.rollAttack(null, "melee");
     }
 
     async promptForAttackType() {

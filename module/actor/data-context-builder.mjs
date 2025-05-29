@@ -1,5 +1,6 @@
 // module/actor/data-context-builder.mjs
 import { hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
+import { analyzeEquippedWeapons, hasFeature } from '../utils/actor-analysis.mjs';
 
 export class DataContextBuilder {
     constructor(actor) {
@@ -51,12 +52,12 @@ class ContextEnhancer {
     }
 
     addWeaponAnalysis() {
-        this.context.weaponAnalysis = this.analyzeEquippedWeapons();
+        this.context.weaponAnalysis = analyzeEquippedWeapons(this.actor.items);
         return this;
     }
 
     addAcrobatTraining() {
-        this.context.hasAcrobatTraining = this.checkForAcrobatTraining();
+        this.context.hasAcrobatTraining = hasFeature(this.actor.items, "Acrobat Training");
         return this;
     }
 
@@ -80,24 +81,6 @@ class ContextEnhancer {
             return hasAvailableClassFeatures(this.actor);
         } catch (error) {
             console.warn('Error checking available features:', error);
-            return false;
-        }
-    }
-
-    analyzeEquippedWeapons() {
-        try {
-            return this.actor.analyzeEquippedWeapons();
-        } catch (error) {
-            console.warn('Error analyzing weapons:', error);
-            return { hasWeapons: false, attackButtonType: 'generic' };
-        }
-    }
-
-    checkForAcrobatTraining() {
-        try {
-            return this.actor.hasFeature("Acrobat Training");
-        } catch (error) {
-            console.warn('Error checking for Acrobat Training:', error);
             return false;
         }
     }

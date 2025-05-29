@@ -82,23 +82,30 @@ class WeaponEquipmentRules {
     findCapacityConflicts(currentlyEquipped) {
         const conflicts = [];
         const { weapons, shields } = currentlyEquipped;
+        const heavyWeapons = weapons.filter(w => w.system.size === 'heavy');
+        const lightMediumWeapons = weapons.filter(w => w.system.size !== 'heavy');
 
         // RULE 1: Maximum 1 shield
         if (shields.length > 1) {
-            // Keep the "best" shield (most armor bonus), unequip others
             const bestShield = this.findBestShield(shields);
             conflicts.push(...shields.filter(s => s.id !== bestShield.id));
         }
 
-        // RULE 2: Heavy weapons conflict with everything
-        const heavyWeapons = weapons.filter(w => w.system.size === 'heavy');
-        if (heavyWeapons.length >= 1) {
-            conflicts.push(...shields); // Heavy weapon = no shields
-        }
+        // RULE 2: Heavy weapons conflict with everything else
+        if (heavyWeapons.length > 0) {
+            // If there are heavy weapons, remove all shields and other weapons
+            conflicts.push(...shields);
+            conflicts.push(...lightMediumWeapons);
 
-        // RULE 3: Hand capacity (if no heavy weapons)
-        if (heavyWeapons.length === 0) {
-            const oneHandedItems = [...weapons, ...shields];
+            // Also remove excess heavy weapons (only keep 1)
+            if (heavyWeapons.length > 1) {
+                const bestHeavy = this.findBestWeapon(heavyWeapons);
+                conflicts.push(...heavyWeapons.filter(w => w.id !== bestHeavy.id));
+            }
+        }
+        // RULE 3: Hand capacity (only applies if no heavy weapons)
+        else {
+            const oneHandedItems = [...lightMediumWeapons, ...shields];
             if (oneHandedItems.length > 2) {
                 const excess = oneHandedItems.length - 2;
                 const weakest = this.selectWeakestItems(oneHandedItems, excess);

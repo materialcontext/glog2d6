@@ -1,6 +1,7 @@
 /**
  * Roll functionality for GLOG 2d6 actors
  */
+import { findBestWeapon } from "../utils/actor-analysis.mjs"
 export class ActorRolls {
     constructor(actor) {
         this.actor = actor;
@@ -138,19 +139,32 @@ export class ActorRolls {
 
     // Private helper: Figure out what kind of attack this is
     _determineAttackContext(weapon, attackType) {
+        console.log("🎯 _determineAttackContext called with:", {
+            weapon: weapon,
+            weaponName: weapon?.name,
+            weaponSystem: weapon?.system,
+            attackType: attackType
+        });
+
         if (weapon) {
+            console.log("🎯 Taking weapon path");
             return this._getWeaponContext(weapon);
         }
 
-        // No specific weapon - analyze equipped weapons
-        const equippedWeapons = this.actor.items.filter(i => i.type === "weapon" && i.system.equipped);
+        console.log("🎯 No specific weapon, analyzing equipped weapons");
+        const equippedWeapons = this.actor.items.filter(i =>
+            i && i.type === "weapon" && i.system && i.system.equipped
+        );
+
+        console.log("🎯 Found equipped weapons:", equippedWeapons.length);
 
         if (equippedWeapons.length === 0) {
-            return this._getUnarmedContext(attackType);
+            console.log("🎯 No equipped weapons, going unarmed");
+            return this._getUnarmedContext(attackType || "melee");
         }
 
         // Use best equipped weapon
-        const bestWeapon = this.actor._getBestWeapon(equippedWeapons);
+        const bestWeapon = findBestWeapon(equippedWeapons);
         return this._getWeaponContext(bestWeapon);
     }
 

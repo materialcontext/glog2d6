@@ -29,10 +29,6 @@ describe('ActorRolls', () => {
         actor.system.saves[attr] = { bonus, breakdown }
     }
 
-    const addWeapon = (system) => {
-        actor.items.push(createMockItem('weapon', { system }))
-    }
-
     describe('Attribute Rolls', () => {
         it('rolls attribute checks with correct modifier', async () => {
             setAttr('str', 14, 4)

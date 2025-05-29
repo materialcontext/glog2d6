@@ -1,5 +1,4 @@
 // module/actor/actor-sheet.mjs - Refactored
-import { safely } from "../systems/safely.mjs";
 import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
 import { addClassFeatures, toggleFeature, hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
@@ -15,7 +14,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     constructor(...args) {
         super(...args);
         this.initializeMixinsAndComponents();
-        this.setupDebugInterface();
     }
 
     static get defaultOptions() {
@@ -39,41 +37,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         this.equipmentHandler = new EquipmentHandler(this.actor);
         this.itemManager = new ItemManagementHandler(this);
         this.dataContextBuilder = new DataContextBuilder(this.actor);
-
-        this.setupSafeMethodWrappers();
-    }
-
-    setupSafeMethodWrappers() {
-        this.getWeaponAnalysis = safely({
-            fallback: { hasWeapons: false, attackButtonType: 'generic' },
-            context: 'weapon-analysis'
-        })(() => this.actor.analyzeEquippedWeapons());
-
-        this.hasFeature = safely.silent(false)(
-            (featureName) => this.actor.hasFeature(featureName)
-        );
-
-        this.hasAvailableFeatures = safely({
-            fallback: false,
-            context: 'loading-available-features'
-        })((actor) => hasAvailableClassFeatures(actor));
-    }
-
-    setupDebugInterface() {
-        window.debugSheet = this;
-        this.addGlobalDebugMethods();
-    }
-
-    addGlobalDebugMethods() {
-        const debugMethods = {
-            getSheetErrors: () => this.getErrorHistory(),
-            clearSheetErrors: () => this.clearErrorHistory(),
-            generateErrorReport: () => this.generateErrorReport()
-        };
-
-        Object.assign(window, debugMethods);
-
-        console.log('Debug methods available:', Object.keys(debugMethods));
     }
 
     get template() {

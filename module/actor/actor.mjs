@@ -1,7 +1,6 @@
 // module/actor/actor.mjs - Refactored
 import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
 import { ActorRolls } from "../dice/actor-rolls.mjs";
-import { safely } from "../systems/safely.mjs";
 
 // Import our new systems
 import { ActorAttributeSystem } from "./systems/actor-attribute-system.mjs";
@@ -19,14 +18,6 @@ export class GLOG2D6Actor extends Actor {
     }
 
     /** @override */
-    _initialize(options = {}) {
-        this.initializeComponents();
-        this.setupSafePublicMethods();
-
-        // Then call Foundry's initialization
-        super._initialize(options);
-    }
-
     async _preCreate(data, options, user) {
         await super._preCreate(data, options, user);
         await this.updateSource({
@@ -51,32 +42,25 @@ export class GLOG2D6Actor extends Actor {
         this.spellSystem = new ActorSpellSystem(this);
     }
 
-    setupSafePublicMethods() {
-        // Create safe public versions of risky methods
-        this.analyzeEquippedWeapons = safely({
-            fallback: { hasWeapons: false, attackButtonType: 'generic' },
-            context: 'actor-weapon-analysis'
-        })(this._analyzeEquippedWeapons.bind(this));
-
-        this.hasFeature = safely.silent(false)(this._hasFeature.bind(this));
-        this.getClassTemplateCount = safely.silent(0)(this._getClassTemplateCount.bind(this));
-    }
-
     // Data preparation lifecycle
     prepareData() {
+        this.initializeComponents();
         super.prepareData();
     }
 
     prepareBaseData() {
         console.log("calculating base data");
+
         this.attributeSystem.calculateAttributeModifiers();
         this.inventorySystem.calculateInventoryData();
         this.combatSystem.calculateAttackValue();
     }
 
     prepareDerivedData() {
+
         try {
             console.log("calculating derived data");
+
             this.attributeSystem.initializeEffectiveModifiers();
             this.bonusSystem.calculateAndApplyAllBonuses();
             this.attributeSystem.applyEncumbranceToAttributes();
@@ -131,16 +115,6 @@ export class GLOG2D6Actor extends Actor {
         );
     }
 
-    _hasFeature(...featureNames) {
-        return featureNames.some(name =>
-            this.items.some(i =>
-                i.type === "feature" &&
-                i.system.active &&
-                i.name === name
-            )
-        );
-    }
-
     // System delegations
     async toggleTorch() { return this.torchSystem.toggleTorch(); }
     getAvailableTorches() { return this.torchSystem.getAvailableTorches(); }
@@ -148,17 +122,6 @@ export class GLOG2D6Actor extends Actor {
     async burnTorch(hours = 0.1) { return this.torchSystem.burnTorch(hours); }
     async rest() { return this.restSystem.performRest(); }
     async castSpellWithDice(spell, diceCount) { return this.spellSystem.castSpellWithDice(spell, diceCount); }
-
-    // Weapon analysis
-    _analyzeEquippedWeapons() {
-        const weaponAnalyzer = new WeaponAnalyzer(this.items);
-        return weaponAnalyzer.analyzeAll();
-    }
-
-    _getBestWeapon(weapons) {
-        const weaponRanker = new WeaponRanker();
-        return weaponRanker.findBest(weapons);
-    }
 
     // Roll creation utilities
     createRoll(formula, data = {}, context = null) {
@@ -199,116 +162,6 @@ export class GLOG2D6Actor extends Actor {
     _getDiceResults(roll) {
         const diceExtractor = new DiceResultExtractor(roll);
         return diceExtractor.extractResults();
-    }
-}
-
-// Helper classes for the remaining complex methods
-class WeaponAnalyzer {
-    constructor(items) {
-        this.items = items;
-    }
-
-    analyzeAll() {
-        const equippedWeapons = this.getEquippedWeapons();
-        const analysis = this.createBaseAnalysis(equippedWeapons);
-
-        if (equippedWeapons.length === 0) {
-            return analysis;
-        }
-
-        this.categorizeWeapons(equippedWeapons, analysis);
-        this.determinePrimaryWeapon(equippedWeapons, analysis);
-        this.determineAttackButtonType(analysis);
-
-        return analysis;
-    }
-
-    getEquippedWeapons() {
-        return this.items.filter(i => i.type === "weapon" && i.system.equipped);
-    }
-
-    createBaseAnalysis(equippedWeapons) {
-        return {
-            hasWeapons: equippedWeapons.length > 0,
-            weaponCount: equippedWeapons.length,
-            primaryWeapon: null,
-            weaponTypes: new Set(),
-            hasThrowable: false,
-            attackButtonType: 'generic',
-            throwableWeapon: null,
-            meleeWeapons: [],
-            rangedWeapons: []
-        };
-    }
-
-    categorizeWeapons(equippedWeapons, analysis) {
-        for (const weapon of equippedWeapons) {
-            const type = weapon.system.weaponType || 'melee';
-            analysis.weaponTypes.add(type);
-
-            if (type === 'thrown') {
-                analysis.hasThrowable = true;
-                analysis.throwableWeapon = weapon;
-                analysis.meleeWeapons.push(weapon);
-            } else if (type === 'ranged') {
-                analysis.rangedWeapons.push(weapon);
-            } else {
-                analysis.meleeWeapons.push(weapon);
-            }
-        }
-    }
-
-    determinePrimaryWeapon(equippedWeapons, analysis) {
-        const weaponRanker = new WeaponRanker();
-        analysis.primaryWeapon = weaponRanker.findBest(equippedWeapons);
-    }
-
-    determineAttackButtonType(analysis) {
-        if (analysis.hasThrowable && analysis.meleeWeapons.length > 1) {
-            analysis.attackButtonType = 'split';
-        } else if (analysis.rangedWeapons.length > 0 && analysis.meleeWeapons.length === 0) {
-            analysis.attackButtonType = 'ranged';
-        } else if (analysis.meleeWeapons.length > 0 && analysis.rangedWeapons.length === 0) {
-            analysis.attackButtonType = 'melee';
-        } else if (analysis.weaponTypes.size > 1) {
-            analysis.attackButtonType = 'split';
-        } else {
-            analysis.attackButtonType = 'generic';
-        }
-    }
-}
-
-class WeaponRanker {
-    constructor() {
-        this.sizePriority = { heavy: 3, medium: 2, light: 1 };
-    }
-
-    findBest(weapons) {
-        if (weapons.length === 0) return null;
-        if (weapons.length === 1) return weapons[0];
-
-        return weapons.reduce((best, current) => {
-            return this.isWeaponBetter(current, best) ? current : best;
-        });
-    }
-
-    isWeaponBetter(weaponA, weaponB) {
-        const priorityA = this.sizePriority[weaponA.system.size] || 1;
-        const priorityB = this.sizePriority[weaponB.system.size] || 1;
-
-        if (priorityA !== priorityB) {
-            return priorityA > priorityB;
-        }
-
-        const damageA = this.calculateDamageScore(weaponA.system.damage);
-        const damageB = this.calculateDamageScore(weaponB.system.damage);
-        return damageA > damageB;
-    }
-
-    calculateDamageScore(damage) {
-        if (!damage) return 0;
-        const numbers = damage.match(/\d+/g) || [];
-        return numbers.reduce((sum, n) => sum + parseInt(n), 0);
     }
 }
 
