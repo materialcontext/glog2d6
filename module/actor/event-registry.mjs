@@ -32,7 +32,11 @@ export class EventHandlerRegistry {
             { selector: '.torch-btn', event: 'click', handler: 'handleTorchToggle' },
             { selector: '.torch-icon[data-action="toggle-torch"]', event: 'click', handler: 'handleTorchItemToggle' },
             { selector: '.add-class-features', event: 'click', handler: 'handleAddClassFeatures' },
-            { selector: '.feature-item', event: 'click', handler: 'handleFeatureToggle' }
+            { selector: '.feature-item', event: 'click', handler: 'handleFeatureToggle' },
+
+            // trauma and wounds
+            { selector: '.trauma-save-btn', event: 'click', handler: 'handleTraumaSave' },
+            { selector: '.remove-wound-btn', event: 'click', handler: 'handleRemoveWound' },
         ];
     }
 

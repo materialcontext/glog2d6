@@ -56,6 +56,10 @@ export async function createDefaultFolders() {
 
         console.log('glog2d6 | Created', Object.keys(classFolders).length, 'class folders');
 
+        if (CONFIG.GLOG.WOUNDS) {
+            await createWoundsTable();
+        }
+
         // Create items from data files
         await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id, classFolders);
 
@@ -311,4 +315,44 @@ function getFeatureIcon(className, _template) {
     };
 
     return classIcons[className] || "icons/sundries/scrolls/scroll-bound-brown.webp";
+}
+
+async function createWoundsTable() {
+    // Check if wounds table already exists
+    const existingTable = game.tables.find(t => t.name === "GLOG Wounds Table");
+    if (existingTable) {
+        console.log('glog2d6 | Wounds table already exists');
+        return existingTable;
+    }
+
+    console.log('glog2d6 | Creating wounds roll table...');
+
+    const woundsData = CONFIG.GLOG.WOUNDS?.wounds || [];
+    if (woundsData.length === 0) {
+        console.warn('glog2d6 | No wounds data available for table creation');
+        return;
+    }
+
+    // Create table results
+    const results = woundsData.map((wound, index) => ({
+        type: CONST.TABLE_RESULT_TYPES.TEXT,
+        text: `${wound.name}: ${wound.description}`,
+        weight: 1,
+        range: [index + 1, index + 1],
+        drawn: false
+    }));
+
+    // Create the roll table
+    const tableData = {
+        name: "GLOG Wounds Table",
+        formula: `1d${woundsData.length}`,
+        replacement: false,
+        displayRoll: true,
+        results: results,
+        folder: null
+    };
+
+    const woundsTable = await RollTable.create(tableData);
+    console.log('glog2d6 | Created wounds roll table with', results.length, 'entries');
+    return woundsTable;
 }

@@ -126,7 +126,6 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         if (result.ok) this.render();
     }
 
-    // Rest handling
     async handleRest(event) {
         event.preventDefault();
 
@@ -136,6 +135,39 @@ export class GLOG2D6ActorSheet extends ActorSheet {
             this.render();
         } catch (error) {
             this.handleRestError(error);
+        }
+    }
+
+    async handleTraumaSave(event) {
+        event.preventDefault();
+        console.log('Trauma save button clicked');
+
+        if (!this.actor.traumaSystem) {
+            console.error('Trauma system not initialized');
+            return;
+        }
+
+        try {
+            await this.actor.initiateTraumaSave();
+        } catch (error) {
+            console.error('Error initiating trauma save:', error);
+            ui.notifications.error('Failed to open trauma save dialog: ' + error.message);
+        }
+    }
+
+    async handleRemoveWound(event) {
+        event.preventDefault();
+        const woundId = event.currentTarget.dataset.woundId;
+
+        const confirm = await Dialog.confirm({
+            title: "Remove Wound",
+            content: "<p>Are you sure you want to remove this wound?</p>",
+            defaultYes: false
+        });
+
+        if (confirm) {
+            await this.actor.removeWound(woundId);
+            this.render();
         }
     }
 

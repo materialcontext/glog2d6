@@ -98,6 +98,22 @@ async function loadSystemData() {
         glog.TORCHES = { torches: [] };
     }
 
+    // Load wounds data
+    try {
+        const woundsResponse = await fetch('systems/glog2d6/data/wounds.json');
+        if (woundsResponse.ok) {
+            const woundsData = await woundsResponse.json();
+            glog.WOUNDS = woundsData;
+            console.log('glog2d6 | Loaded', woundsData.wounds.length, 'wound types');
+        } else {
+            console.warn('glog2d6 | Could not load wounds.json');
+            glog.WOUNDS = { wounds: [], bodyParts: [], maimedResults: [] };
+        }
+    } catch (error) {
+        console.error('glog2d6 | Error loading wounds.json:', error);
+        glog.WOUNDS = { wounds: [], bodyParts: [], maimedResults: [] };
+    }
+
     // Load spells from multiple files
     await loadSpellData();
 }

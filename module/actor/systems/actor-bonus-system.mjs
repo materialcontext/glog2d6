@@ -13,6 +13,7 @@ export class ActorBonusSystem {
 
             const bonuses = this.bonusCalculator.calculateBonuses();
             this.applyBonusesToActorData(bonuses);
+            this.applyWoundPenalties();
         } catch (error) { // we need to keep running but be made VERY aware
             console.error(`🚨 BONUS CALCULATION FAILED FOR ${this.actor.name.toUpperCase()}! 🚨`);
             console.error('Error details:', error);
@@ -33,6 +34,65 @@ export class ActorBonusSystem {
     applyBonusToSpecificTarget(target, totalBonus, breakdown) {
         const bonusApplier = new BonusTargetApplier(this.actor.system);
         bonusApplier.applyBonus(target, totalBonus, breakdown);
+    }
+
+    applyWoundPenalties() {
+        if (!this.actor.traumaSystem) return;
+
+        // Ensure wounds structure exists
+        if (!this.actor.system.wounds) {
+            this.actor.system.wounds = {
+                count: 0,
+                list: [],
+                effects: {
+                    statReductions: {},
+                    movementReduction: 0,
+                    noHealing: false,
+                    attackPenalty: 0,
+                    defensePenalty: 0,
+                    reactionPenalty: 0
+                }
+            };
+        }
+
+        const penalties = this.actor.traumaSystem.getWoundPenalties();
+
+        // Apply stat penalties to effective values
+        for (const [stat, penalty] of Object.entries(penalties.stats)) {
+            if (penalty > 0) {
+                const attr = this.actor.system.attributes[stat];
+
+                // Debug logging to find the issue
+                console.log(`Applying wound penalty to ${stat}:`, {
+                    attr,
+                    penalty,
+                    attrValue: attr.value,
+                    attrMod: attr.mod,
+                    attrValueType: typeof attr.value,
+                    attrModType: typeof attr.mod
+                });
+
+                const effectiveValue = Math.max(1, attr.value - penalty);
+                attr.effectiveValue = effectiveValue;
+                attr.effectiveMod = this.actor.attributeSystem.calculateSingleModifier(effectiveValue);
+
+                console.log(`After wound penalty applied:`, {
+                    effectiveValue: attr.effectiveValue,
+                    effectiveMod: attr.effectiveMod,
+                    effectiveModType: typeof attr.effectiveMod
+                });
+            }
+        }
+
+        // Store wound effects for UI display
+        this.actor.system.wounds.effects = {
+            statReductions: Object.fromEntries(Object.entries(penalties.stats).filter(([, v]) => v > 0)),
+            movementReduction: penalties.movement,
+            noHealing: penalties.healing,
+            attackPenalty: penalties.attackPenalty,
+            defensePenalty: penalties.defensePenalty,
+            reactionPenalty: penalties.reactionPenalty
+        };
     }
 }
 

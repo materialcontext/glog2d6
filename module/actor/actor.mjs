@@ -1,8 +1,5 @@
-// module/actor/actor.mjs - Refactored
 import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
 import { ActorRolls } from "../dice/actor-rolls.mjs";
-
-// Import our new systems
 import { ActorAttributeSystem } from "./systems/actor-attribute-system.mjs";
 import { ActorInventorySystem } from "./systems/actor-inventory-system.mjs";
 import { ActorBonusSystem } from "./systems/actor-bonus-system.mjs";
@@ -11,6 +8,7 @@ import { ActorMovementSystem } from "./systems/actor-movement-system.mjs";
 import { ActorTorchSystem } from "./systems/actor-torch-system.mjs";
 import { ActorRestSystem } from "./systems/actor-rest-system.mjs";
 import { ActorSpellSystem } from "./systems/actor-spell-system.mjs";
+import { ActorTraumaSystem } from "./systems/actor-trauma-system.mjs";
 
 export class GLOG2D6Actor extends Actor {
     constructor(data, context) {
@@ -54,6 +52,7 @@ export class GLOG2D6Actor extends Actor {
         this.attributeSystem.calculateAttributeModifiers();
         this.inventorySystem.calculateInventoryData();
         this.combatSystem.calculateAttackValue();
+        this.traumaSystem = new ActorTraumaSystem(this);
     }
 
     prepareDerivedData() {
@@ -88,6 +87,10 @@ export class GLOG2D6Actor extends Actor {
     async rollDiplomacy(...args) { return this.rolls.rollDiplomacy(...args); }
     async rollIntimidate(...args) { return this.rolls.rollIntimidate(...args); }
     async rollTraumaSave(...args) { return this.rolls.rollTraumaSave(...args); }
+    async rollTraumaSave(...args) { return this.traumaSystem.rollTraumaSave(...args); }
+    async initiateTraumaSave() { return this.traumaSystem.initiateTraumaSave(); }
+    async applyWound(...args) { return this.traumaSystem.applyWound(...args); }
+    async removeWound(...args) { return this.traumaSystem.removeWound(...args); }
 
     _hasClass(className) {
         return this.items.some(i =>

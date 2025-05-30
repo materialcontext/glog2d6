@@ -136,6 +136,18 @@
                 },
                 "encumbrance": 0
             },
+            "wounds": {
+                "count": 0,
+                "list": [],
+                "effects": {
+                    "statReductions": {},
+                    "movementReduction": 0,
+                    "noHealing": false,
+                    "attackPenalty": 0,
+                    "defensePenalty": 0,
+                    "reactionPenalty": 0
+                }
+            },
             "torch": {
                 "lit": false,
                 "activeTorchId": null

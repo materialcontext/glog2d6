@@ -238,7 +238,53 @@
     box-shadow: 0 4px 12px rgba(120, 46, 34, 0.15);
 }
 
+.border-danger {
+    border-color: var(--danger) !important;
+}
+
+.border-success {
+    border-color: var(--success) !important;
+}
+
+.bg-danger-light {
+    background: rgba(211, 47, 47, 0.1);
+}
+
+.bg-success-light {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.text-upper {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 /* === SPECIFIC COMPONENTS === */
+
+/* Trauma save button specific styling */
+.trauma-save-btn {
+    background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%);
+    border: 1px solid #b71c1c;
+    box-shadow: 0 2px 4px rgba(211, 47, 47, 0.3);
+}
+
+.trauma-save-btn:hover {
+    background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(211, 47, 47, 0.4);
+}
+
+/* Apply wound button */
+.apply-wound-btn {
+    font-weight: bold;
+    transition: var(--transition);
+}
+
+.apply-wound-btn:disabled {
+    background: var(--secondary);
+    transform: none;
+    cursor: not-allowed;
+}
 
 /* Attribute Cards */
 .attribute-card {
@@ -956,6 +1002,29 @@
     padding: 3px;
 }
 
+.attribute-card:hover .hover-modifiers {
+    display: block !important;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.attribute-card:hover .current-modifier {
+    display: none;
+}
+
+.original-value {
+    text-decoration: line-through;
+}
+
 /* Rest Button */
 .glog2d6 .rest-btn {
     display: flex;
@@ -1014,7 +1083,8 @@
 
 /* Inactive torch - no background */
 .torch-icon {
-    background: transparent; /* or #ddd for light gray */
+    background: transparent;
+    /* or #ddd for light gray */
     color: #666;
     border: 1px solid var(--border);
 }
@@ -1037,8 +1107,13 @@
 }
 
 @keyframes torchGlow {
-    0% { box-shadow: 0 0 8px rgba(255, 107, 53, 0.4); }
-    100% { box-shadow: 0 0 15px rgba(255, 107, 53, 0.7); }
+    0% {
+        box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    }
+
+    100% {
+        box-shadow: 0 0 15px rgba(255, 107, 53, 0.7);
+    }
 }
 
 /* Mobile Responsive */

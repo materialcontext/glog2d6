@@ -1,0 +1,138 @@
+{
+  "wounds": [
+    {
+      "id": "marked",
+      "name": "Marked",
+      "description": "Roll 1d6 to see which part of you is marked and then reduce one physical stat by 1 point until rest and recover hit points. When you remove this wound, reroll your 1d6 for max HP and keep the result if higher. This penalty stacks. – 1: Leg, 2: Chest, 3: Arm, 4: Shoulder, 5: Abdomen, 6: Hand.",
+      "effects": {
+        "statReduction": { "str": 1 },
+        "stacks": true,
+        "hpReroll": "1d6",
+        "specialRoll": "bodyPart"
+      }
+    },
+    {
+      "id": "concussed",
+      "name": "Concussed",
+      "description": "Reduce your Intelligence and Wisdom by 1 point until you rest and recover hit points. When you remove this wound, reroll your 1d6 for max HP and keep the result if higher. This penalty stacks.",
+      "effects": {
+        "statReduction": { "int": 1, "wis": 1 },
+        "stacks": true,
+        "hpReroll": "1d6"
+      }
+    },
+    {
+      "id": "hobbled",
+      "name": "Hobbled",
+      "description": "Your movement is reduced to 10' until the wound is healed. After you've recovered, reroll your max HP and keep the result if higher. This penalty does not stack.",
+      "effects": {
+        "movementReduction": 10,
+        "stacks": false,
+        "hpReroll": "1d6"
+      }
+    },
+    {
+      "id": "smashed",
+      "name": "Smashed",
+      "description": "You look a mess and take a -1 penalty to all Charisma and Reaction checks until you get it fixed. This penalty stacks. If you roll this a second time you also use your mouth to chew or talk.",
+      "effects": {
+        "statReduction": { "cha": 1 },
+        "reactionPenalty": 1,
+        "stacks": true
+      }
+    },
+    {
+      "id": "slashed",
+      "name": "Slashed",
+      "description": "You cannot regain HP until you've rested and had the wound stitched shut. Common healing only goes so far, magical or otherwise. After the stitches heal, reroll your max HP on 1d8 and keep the result if it's higher. This penalty stacks.",
+      "effects": {
+        "noHealing": true,
+        "stacks": true,
+        "hpReroll": "1d8"
+      }
+    },
+    {
+      "id": "humiliated",
+      "name": "Humiliated",
+      "description": "Do not lose this wound until after you get revenge. When you recover from this, reroll your maximum HP on 1d8. Keep the result if it's higher. This penalty does not stack.",
+      "effects": {
+        "specialRemoval": "revenge",
+        "stacks": false,
+        "hpReroll": "1d8"
+      }
+    },
+    {
+      "id": "ruptured",
+      "name": "Ruptured",
+      "description": "Reduce Strength and Dexterity by 1 until you see a medical specialist. After recovering, reroll your max HP on 1d8 and keep the result if higher. This penalty does not stack.",
+      "effects": {
+        "statReduction": { "str": 1, "dex": 1 },
+        "specialRemoval": "medical",
+        "stacks": false,
+        "hpReroll": "1d8"
+      }
+    },
+    {
+      "id": "crushed",
+      "name": "Crushed",
+      "description": "Your body and spirit are crushed. Reduce all stats by 1 until you've recovered from this wound. This wound takes longer to overcome and thus you cannot remove it during your next downtime. After recovering, reroll your HP on 1d8 and keep the result if higher.",
+      "effects": {
+        "statReduction": { "str": 1, "dex": 1, "con": 1, "int": 1, "wis": 1, "cha": 1 },
+        "extendedHealing": true,
+        "stacks": false,
+        "hpReroll": "1d8"
+      }
+    },
+    {
+      "id": "maimed",
+      "name": "Maimed",
+      "description": "Part of your body is damaged beyond repair. Roll 1d6 and consult the table. To remove this wound you need to get a prosthesis or magic enhancement to compensate for your loss. If you have not removed this wound in 3 months time, remove it and gain a basic prosthetic. After recovering from this wound, reroll your max HP on 1d8 and keep the result if higher.",
+      "effects": {
+        "specialRoll": "maimed",
+        "specialRemoval": "prosthetic",
+        "autoRemoval": "3months",
+        "hpReroll": "1d8"
+      }
+    },
+    {
+      "id": "scrambled",
+      "name": "Scrambled",
+      "description": "Take 2 wounds instead of 1. You feel like a slightly different person. Reroll your Charisma then take a -2 penalty to all mental stats until you recover.",
+      "effects": {
+        "multipleWounds": 2,
+        "statReduction": { "int": 2, "wis": 2, "cha": 2 },
+        "rerollStat": "cha"
+      }
+    },
+    {
+      "id": "broken",
+      "name": "Broken",
+      "description": "Internal bleeding, broken ribs, concussion. It's hard to breathe or focus. Take 2 wounds and reduce all stats by 1 until you recover. At the start of each round of this combat make a DC 7 Constitution check, if you fail you fall unconscious at the end of your turn. Otherwise increase the DC by 1 and repeat it on your next turn.",
+      "effects": {
+        "multipleWounds": 2,
+        "statReduction": { "str": 1, "dex": 1, "con": 1, "int": 1, "wis": 1, "cha": 1 },
+        "combatEffect": "unconscious_check"
+      }
+    },
+    {
+      "id": "doomed",
+      "name": "Doomed",
+      "description": "You shouldn't have survived that. You have dreams of your own death. Take 2 wounds instead of 1. The next time you fail a Trauma save, you die. Until you recover, you have a 50% chance of the nightmares ruining your sleep, depriving you of its benefits. Remove this wound only if it is your last one.",
+      "effects": {
+        "multipleWounds": 2,
+        "deathOnFailure": true,
+        "sleepDisruption": 0.5,
+        "specialRemoval": "last_wound"
+      }
+    }
+  ],
+  "bodyParts": ["Leg", "Chest", "Arm", "Shoulder", "Abdomen", "Hand"],
+  "maimedResults": [
+    "Roll twice more and keep both results",
+    "Sword Arm damaged",
+    "Face damaged",
+    "Shield Arm damaged",
+    "Leg damaged",
+    "Leg damaged"
+  ]
+}

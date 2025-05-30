@@ -1,0 +1,271 @@
+{{!-- templates/actor/wounds-tab.hbs --}}
+<div class="tab" data-group="primary" data-tab="wounds">
+    <div class="wounds-section">
+        <div class="flex flex-between mb-10 p-10 section"
+            style="background: linear-gradient(135deg, #ffe6e6 0%, #fff0f0 100%); border: 1px solid #ffcccc;">
+            <div class="text-bold">
+                Active Wounds: {{system.wounds.count}}
+                {{#if (gt system.wounds.count 0)}}
+                <span class="text-danger">(-{{system.wounds.penalty}} penalty)</span>
+                {{/if}}
+            </div>
+            {{#unless editMode}}
+            <div class="flex">
+                <button type="button" class="btn btn-danger p-6 text-small flex flex-center flex-gap-4 trauma-save-btn"
+                    title="Roll Trauma Save">
+                    <i class="fas fa-skull"></i> Trauma
+                </button>
+            </div>
+            {{/unless}}
+        </div>
+
+        {{#if system.wounds.effects}}
+        <div class="section p-10 mb-10"
+            style="background: linear-gradient(135deg, #ffe6e6 0%, #fff0f0 100%); border: 2px solid var(--danger);">
+            <h4 class="text-bold text-danger mb-8">Current Wound Effects</h4>
+            <div class="grid-2 flex-gap-8">
+                {{#if system.wounds.effects.statReductions}}
+                <div class="p-6 section"
+                    style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(211, 47, 47, 0.2);">
+                    <strong class="text-danger text-small text-upper">Stat Penalties:</strong>
+                    {{#each system.wounds.effects.statReductions as |penalty stat|}}
+                    <span class="text-danger">{{upperCase stat}} -{{penalty}}</span>
+                    {{/each}}
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.movementReduction}}
+                <div class="p-6 section"
+                    style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(211, 47, 47, 0.2);">
+                    <strong class="text-danger text-small text-upper">Movement:</strong>
+                    <span class="text-danger">Reduced to {{system.wounds.effects.movementReduction}}'</span>
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.noHealing}}
+                <div class="p-6 section"
+                    style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(211, 47, 47, 0.2);">
+                    <strong class="text-danger text-small text-upper">Healing:</strong>
+                    <span class="text-danger">Cannot regain HP</span>
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.attackPenalty}}
+                <div class="p-6 section"
+                    style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(211, 47, 47, 0.2);">
+                    <strong class="text-danger text-small text-upper">Attack Penalty:</strong>
+                    <span class="text-danger">-{{system.wounds.effects.attackPenalty}}</span>
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.defensePenalty}}
+                <div class="p-6 section"
+                    style="background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(211, 47, 47, 0.2);">
+                    <strong class="text-danger text-small text-upper">Defense Penalty:</strong>
+                    <span class="text-danger">-{{system.wounds.effects.defensePenalty}}</span>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        {{/if}}
+
+        <div class="section">
+            {{#each system.wounds.list as |wound|}}
+            <div class="p-10 mb-8" data-wound-id="{{wound.id}}"
+                style="border: 1px solid #ffcccc; background: linear-gradient(135deg, #fff8f8 0%, white 100%); border-left: 4px solid var(--danger);">
+                <div class="flex flex-between mb-8">
+                    <div class="text-bold text-danger">
+                        {{wound.name}}
+                        <span class="text-small text-muted">({{wound.damage}} damage)</span>
+                    </div>
+                    <div class="flex flex-gap-8">
+                        <div class="text-small text-muted">
+                            {{formatDate wound.dateAcquired}}
+                        </div>
+                        {{#if ../editMode}}
+                        <button type="button" class="btn btn-success p-2 text-small remove-wound-btn"
+                            data-wound-id="{{wound.id}}" title="Remove Wound"
+                            style="border-radius: 50%; width: 24px; height: 24px;">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <div class="text-small p-8 section mb-8"
+                    style="background: rgba(211, 47, 47, 0.05); border: 1px solid rgba(211, 47, 47, 0.1);">
+                    {{wound.description}}
+                </div>
+
+                {{#if wound.bodyPart}}
+                <div class="text-small text-muted mb-4" style="border-top: 1px solid #eee; padding-top: 8px;">
+                    <strong>Body Part Affected:</strong> {{wound.bodyPart}}
+                </div>
+                {{/if}}
+
+                {{#if wound.maimedResult}}
+                <div class="text-small text-muted mb-4" style="border-top: 1px solid #eee; padding-top: 8px;">
+                    <strong>Maimed Result:</strong> {{wound.maimedResult}}
+                </div>
+                {{/if}}
+
+                {{#if wound.effects.specialRemoval}}
+                <div class="text-small text-primary p-6 section"
+                    style="background: rgba(120, 46, 34, 0.1); border: 1px solid rgba(120, 46, 34, 0.2);">
+                    <strong>Special Removal Requirement:</strong>
+                    {{#if (eq wound.effects.specialRemoval "revenge")}}
+                    Must get revenge before this wound can be removed
+                    {{else if (eq wound.effects.specialRemoval "medical")}}
+                    Requires medical specialist treatment
+                    {{else if (eq wound.effects.specialRemoval "prosthetic")}}
+                    Requires prosthetic or magical enhancement
+                    {{else if (eq wound.effects.specialRemoval "last_wound")}}
+                    Can only be removed if it's your last wound
+                    {{else}}
+                    {{wound.effects.specialRemoval}}
+                    {{/if}}
+                </div>
+                {{/if}}
+            </div>
+            {{else}}
+            <div class="text-center p-10 section">
+                <div class="text-muted mb-10">
+                    <i class="fas fa-heart" style="font-size: 32px;"></i>
+                </div>
+                <p class="text-muted mb-8">No wounds currently.</p>
+                <p class="text-small text-muted">When you take damage at 0 HP, you'll need to make a Trauma Save.</p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>{{!-- templates/actor/wounds-tab.hbs --}}
+<div class="tab" data-group="primary" data-tab="wounds">
+    <div class="wounds-section">
+        <div class="flex flex-between mb-10 p-10 section"
+            style="background: linear-gradient(135deg, #ffe6e6 0%, #fff0f0 100%); border: 1px solid #ffcccc;">
+            <div class="text-bold">
+                Active Wounds: {{system.wounds.count}}
+                {{#if (gt system.wounds.count 0)}}
+                <span class="text-danger">(-{{system.wounds.penalty}} penalty)</span>
+                {{/if}}
+            </div>
+            {{#unless editMode}}
+            <div class="flex">
+                <button type="button" class="btn btn-danger p-6 text-small flex flex-center flex-gap-4 trauma-save-btn"
+                    title="Roll Trauma Save">
+                    <i class="fas fa-skull"></i> Trauma
+                </button>
+            </div>
+            {{/unless}}
+        </div>
+
+        {{#if system.wounds.effects}}
+        <div class="wounds-effects section p-10 mb-10">
+            <h4 class="text-bold text-danger mb-8">Current Wound Effects</h4>
+            <div class="effects-grid grid-2 flex-gap-8">
+                {{#if system.wounds.effects.statReductions}}
+                <div class="effect-item">
+                    <strong>Stat Penalties:</strong>
+                    {{#each system.wounds.effects.statReductions as |penalty stat|}}
+                    <span class="text-danger">{{upperCase stat}} -{{penalty}}</span>
+                    {{/each}}
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.movementReduction}}
+                <div class="effect-item">
+                    <strong>Movement:</strong>
+                    <span class="text-danger">Reduced to {{system.wounds.effects.movementReduction}}'</span>
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.noHealing}}
+                <div class="effect-item">
+                    <strong>Healing:</strong>
+                    <span class="text-danger">Cannot regain HP</span>
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.attackPenalty}}
+                <div class="effect-item">
+                    <strong>Attack Penalty:</strong>
+                    <span class="text-danger">-{{system.wounds.effects.attackPenalty}}</span>
+                </div>
+                {{/if}}
+
+                {{#if system.wounds.effects.defensePenalty}}
+                <div class="effect-item">
+                    <strong>Defense Penalty:</strong>
+                    <span class="text-danger">-{{system.wounds.effects.defensePenalty}}</span>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        {{/if}}
+
+        <div class="wounds-list section">
+            {{#each system.wounds.list as |wound|}}
+            <div class="wound-item p-10" data-wound-id="{{wound.id}}">
+                <div class="wound-header flex flex-between mb-8">
+                    <div class="wound-name text-bold text-danger">
+                        {{wound.name}}
+                        <span class="text-small text-muted">({{wound.damage}} damage)</span>
+                    </div>
+                    <div class="wound-date text-small text-muted">
+                        {{formatDate wound.dateAcquired}}
+                    </div>
+                    {{#if ../editMode}}
+                    <div class="wound-controls">
+                        <button type="button" class="btn btn-success p-2 text-small remove-wound-btn"
+                            data-wound-id="{{wound.id}}" title="Remove Wound">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                    {{/if}}
+                </div>
+
+                <div class="wound-description text-small p-8 section">
+                    {{wound.description}}
+                </div>
+
+                {{#if wound.bodyPart}}
+                <div class="wound-details text-small text-muted mt-4">
+                    <strong>Body Part Affected:</strong> {{wound.bodyPart}}
+                </div>
+                {{/if}}
+
+                {{#if wound.maimedResult}}
+                <div class="wound-details text-small text-muted mt-4">
+                    <strong>Maimed Result:</strong> {{wound.maimedResult}}
+                </div>
+                {{/if}}
+
+                {{#if wound.effects.specialRemoval}}
+                <div class="wound-special text-small text-primary mt-4">
+                    <strong>Special Removal Requirement:</strong>
+                    {{#if (eq wound.effects.specialRemoval "revenge")}}
+                    Must get revenge before this wound can be removed
+                    {{else if (eq wound.effects.specialRemoval "medical")}}
+                    Requires medical specialist treatment
+                    {{else if (eq wound.effects.specialRemoval "prosthetic")}}
+                    Requires prosthetic or magical enhancement
+                    {{else if (eq wound.effects.specialRemoval "last_wound")}}
+                    Can only be removed if it's your last wound
+                    {{else}}
+                    {{wound.effects.specialRemoval}}
+                    {{/if}}
+                </div>
+                {{/if}}
+            </div>
+            {{else}}
+            <div class="empty-section text-center p-10 section">
+                <div class="empty-icon text-muted mb-10">
+                    <i class="fas fa-heart" style="font-size: 32px;"></i>
+                </div>
+                <p class="text-muted mb-8">No wounds currently.</p>
+                <p class="text-small text-muted">When you take damage at 0 HP, you'll need to make a Trauma Save.</p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
