@@ -1,48 +1,48 @@
 <form class="{{cssClass}} {{actor.type}}" autocomplete="off">
 
-  <header class="sheet-header">
-    <div class="header-fields">
-      <div class="form-group">
-        <label for="name">Name</label>
-        <input name="name" type="text" value="{{actor.name}}" placeholder="NPC Name"/>
+  <header class="sheet-header section p-10 mb-10">
+    <div class="header-fields grid-3 flex-gap-8">
+      <div class="form-group flex flex-col flex-gap-2">
+        <label for="name" class="text-small text-bold text-upper text-muted">Name</label>
+        <input name="name" type="text" value="{{actor.name}}" placeholder="NPC Name" class="input"/>
       </div>
 
-      <div class="form-group">
-        <label for="system.hp.value">Current HP</label>
-        <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0"/>
+      <div class="form-group flex flex-col flex-gap-2">
+        <label for="system.hp.value" class="text-small text-bold text-upper text-muted">Current HP</label>
+        <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0" class="input text-center"/>
       </div>
 
-      <div class="form-group">
-        <label for="system.hp.max">Max HP</label>
-        <input name="system.hp.max" type="number" value="{{system.hp.max}}" min="1"/>
+      <div class="form-group flex flex-col flex-gap-2">
+        <label for="system.hp.max" class="text-small text-bold text-upper text-muted">Max HP</label>
+        <input name="system.hp.max" type="number" value="{{system.hp.max}}" min="1" class="input text-center"/>
       </div>
     </div>
   </header>
 
   <section class="sheet-body">
 
-    <div class="attributes-section">
+    <div class="attributes-section mt-15">
       <h3>Attributes</h3>
-      <div class="attributes-grid">
+      <div class="grid-6 mt-8">
         {{#each system.attributes as |attr key|}}
-        <div class="attribute-card">
+        <div class="attribute-card clickable hoverable" data-attribute="{{key}}">
           <div class="attribute-main">
-            <div class="attribute-name">{{upperCase key}}</div>
-            <input name="system.attributes.{{key}}.value" type="number" value="{{attr.value}}" min="2" max="12" class="attribute-input"/>
-            <div class="attribute-mod">({{numberFormat attr.mod decimals=0 sign=true}})</div>
-            <button type="button" class="attribute-roll" data-attribute="{{key}}">Roll</button>
+            <div class="text-small text-bold text-upper text-primary mb-4">{{upperCase key}}</div>
+            <input name="system.attributes.{{key}}.value" type="number" value="{{attr.value}}" min="2" max="12" class="input text-center"/>
+            <div class="text-small text-muted mt-2">({{numberFormat attr.mod decimals=0 sign=true}})</div>
+            <button type="button" class="btn btn-primary p-2 mt-4 text-small" data-attribute="{{key}}">Roll</button>
           </div>
-          <div class="attribute-save">
-            <button type="button" class="save-roll" data-attribute="{{key}}">SAVE</button>
+          <div class="attribute-save clickable" data-attribute="{{key}}">
+            <span class="save-label">SAVE</span>
           </div>
         </div>
         {{/each}}
       </div>
     </div>
 
-    <div class="form-group stacked">
-      <label for="system.details.description">Description</label>
-      <textarea name="system.details.description" rows="10">{{system.details.description}}</textarea>
+    <div class="form-group flex flex-col flex-gap-2 mt-15">
+      <label for="system.details.description" class="text-small text-bold text-upper text-muted">Description</label>
+      <textarea name="system.details.description" rows="10" class="input">{{system.details.description}}</textarea>
     </div>
 
   </section>

@@ -1,0 +1,53 @@
+{{!-- templates/dialogs/gm-roll.hbs --}}
+<form autocomplete="off">
+    <div class="form-group">
+        <label>Type</label>
+        <select name="type">
+            {{#each rollTypes as |type|}}
+            <option value="{{type.key}}" data-target="{{type.target}}">{{type.name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="target-group" style="display: none;">
+        <div class="attribute-target">
+            <label>Attribute</label>
+            <select name="attribute">
+                {{#each attributes as |attr|}}
+                <option value="{{attr}}">{{upperCase attr}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="skill-target" style="display: none;">
+            <label>Skill</label>
+            <select name="skill">
+                {{#each skills as |skill|}}
+                <option value="{{skill}}">{{capitalize skill}}</option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Target (optional)</label>
+        <input type="number" name="target" min="1" max="20">
+    </div>
+
+    <div class="form-group">
+        <label>Description (optional)</label>
+        <input type="text" name="description" placeholder="Context...">
+    </div>
+
+    <div class="form-group">
+        <label>Actors</label>
+        <div class="actor-grid">
+            {{#each actors as |actor|}}
+            <label>
+                <input type="checkbox" name="actors.{{actor.id}}" value="true">
+                {{actor.name}}
+            </label>
+            {{/each}}
+        </div>
+    </div>
+</form>

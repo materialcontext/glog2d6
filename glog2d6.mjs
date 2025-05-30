@@ -6,9 +6,8 @@ import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
-import { GLOG2D6Roll } from "./module/dice/glog-roll.mjs";
 import { setupGlobalErrorHandler } from './module/systems/global-error-handler.mjs';
-
+import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
 
 // Define custom Document classes
 CONFIG.Actor.documentClass = GLOG2D6Actor;
@@ -84,6 +83,8 @@ Hooks.once('init', async function() {
         default: false
     });
 
+    initGMRolls();
+
     console.log('glog2d6 | System initialization complete');
 });
 
@@ -103,6 +104,7 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/item/item-spell-sheet.hbs",
         "systems/glog2d6/templates/item/item-feature-sheet.hbs",
         "systems/glog2d6/templates/item/item-torch-sheet.hbs",
+        "systems/glog2d6/templates/dialogs/gm-roll.hbs"
     ]);
 
     // Register partials

@@ -243,7 +243,6 @@ class SpellCastingMessageBuilder {
     extractSpellProperties() {
         const properties = [];
         const propertyMapping = {
-            school: 'School',
             range: 'Range',
             duration: 'Duration',
             components: 'Components'

@@ -1,21 +1,20 @@
 {{!-- Features Tab - Enhanced Version --}}
 <div class="tab" data-group="primary" data-tab="features">
     <div class="features-section">
-        <div class="features-header">
-            <div class="features-info">
-                Class Features & Abilities
+        <div class="features-header flex flex row flex-between mb-10 p-10 section">
+            <div class="features-info flex flex-row">
+                <div class="text-bold text-primary">Class Features & Abilities</div>
                 {{#if system.details.class}}
-                <span class="feature-class-info">({{system.details.class}} Level
-                    {{system.details.level}})</span>
+                <span class="text-small text-muted">({{system.details.class}} Level {{system.details.level}})</span>
                 {{/if}}
             </div>
             {{#if editMode}}
-            <div class="item-controls">
-                <a class="item-control item-create" data-type="feature" title="Create Feature">
+            <div class="flex flex-gap-8">
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="feature" title="Create Feature">
                     <i class="fas fa-star"></i> Feature
                 </a>
                 {{#if system.details.class}}
-                <a class="item-control add-class-features" title="Add Class Features">
+                <a class="btn btn-success p-6 text-small flex flex-center flex-gap-4 add-class-features" title="Add Class Features">
                     <i class="fas fa-magic"></i> Add Class Features
                 </a>
                 {{/if}}
@@ -23,40 +22,42 @@
             {{/if}}
         </div>
 
-        <div class="features-list">
+        <div class="features-list flex flex-col flex-gap-8">
             {{#each actor.items as |item id|}}
             {{#if (eq item.type "feature")}}
-            <div class="feature-item {{#unless item.system.active}}feature-inactive{{/unless}}"
+            <div class="feature-card {{#unless item.system.active}}feature-inactive{{/unless}}"
                 data-item-id="{{item.id}}">
-                <div class="feature-header">
-                    <div class="feature-name">{{item.name}}</div>
-                    <div class="feature-badges">
+                <div class="feature-header flex flex-between mb-8">
+                    <div class="feature-name text-bold text-primary">{{item.name}}</div>
+                    <div class="feature-badges flex flex-gap-4">
                         {{#if item.system.classSource}}
                         <span class="feature-source">{{item.system.classSource}}</span>
                         {{/if}}
                         <span class="feature-template">{{item.system.template}}</span>
                     </div>
+                    {{#if ../editMode}}
+                    <div class="item-controls flex flex-gap-2">
+                        <a class="btn btn-secondary p-2 text-small item-control item-edit" title="Edit Feature">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a class="btn btn-danger p-2 text-small item-control item-delete" title="Delete Feature">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                    {{/if}}
                 </div>
 
-                <div class="feature-description">{{item.system.description}}</div>
-
-                {{#if ../editMode}}
-                <div class="item-controls">
-                    <a class="item-control item-edit" title="Edit Feature">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a class="item-control item-delete" title="Delete Feature">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </div>
-                {{/if}}
+                <div class="feature-description text-small">{{item.system.description}}</div>
             </div>
             {{/if}}
             {{else}}
-            <div class="empty-section">
-                <p>No features yet.</p>
+            <div class="empty-section text-center p-10 section">
+                <div class="empty-icon text-muted mb-10">
+                    <i class="fas fa-star" style="font-size: 32px;"></i>
+                </div>
+                <p class="text-muted mb-8">No features yet.</p>
                 {{#if editMode}}
-                <p>Click "Feature" above to add abilities, or "Add Class Features" to automatically add
+                <p class="text-muted">Click "Feature" above to add abilities, or "Add Class Features" to automatically add
                     features for your current class and level.</p>
                 {{/if}}
             </div>

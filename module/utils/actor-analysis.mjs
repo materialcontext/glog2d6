@@ -5,6 +5,29 @@
  * @param {Collection} items - The actor's items collection
  * @returns {Object} Weapon analysis object
  */
+export function getClassTemplateCount(items, className) {
+    if (!items || items.size === 0) {
+        return 0;
+    }
+
+    const classFeatures = items.filter(i =>
+        i &&
+        i.type === "feature" &&
+        i.system &&
+        i.system.active &&
+        i.system.classSource === className
+    );
+
+    const templates = new Set();
+    for (const feature of classFeatures) {
+        if (feature.system && feature.system.template) {
+            templates.add(feature.system.template);
+        }
+    }
+
+    return templates.size;
+}
+
 export function analyzeEquippedWeapons(items) {
     console.log("🗡️ analyzeEquippedWeapons called");
     console.log("🗡️ items:", items);

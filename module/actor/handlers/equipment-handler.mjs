@@ -79,38 +79,38 @@ class WeaponEquipmentRules {
         });
     }
 
-    findCapacityConflicts(currentlyEquipped) {
+    findCapacityConflicts(currentlyEquipped, newItem = null) {
         const conflicts = [];
         const { weapons, shields } = currentlyEquipped;
-        const heavyWeapons = weapons.filter(w => w.system.size === 'heavy');
-        const lightMediumWeapons = weapons.filter(w => w.system.size !== 'heavy');
 
-        // RULE 1: Maximum 1 shield
+        // RULE 1: Maximum 1 shield (handle shield excess first)
         if (shields.length > 1) {
             const bestShield = this.findBestShield(shields);
             conflicts.push(...shields.filter(s => s.id !== bestShield.id));
         }
 
-        // RULE 2: Heavy weapons conflict with everything else
-        if (heavyWeapons.length > 0) {
-            // If there are heavy weapons, remove all shields and other weapons
-            conflicts.push(...shields);
-            conflicts.push(...lightMediumWeapons);
+        // RULE 2: Capacity check - max 2 items total, heavy weapons must be alone
+        const remainingShields = shields.filter(s => !conflicts.includes(s));
+        const allCurrentItems = [...weapons, ...remainingShields];
 
-            // Also remove excess heavy weapons (only keep 1)
-            if (heavyWeapons.length > 1) {
-                const bestHeavy = this.findBestWeapon(heavyWeapons);
-                conflicts.push(...heavyWeapons.filter(w => w.id !== bestHeavy.id));
-            }
-        }
-        // RULE 3: Hand capacity (only applies if no heavy weapons)
-        else {
-            const oneHandedItems = [...lightMediumWeapons, ...shields];
-            if (oneHandedItems.length > 2) {
-                const excess = oneHandedItems.length - 2;
-                const weakest = this.selectWeakestItems(oneHandedItems, excess);
-                conflicts.push(...weakest);
-            }
+        // Calculate total after adding new item
+        const totalAfterAdd = allCurrentItems.length + (newItem ? 1 : 0);
+
+        // remove heavy item
+        const hasHeavyWeapon = [...weapons].some(item =>
+            item && item.system.size === "heavy"
+        );
+        console.log(weapons);
+        if (hasHeavyWeapon. length > 0) conflicts.push(hasHeavyWeapon[0]);
+
+        // Determine capacity limit
+        const maxCapacity = 2;
+
+        // If over capacity, remove worst items
+        if (totalAfterAdd > maxCapacity) {
+            const excess = totalAfterAdd - maxCapacity;
+            const weakestItems = this.selectWeakestItems(allCurrentItems, excess);
+            conflicts.push(...weakestItems);
         }
 
         return conflicts;
@@ -122,6 +122,29 @@ class WeaponEquipmentRules {
             const currentBonus = current.system.armorBonus || 0;
             return currentBonus > bestBonus ? current : best;
         });
+    }
+
+    selectWeakestItems(items, count) {
+        if (count >= items.length) {
+            return [...items];
+        }
+
+        const weakest = [];
+        const remaining = [...items];
+        const calculator = new WeaponStrengthCalculator();
+
+        for (let i = 0; i < count; i++) {
+            if (remaining.length === 0) break;
+
+            const weakestItem = calculator.findWeakest(remaining);
+            weakest.push(weakestItem);
+
+            // Remove from remaining items
+            const index = remaining.indexOf(weakestItem);
+            remaining.splice(index, 1);
+        }
+
+        return weakest;
     }
 
     weaponTypesConflict(typeA, typeB) {

@@ -1,31 +1,34 @@
 <form class="{{cssClass}}" autocomplete="off">
 
-  <header class="sheet-header">
+  <header class="sheet-header flex flex-center flex-gap-8 p-10 section mb-10">
     <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
-    <div class="header-fields">
+    <div class="header-fields w-full">
       <h1 class="charname">
-        <input name="name" type="text" value="{{item.name}}" placeholder="Shield Name"/>
+        <input name="name" type="text" value="{{item.name}}" placeholder="Shield Name" class="input text-bold w-full"/>
       </h1>
     </div>
   </header>
 
   <section class="sheet-body">
 
-    <div class="shield-properties">
-      <div class="form-group">
-        <label for="system.armorBonus">Armor Bonus</label>
-        <input type="number" name="system.armorBonus" value="{{system.armorBonus}}" min="0"/>
-      </div>
+    <div class="shield-properties section p-10 mt-15">
+      <h3>Properties</h3>
+      <div class="grid-2 flex-gap-8 mt-8">
+        <div class="form-group flex flex-col flex-gap-2">
+          <label for="system.armorBonus" class="text-small text-bold text-upper text-muted">Armor Bonus</label>
+          <input type="number" name="system.armorBonus" value="{{system.armorBonus}}" min="0" class="input text-center"/>
+        </div>
 
-      <div class="form-group">
-        <label for="system.slots">Inventory Slots</label>
-        <input type="number" name="system.slots" value="{{system.slots}}" min="0"/>
+        <div class="form-group flex flex-col flex-gap-2">
+          <label for="system.slots" class="text-small text-bold text-upper text-muted">Inventory Slots</label>
+          <input type="number" name="system.slots" value="{{system.slots}}" min="0" class="input text-center"/>
+        </div>
       </div>
     </div>
 
-    <div class="form-group stacked">
-      <label for="system.description">Description</label>
-      <textarea name="system.description" rows="8">{{system.description}}</textarea>
+    <div class="form-group flex flex-col flex-gap-2 mt-15">
+      <label for="system.description" class="text-small text-bold text-upper text-muted">Description</label>
+      <textarea name="system.description" rows="8" class="input">{{system.description}}</textarea>
     </div>
 
   </section>

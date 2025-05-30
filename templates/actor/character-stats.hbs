@@ -1,14 +1,14 @@
 {{!-- Attributes Section --}}
-<div class="attributes-section">
+<div class="attributes-section mt-15">
     <h3>Attributes</h3>
-    <div class="attributes-grid">
+    <div class="grid-6 mt-8">
         {{#each system.attributes as |attr key|}}
-        <div class="attribute-card" data-attribute="{{key}}">
+        <div class="attribute-card clickable hoverable" data-attribute="{{key}}">
             <div class="attribute-main">
-                <div class="attribute-name">{{upperCase key}}</div>
+                <div class="text-small text-bold text-upper text-primary mb-4">{{upperCase key}}</div>
                 {{#if ../editMode}}
                 <input name="system.attributes.{{key}}.value" type="number" value="{{attr.value}}" min="2" max="12"
-                    class="attribute-input" />
+                    class="input text-center" />
                 {{else}}
                 <div class="attribute-value normal" data-base-value="{{attr.value}}"
                     data-effective-mod="{{attr.effectiveMod}}" data-original-mod="{{attr.mod}}">
@@ -27,7 +27,7 @@
                 </div>
                 {{/unless}}
             </div>
-            <div class="attribute-save" data-attribute="{{key}}">
+            <div class="attribute-save clickable" data-attribute="{{key}}">
                 <span class="save-label">SAVE</span>
             </div>
         </div>
@@ -36,102 +36,102 @@
 </div>
 
 {{!-- Actions Section --}}
-<div class="actions-section">
+<div class="actions-section mt-15">
     <h3>Actions</h3>
-    <div class="actions-grid">
-        <div class="action-card" data-action="sneak">
-            <div class="action-main">
-                <div class="action-name">Sneak</div>
+    <div class="grid-6 mt-8">
+        <div class="action-card combat-card clickable" data-action="sneak">
+            <div class="combat-main">
+                <div class="text-small text-bold text-primary">Sneak</div>
             </div>
         </div>
-        <div class="action-card" data-action="hide">
-            <div class="action-main">
-                <div class="action-name">Hide</div>
+        <div class="action-card combat-card clickable" data-action="hide">
+            <div class="combat-main">
+                <div class="text-small text-bold text-primary">Hide</div>
             </div>
         </div>
-        <div class="action-card" data-action="disguise">
-            <div class="action-main">
-                <div class="action-name">Disguise</div>
+        <div class="action-card combat-card clickable" data-action="disguise">
+            <div class="combat-main">
+                <div class="text-small text-bold text-primary">Disguise</div>
             </div>
         </div>
-        <div class="action-card" data-action="reaction">
-            <div class="action-main">
-                <div class="action-name">Reaction</div>
+        <div class="action-card combat-card clickable" data-action="reaction">
+            <div class="combat-main">
+                <div class="text-small text-bold text-primary">Reaction</div>
             </div>
         </div>
-        <div class="action-card" data-action="diplomacy">
-            <div class="action-main">
-                <div class="action-name">Diplomacy</div>
+        <div class="action-card combat-card clickable" data-action="diplomacy">
+            <div class="combat-main">
+                <div class="text-small text-bold text-primary">Diplomacy</div>
             </div>
         </div>
-        <div class="action-card" data-action="intimidate">
-            <div class="action-main">
-                <div class="action-name">Intimidate</div>
+        <div class="action-card combat-card clickable" data-action="intimidate">
+            <div class="combat-main">
+                <div class="text-small text-bold text-primary">Intimidate</div>
             </div>
         </div>
     </div>
 </div>
 
 {{!-- Combat Section --}}
-<div class="combat-section">
+<div class="combat-section mt-15">
     <h3>Combat</h3>
-    <div class="combat-actions">
+    <div class="flex flex-gap-8 mt-8">
         {{!-- Attack Button Logic --}}
         {{#if weaponAnalysis.hasWeapons}}
             {{#if (eq weaponAnalysis.attackButtonType 'split')}}
                 {{!-- Split buttons for mixed weapon types --}}
-                <div class="combat-card attack-split" data-action="attack" data-attack-type="melee">
+                <div class="combat-card clickable" data-action="attack" data-attack-type="melee">
                     <div class="combat-main">
-                        <div class="combat-name">Melee</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
+                        <div class="text-small text-bold text-primary mb-4">Melee</div>
+                        <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
                 {{#if weaponAnalysis.hasThrowable}}
-                <div class="combat-card attack-split" data-action="attack" data-attack-type="thrown">
+                <div class="combat-card clickable" data-action="attack" data-attack-type="thrown">
                     <div class="combat-main">
-                        <div class="combat-name">Thrown</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
+                        <div class="text-small text-bold text-primary mb-4">Thrown</div>
+                        <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
                 {{else}}
-                <div class="combat-card attack-split" data-action="attack" data-attack-type="ranged">
+                <div class="combat-card clickable" data-action="attack" data-attack-type="ranged">
                     <div class="combat-main">
-                        <div class="combat-name">Ranged</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
+                        <div class="text-small text-bold text-primary mb-4">Ranged</div>
+                        <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
                 {{/if}}
             {{else if (eq weaponAnalysis.attackButtonType 'ranged')}}
                 {{!-- Single ranged button --}}
-                <div class="combat-card" data-action="attack">
+                <div class="combat-card clickable" data-action="attack">
                     <div class="combat-main">
-                        <div class="combat-name">Ranged Attack</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
+                        <div class="text-small text-bold text-primary mb-4">Ranged Attack</div>
+                        <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
             {{else if (eq weaponAnalysis.attackButtonType 'melee')}}
                 {{!-- Single melee button --}}
-                <div class="combat-card" data-action="attack">
+                <div class="combat-card clickable" data-action="attack">
                     <div class="combat-main">
-                        <div class="combat-name">Melee Attack</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
+                        <div class="text-small text-bold text-primary mb-4">Melee Attack</div>
+                        <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
             {{else}}
                 {{!-- Generic attack button --}}
-                <div class="combat-card" data-action="attack">
+                <div class="combat-card clickable" data-action="attack">
                     <div class="combat-main">
-                        <div class="combat-name">Unarmed Attack</div>
-                        <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
+                        <div class="text-small text-bold text-primary mb-4">Unarmed Attack</div>
+                        <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus system.attributes.str.effectiveMod}}</div>
                     </div>
                 </div>
             {{/if}}
         {{else}}
             {{!-- No weapons equipped --}}
-            <div class="combat-card" data-action="attack">
+            <div class="combat-card clickable" data-action="attack">
                 <div class="combat-main">
-                    <div class="combat-name">Attack</div>
-                    <div class="combat-value">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
+                    <div class="text-small text-bold text-primary mb-4">Attack</div>
+                    <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                 </div>
             </div>
         {{/if}}
@@ -139,24 +139,24 @@
         {{!-- Defense Button Logic --}}
         {{#if hasAcrobatTraining}}
             {{!-- Split defense for Acrobats --}}
-            <div class="combat-card defense-split" data-action="defend-melee">
+            <div class="combat-card defense-split clickable" data-action="defend-melee">
                 <div class="combat-main">
-                    <div class="combat-name">Melee Defense</div>
-                    <div class="combat-value">{{system.defense.meleeTotal}}</div>
+                    <div class="text-small text-bold text-primary mb-4">Melee Defense</div>
+                    <div class="text-bold">{{system.defense.meleeTotal}}</div>
                 </div>
             </div>
-            <div class="combat-card defense-split" data-action="defend-ranged">
+            <div class="combat-card defense-split clickable" data-action="defend-ranged">
                 <div class="combat-main">
-                    <div class="combat-name">Ranged Defense</div>
-                    <div class="combat-value">{{system.defense.rangedTotal}}</div>
+                    <div class="text-small text-bold text-primary mb-4">Ranged Defense</div>
+                    <div class="text-bold">{{system.defense.rangedTotal}}</div>
                 </div>
             </div>
         {{else}}
             {{!-- Regular defense for everyone else --}}
-            <div class="combat-card" data-action="defend">
+            <div class="combat-card clickable" data-action="defend">
                 <div class="combat-main">
-                    <div class="combat-name">Defend</div>
-                    <div class="combat-value">{{system.defense.total}}</div>
+                    <div class="text-small text-bold text-primary mb-4">Defend</div>
+                    <div class="text-bold">{{system.defense.total}}</div>
                 </div>
             </div>
         {{/if}}

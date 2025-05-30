@@ -1,59 +1,44 @@
 <form class="{{cssClass}}" autocomplete="off">
 
-  <header class="sheet-header">
-    <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
-    <div class="header-fields">
-      <h1 class="charname">
-        <input name="name" type="text" value="{{item.name}}" placeholder="Spell Name"/>
-      </h1>
-    </div>
-  </header>
+    <header class="sheet-header flex flex-center flex-gap-8 p-10 section mb-10">
+        <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64" />
+        <div class="header-fields w-full">
+            <h1 class="charname">
+                <input name="name" type="text" value="{{item.name}}" placeholder="Spell Name"
+                    class="input text-bold w-full" />
+            </h1>
+        </div>
+    </header>
 
-  <section class="sheet-body">
+    <section class="sheet-body">
 
-    <div class="spell-properties">
-      <div class="form-group">
-        <label for="system.level">Spell Level</label>
-        <input type="number" name="system.level" value="{{system.level}}" min="1" max="9"/>
-      </div>
+        <div class="spell-properties section p-10 mt-15">
+            <h3>Properties</h3>
+            <div class="grid-2 flex-gap-8 mt-8">
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.range" class="text-small text-bold text-upper text-muted">Range</label>
+                    <input type="text" name="system.range" value="{{system.range}}"
+                        placeholder="e.g., Touch, 30 feet, Self" class="input" />
+                </div>
 
-      <div class="form-group">
-        <label for="system.school">School of Magic</label>
-        <select name="system.school">
-          {{#select system.school}}
-          <option value="">Select School</option>
-          <option value="abjuration">Abjuration</option>
-          <option value="conjuration">Conjuration</option>
-          <option value="divination">Divination</option>
-          <option value="enchantment">Enchantment</option>
-          <option value="evocation">Evocation</option>
-          <option value="illusion">Illusion</option>
-          <option value="necromancy">Necromancy</option>
-          <option value="transmutation">Transmutation</option>
-          {{/select}}
-        </select>
-      </div>
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.duration" class="text-small text-bold text-upper text-muted">Duration</label>
+                    <input type="text" name="system.duration" value="{{system.duration}}"
+                        placeholder="e.g., Instantaneous, 1 hour, Concentration" class="input" />
+                </div>
 
-      <div class="form-group">
-        <label for="system.range">Range</label>
-        <input type="text" name="system.range" value="{{system.range}}" placeholder="e.g., Touch, 30 feet, Self"/>
-      </div>
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.components" class="text-small text-bold text-upper text-muted">Components</label>
+                    <input type="text" name="system.components" value="{{system.components}}"
+                        placeholder="e.g., V, S, M (a pinch of sulfur)" class="input" />
+                </div>
+            </div>
+        </div>
 
-      <div class="form-group">
-        <label for="system.duration">Duration</label>
-        <input type="text" name="system.duration" value="{{system.duration}}" placeholder="e.g., Instantaneous, 1 hour, Concentration"/>
-      </div>
+        <div class="form-group flex flex-col flex-gap-2 mt-15">
+            <label for="system.description" class="text-small text-bold text-upper text-muted">Description</label>
+            <textarea name="system.description" rows="12" class="input">{{system.description}}</textarea>
+        </div>
 
-      <div class="form-group">
-        <label for="system.components">Components</label>
-        <input type="text" name="system.components" value="{{system.components}}" placeholder="e.g., V, S, M (a pinch of sulfur)"/>
-      </div>
-    </div>
-
-    <div class="form-group stacked">
-      <label for="system.description">Description</label>
-      <textarea name="system.description" rows="12">{{system.description}}</textarea>
-    </div>
-
-  </section>
+    </section>
 </form>

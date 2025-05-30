@@ -1,70 +1,79 @@
 <form class="{{cssClass}}" autocomplete="off">
 
-  <header class="sheet-header">
-    <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
-    <div class="header-fields">
-      <h1 class="charname">
-        <input name="name" type="text" value="{{item.name}}" placeholder="Feature Name"/>
-      </h1>
-    </div>
-  </header>
+    <header class="sheet-header flex flex-center flex-gap-8 p-10 section mb-10">
+        <img class="item-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64" />
+        <div class="header-fields w-full">
+            <h1 class="charname">
+                <input name="name" type="text" value="{{item.name}}" placeholder="Feature Name"
+                    class="input text-bold w-full" />
+            </h1>
+        </div>
+    </header>
 
-  <section class="sheet-body">
+    <section class="sheet-body">
 
-    <div class="feature-properties">
-      <div class="form-group">
-        <label for="system.classSource">Class Source</label>
-        <select name="system.classSource">
-          {{#select system.classSource}}
-          <option value="">No Class</option>
-          <option value="Acrobat">Acrobat</option>
-          <option value="Assassin">Assassin</option>
-          <option value="Barbarian">Barbarian</option>
-          <option value="Courtier">Courtier</option>
-          <option value="Fighter">Fighter</option>
-          <option value="Hunter">Hunter</option>
-          <option value="Thief">Thief</option>
-          <option value="Wizard">Wizard</option>
-          {{/select}}
-        </select>
-      </div>
+        <div class="feature-properties section p-10 mt-15">
+            <h3>Properties</h3>
+            <div class="grid-2 flex-gap-8 mt-8">
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.classSource" class="text-small text-bold text-upper text-muted">Class
+                        Source</label>
+                    <select name="system.classSource" class="input">
+                        {{#select system.classSource}}
+                        <option value="">No Class</option>
+                        <option value="Acrobat">Acrobat</option>
+                        <option value="Assassin">Assassin</option>
+                        <option value="Barbarian">Barbarian</option>
+                        <option value="Courtier">Courtier</option>
+                        <option value="Fighter">Fighter</option>
+                        <option value="Hunter">Hunter</option>
+                        <option value="Thief">Thief</option>
+                        <option value="Wizard">Wizard</option>
+                        {{/select}}
+                    </select>
+                </div>
 
-      <div class="form-group">
-        <label for="system.template">Template</label>
-        <select name="system.template">
-          {{#select system.template}}
-          <option value="level-0">Level 0</option>
-          <option value="A">Template A</option>
-          <option value="B">Template B</option>
-          <option value="C">Template C</option>
-          <option value="D">Template D</option>
-          <option value="custom">Custom</option>
-          {{/select}}
-        </select>
-      </div>
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.template" class="text-small text-bold text-upper text-muted">Template</label>
+                    <select name="system.template" class="input">
+                        {{#select system.template}}
+                        <option value="level-0">Level 0</option>
+                        <option value="A">Template A</option>
+                        <option value="B">Template B</option>
+                        <option value="C">Template C</option>
+                        <option value="D">Template D</option>
+                        <option value="custom">Custom</option>
+                        {{/select}}
+                    </select>
+                </div>
 
-      <div class="form-group">
-        <label for="system.level">Required Level</label>
-        <input type="number" name="system.level" value="{{system.level}}" min="1" max="20"/>
-      </div>
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.level" class="text-small text-bold text-upper text-muted">Required Level</label>
+                    <input type="number" name="system.level" value="{{system.level}}" min="1" max="20"
+                        class="input text-center" />
+                </div>
 
-      <div class="form-group">
-        <label for="system.active">
-          <input type="checkbox" name="system.active" {{#if system.active}}checked{{/if}}/>
-          Active
-        </label>
-      </div>
-    </div>
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.active" class="text-small text-bold text-upper text-muted">Status</label>
+                    <label class="flex flex-center flex-gap-4">
+                        <input type="checkbox" name="system.active" {{#if system.active}}checked{{/if}}
+                            class="clickable" />
+                        <span class="text-small">Active</span>
+                    </label>
+                </div>
+            </div>
+        </div>
 
-    <div class="form-group stacked">
-      <label for="system.prerequisites">Prerequisites</label>
-      <input type="text" name="system.prerequisites" value="{{system.prerequisites}}" placeholder="e.g., Fighter Template A, Level 3"/>
-    </div>
+        <div class="form-group flex flex-col flex-gap-2 mt-15">
+            <label for="system.prerequisites" class="text-small text-bold text-upper text-muted">Prerequisites</label>
+            <input type="text" name="system.prerequisites" value="{{system.prerequisites}}"
+                placeholder="e.g., Fighter Template A, Level 3" class="input" />
+        </div>
 
-    <div class="form-group stacked">
-      <label for="system.description">Description</label>
-      <textarea name="system.description" rows="12">{{system.description}}</textarea>
-    </div>
+        <div class="form-group flex flex-col flex-gap-2 mt-15">
+        i    <label for="system.description" class="text-small text-bold text-upper text-muted">Description</label>
+            <textarea name="system.description" rows="12" class="input">{{system.description}}</textarea>
+        </div>
 
-  </section>
+    </section>
 </form>

@@ -89,24 +89,6 @@ export class GLOG2D6Actor extends Actor {
     async rollIntimidate(...args) { return this.rolls.rollIntimidate(...args); }
     async rollTraumaSave(...args) { return this.rolls.rollTraumaSave(...args); }
 
-    // Feature and class utilities
-    _getClassTemplateCount(className) {
-        const classFeatures = this.items.filter(i =>
-            i.type === "feature" &&
-            i.system.active &&
-            i.system.classSource === className
-        );
-
-        const templates = new Set();
-        for (const feature of classFeatures) {
-            if (feature.system.template) {
-                templates.add(feature.system.template);
-            }
-        }
-
-        return templates.size;
-    }
-
     _hasClass(className) {
         return this.items.some(i =>
             i.type === "feature" &&

@@ -1,41 +1,44 @@
-/* GLOG 2d6 Character Sheet Styles - Complete Fixed Version */
+/* GLOG 2d6 Character Sheet - Refactored Utility-First CSS */
 
-/* CSS Variables for maintainability */
+/* === CSS CUSTOM PROPERTIES === */
 :root {
-    --primary-color: #782e22;
+    --primary: #782e22;
     --primary-hover: #8b3426;
-    --secondary-color: #4b4a44;
+    --secondary: #4b4a44;
     --secondary-hover: #5a5954;
-    --border-color: #ccc;
-    --background-light: #f8f8f8;
-    --background-section: rgba(0, 0, 0, 0.05);
-    --background-darker: rgba(0, 0, 0, 0.1);
+    --border: #ccc;
+    --bg-light: #f8f8f8;
+    --bg-section: rgba(0, 0, 0, 0.05);
+    --bg-dark: rgba(0, 0, 0, 0.1);
     --text-muted: #666;
-    --success-color: #4CAF50;
+    --success: #4CAF50;
     --success-hover: #45a049;
-    --danger-color: #d32f2f;
-    --border-radius: 3px;
-    --border-radius-large: 4px;
+    --danger: #d32f2f;
+    --radius: 3px;
+    --radius-lg: 4px;
     --transition: all 0.2s ease;
 }
 
-/* Global Styles */
+/* === BASE COMPONENT CLASSES === */
 .glog2d6 {
     font-family: "Roboto", sans-serif;
 }
 
-/* Base Component Classes */
-.glog2d6 .clickable {
-    cursor: pointer;
-    transition: var(--transition);
+/* Input base styles */
+.input {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    background: white;
 }
 
-.glog2d6 .btn-base,
-.glog2d6 .theme-btn,
-.glog2d6 .item-control,
-.glog2d6 .weapon-attack-btn,
-.glog2d6 .trauma-btn,
-.damage-roll-btn {
+.input:focus {
+    outline: none;
+    border-color: var(--primary-hover);
+}
+
+/* Button base styles */
+.btn {
     border: none;
     cursor: pointer;
     display: flex;
@@ -43,67 +46,520 @@
     justify-content: center;
     transition: var(--transition);
     font-weight: bold;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius);
 }
 
-.glog2d6 .theme-btn {
-    background: var(--primary-color);
+.btn-primary {
+    background: var(--primary);
     color: white;
 }
 
-.glog2d6 .theme-btn:hover {
+.btn-primary:hover {
     background: var(--primary-hover);
 }
 
-.glog2d6 .input-base,
-.glog2d6 .name-input,
-.glog2d6 .class-input,
-.glog2d6 .level-input,
-.glog2d6 .wounds-input,
-.glog2d6 .movement-input,
-.glog2d6 .hp-max-input,
-.glog2d6 .attribute-input,
-.glog2d6 .combat-input {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 3px;
-    background: white;
+.btn-secondary {
+    background: var(--secondary);
+    color: white;
 }
 
-.glog2d6 .section-base,
-.glog2d6 .name-bar,
-.glog2d6 .hp-section,
-.glog2d6 .max-section,
-.glog2d6 .wounds-section,
-.glog2d6 .trauma-section,
-.glog2d6 .torch-move-section {
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+.btn-secondary:hover {
+    background: var(--secondary-hover);
 }
 
-.glog2d6 .label-small,
-.glog2d6 .hp-label,
-.glog2d6 .max-label {
-    font-size: 9px;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: var(--secondary-color);
-    white-space: nowrap;
+.btn-success {
+    background: var(--success);
+    color: white;
 }
 
-.glog2d6 .label-med {
+.btn-success:hover {
+    background: var(--success-hover);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+/* Layout utilities */
+.section {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.grid-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-gap-2 {
+    gap: 2px;
+}
+
+.flex-gap-4 {
+    gap: 4px;
+}
+
+.flex-gap-8 {
+    gap: 8px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-small {
     font-size: 10px;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+.text-upper {
+    text-transform: uppercase;
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-danger {
+    color: var(--danger);
+}
+
+.p-2 {
+    padding: 2px;
+}
+
+.p-4 {
+    padding: 4px;
+}
+
+.p-6 {
+    padding: 6px;
+}
+
+.p-8 {
+    padding: 8px;
+}
+
+.p-10 {
+    padding: 10px;
+}
+
+.px-4 {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.mb-4 {
+    margin-bottom: 4px;
+}
+
+.mb-8 {
+    margin-bottom: 8px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-15 {
+    margin-bottom: 15px;
+}
+
+.mt-8 {
+    margin-top: 8px;
+}
+
+.mt-15 {
+    margin-top: 15px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.hoverable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(120, 46, 34, 0.15);
+}
+
+/* === SPECIFIC COMPONENTS === */
+
+/* Attribute Cards */
+.attribute-card {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.attribute-card.clickable:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(120, 46, 34, 0.15);
+    transform: translateY(-1px);
+}
+
+.attribute-main {
+    padding: 8px 6px;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.attribute-value {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: #2c3e50;
+}
+
+.attribute-value.negatively-impacted {
+    color: var(--danger);
+}
+
+.attribute-value.positively-impacted {
+    color: var(--success);
+}
+
+.attribute-save {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-hover) 100%);
+    padding: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.attribute-save:hover {
+    background: linear-gradient(135deg, var(--secondary-hover) 0%, #6a6864 100%);
+}
+
+.save-label {
+    color: white;
+    font-size: 8px;
     font-weight: bold;
     text-transform: uppercase;
-    color: var(--secondary-color);
-    white-space: nowrap;
 }
+
+/* Combat Cards */
+.combat-card {
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: white;
+    transition: var(--transition);
+    flex: 1;
+}
+
+.combat-card.clickable:hover {
+    border-color: var(--primary-hover);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.combat-main {
+    padding: 6px;
+    text-align: center;
+    background: var(--bg-light);
+}
+
+/* Inventory - Gear Items */
+.gear-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.gear-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    min-height: 36px;
+    gap: 8px;
+}
+
+.gear-item:hover {
+    background: var(--bg-light);
+}
+
+.gear-equipped {
+    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.gear-name {
+    width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.gear-details {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    justify-content: flex-start;
+}
+
+.gear-actions {
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.weapon-attack-btn {
+    width: 60px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.spell-cast-btn {
+    width: 60px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.gear-slots {
+    min-width: 80px;
+    flex: 0 0 auto;
+    text-align: center;
+}
+
+.gear-controls {
+    width: 60px;
+    display: flex;
+    gap: 2px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.gear-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+    background: #f0f0f0;
+    padding: 1px 3px;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.gear-detail.equipment-penalty {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(211, 47, 47, 0.3);
+    font-weight: bold;
+}
+
+/* Torch Effects */
+.torch-lit {
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%) !important;
+    color: white !important;
+    border-color: #d64933 !important;
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    animation: torchFlicker 3s ease-in-out infinite alternate;
+}
+
+@keyframes torchFlicker {
+    0% {
+        box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    }
+
+    100% {
+        box-shadow: 0 0 15px rgba(255, 107, 53, 0.7);
+    }
+}
+
+/* Tabs */
+.sheet-tabs {
+    border-bottom: 2px solid var(--primary);
+    margin-bottom: 15px;
+    display: flex;
+    background: var(--bg-section);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.sheet-tabs .item {
+    flex: 1;
+    text-align: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    background: var(--bg-section);
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 12px;
+    border-right: 1px solid var(--border);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.sheet-tabs .item:hover {
+    background: var(--bg-dark);
+    color: #333;
+}
+
+.sheet-tabs .item.active {
+    background: var(--primary);
+    color: white;
+}
+
+.tab {
+    display: none;
+}
+
+.tab.active {
+    display: block;
+}
+
+/* Encumbrance Warning */
+.encumbrance-warning {
+    color: var(--danger);
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: rgba(211, 47, 47, 0.1);
+    border-radius: var(--radius);
+    border: 1px solid rgba(211, 47, 47, 0.3);
+}
+
+/* Feature Cards */
+.feature-card {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.feature-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Edit Toggle */
+.edit-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: var(--radius);
+    font-size: 10px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* Chat Messages */
+.glog2d6-roll {
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 10px;
+    background: var(--bg-light);
+}
+
+.glog2d6-roll h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary);
+    font-size: 16px;
+}
+
+/* Section Headers */
+.glog2d6 h3 {
+    color: var(--primary);
+    border-bottom: 1px solid var(--primary);
+    padding-bottom: 3px;
+    margin: 15px 0 8px 0;
+    font-size: 14px;
+}
+
+.glog2d6 .tab h3 {
+    display: none;
+}
+
+/* Original Sheet Header CSS - Extracted from glog2d6.css */
 
 /* Sheet Header Grid - Fixed Layout */
 .glog2d6 .sheet-header {
-    background: var(--background-darker);
-    border-bottom: 2px solid var(--primary-color);
+    background: var(--bg-dark);
+    border-bottom: 2px solid var(--primary);
     padding: 10px;
     display: grid !important;
     flex-direction: unset !important;
@@ -121,9 +577,9 @@
     /* Span all 4 columns */
     grid-row: 1;
     padding: 4px 8px;
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
 }
@@ -133,8 +589,8 @@
     grid-row: 2 / 6;
     width: 90px;
     height: 100%;
-    border: 2px solid var(--primary-color);
-    border-radius: var(--border-radius-large);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-lg);
     overflow: hidden;
     background: #f0f0f0;
     cursor: pointer;
@@ -144,9 +600,9 @@
 
 /* Class Section - row 2, column 2 */
 .glog2d6 .class-section {
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+    background: var(bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 4px;
     display: flex;
     flex-direction: row;
@@ -156,9 +612,9 @@
 
 /* Level Section - row 2, column 3 */
 .glog2d6 .level-section {
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+    background: var(bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 4px;
     display: flex;
     flex-direction: row;
@@ -172,9 +628,9 @@
 .glog2d6 .class-level-section {
     grid-column: 2;
     grid-row: 2;
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+    background: var(bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 4px;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -197,9 +653,9 @@
     grid-column: 2;
     grid-row: 3 / 5;
     /* Changed from 3 / 6 */
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+    background: var(bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 8px;
     display: flex;
     flex-direction: column;
@@ -211,9 +667,9 @@
 .glog2d6 .rest-section {
     grid-column: 2;
     grid-row: 5;
-    background: var(--secondary-color);
+    background: var(--secondary);
     border: 1px solid var(--secondry-color);
-    border-radius: var(--border-radius-large);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -225,9 +681,9 @@
 .glog2d6 .wounds-section {
     grid-column: 3;
     grid-row: 2;
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
+    background: var(bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 4px 8px;
     display: flex;
     flex-direction: row;
@@ -245,28 +701,199 @@
     border: 1px solid transparent;
     background: transparent;
     padding: 2px 4px;
-    /* Reduced padding * /
-  border-radius: var(--border-radius);
-  height: 16px; /* Fixed height */
+    border-radius: var(--radius);
+    height: 16px;
     line-height: 1;
-    /* Control line height */
 }
 
 .glog2d6 .wounds-input:hover,
 .glog2d6 .wounds-input:focus {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border);
     background: white;
     outline: none;
 }
 
+/* Trauma Section - row 4, column 4 */
+.glog2d6 .trauma-section {
+    grid-column: 3;
+    grid-row: 3 / 5;
+    gap: 4px;
+    background: var(--primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    height: 100%;
+}
+
+/* Torch & Move Section - row 5, column 4 */
+.glog2d6 .torch-move-section {
+    grid-column: 3;
+    grid-row: 5;
+    grid-template-columns: 1fr 1fr;
+    background: var(bg-section);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    justify-content: space-around;
+    height: 22px;
+}
+
+/* Character Portrait Image */
+.glog2d6 .character-portrait img {
+    width: 100%;
+    height: 100% !important;
+    object-fit: cover;
+    border: none;
+    border-radius: 0;
+    display: block;
+}
+
+/* Name Display and Input */
+.glog2d6 .name-display {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 0;
+}
+
+.glog2d6 .name-input {
+    font-size: 12px;
+    font-weight: bold;
+    width: 100%;
+    padding: 2px 4px;
+}
+
+/* Class and Level Display */
+.glog2d6 .class-display,
+.glog2d6 .level-display {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+}
+
+.glog2d6 .class-display {
+    font-style: italic;
+}
+
+.glog2d6 .class-input,
+.glog2d6 .level-input {
+    font-size: 11px;
+    text-align: center;
+}
+
+/* HP Styling */
+.glog2d6 .hp-container,
+.glog2d6 .max-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 4px;
+}
+
+.glog2d6 .hp-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+/* Redesigned HP Current Input */
+.glog2d6 .hp-current {
+    font-size: 20px;
+    font-weight: 900;
+    text-align: center;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    color: var(--primary);
+}
+
+.glog2d6 .hp-current:focus {
+    outline: none;
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 8px rgba(120, 46, 34, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.glog2d6 .hp-separator {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--primary);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* HP Max styling */
+.glog2d6 .hp-max {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--secondary);
+    min-width: 30px;
+    text-align: center;
+}
+
+.glog2d6 .hp-max-input {
+    font-size: 16px;
+    font-weight: 700;
+    width: 50px;
+    height: 32px;
+    text-align: center;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    color: var(--secondary);
+}
+
+/* HP Label */
+.glog2d6 .hp-label {
+    color: var(--primary);
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.glog2d6 .hp-label,
+.glog2d6 .max-label {
+    color: var(--primary);
+    text-align: center;
+}
+
+/* Trauma Button */
+.glog2d6 .trauma-btn {
+    font-size: 10px;
+    color: white;
+    text-transform: uppercase;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    border: none !important;
+}
+
+.glog2d6 .trauma-btn:hover {
+    background: var(--primary-hover);
+    /* Same hover color as save button */
+}
+
+/* Torch Button */
 .glog2d6 .torch-btn {
     width: 100%;
     min-height: 0;
     max-height: 100%;
     padding: 0;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border);
     box-sizing: border-box;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius);
     background: #ddd;
     color: #666;
     cursor: pointer;
@@ -295,227 +922,19 @@
     box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
 }
 
-/* Trauma Section - row 4, column 4 */
-.glog2d6 .trauma-section {
-    grid-column: 3;
-    grid-row: 3 / 5;
-    gap: 4px;
-    background: var(--primary-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-    height: 100%;
-}
-
-/* Torch & Move Section - row 5, column 4 */
-.glog2d6 .torch-move-section {
-    grid-column: 3;
-    grid-row: 5;
-    grid-template-columns: 1fr 1fr;
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
-    justify-content: space-around;
-    height: 22px;
-}
-
-.glog2d6 .trauma-btn:hover {
-    background: var(--primary-hover);
-    /* Same hover color as save button */
-}
-
-/* Edit Toggle Button */
-.glog2d6 .edit-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(--background-darker);
-    color: var(--text-muted);
-    padding: 4px;
-    border-radius: var(--border-radius);
-    font-size: 10px;
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-}
-
-.glog2d6 .edit-toggle:hover {
-    background: rgba(0, 0, 0, 0.2);
-    color: #333;
-}
-
-/* Keep all the other existing styles for the components */
-.glog2d6 .name-display {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin: 0;
-}
-
-.glog2d6 .name-input {
-    font-size: 12px;
-    font-weight: bold;
-    width: 100%;
-    padding: 2px 4px;
-}
-
-.glog2d6 .character-portrait img {
-    width: 100%;
-    height: 100% !important;
-    object-fit: cover;
-    border: none;
-    border-radius: 0;
-    display: block;
-}
-
-.glog2d6 .class-display,
-.glog2d6 .level-display {
-    font-size: 12px;
-    font-weight: 500;
-    color: #333;
-}
-
-.glog2d6 .class-display {
-    font-style: italic;
-}
-
-.glog2d6 .class-input,
-.glog2d6 .level-input {
-    font-size: 11px;
-    text-align: center;
-}
-
-.glog2d6 .hp-container,
-.glog2d6 .max-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    gap: 4px;
-}
-
-.glog2d6 .hp-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 6px;
-}
-
-/* Redesigned HP Current Input */
-.glog2d6 .hp-current {
-    font-size: 20px;
-    font-weight: 900;
-    text-align: center;
-    border: 2px solid var(--primary-color);
-    border-radius: var(--border-radius-large);
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    color: var(--primary-color);
-}
-
-.glog2d6 .hp-current:focus {
-    outline: none;
-    border-color: var(--primary-hover);
-    box-shadow: 0 0 8px rgba(120, 46, 34, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    background: white;
-}
-
-.glog2d6 .hp-current:focus {
-    outline: none;
-    border-color: var(--primary-hover);
-    box-shadow: 0 0 8px rgba(120, 46, 34, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    background: white;
-}
-
-.glog2d6 .hp-separator {
-    font-size: 20px;
-    font-weight: 900;
-    color: var(--primary-color);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* HP Max styling */
-.glog2d6 .hp-max {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--secondary-color);
-    min-width: 30px;
-    text-align: center;
-}
-
-.glog2d6 .hp-max-input {
-    font-size: 16px;
-    font-weight: 700;
-    width: 50px;
-    height: 32px;
-    text-align: center;
-    padding: 4px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background: white;
-    color: var(--secondary-color);
-}
-
-/* HP Label */
-.glog2d6 .hp-label {
-    color: var(--primary-color);
-    text-align: center;
-    font-size: 10px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.glog2d6 .hp-label,
-.glog2d6 .max-label {
-    color: var(--primary-color);
-    text-align: center;
-}
-
-.glog2d6 .wounds-input {
-    font-size: 12px;
-    text-align: center;
-    width: 100%;
-}
-
-.glog2d6 .trauma-btn {
-    font-size: 10px;
-    color: white;
-    text-transform: uppercase;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.glog2d6 .torch-toggle,
-.glog2d6 .move-controls {
+/* Movement Display */
+.glog2d6 .movement-display {
     display: flex;
     flex-direction: row;
+    justify-content: center;
     align-items: center;
-    gap: 2px;
-}
-
-.glog2d6 .movement-display {
     font-size: 12px;
     padding: 0;
     font-weight: bold;
-    background: var(--background-light) !important;
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
-    border-radius: var(--border-radius);
+    background: #fff !important;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
     text-align: center;
     gap: 4px;
     width: 100%;
@@ -526,15 +945,7 @@
 }
 
 .glog2d6 .movement-display:hover {
-    background: var(--background-section) !important;
-}
-
-/* Overridden modifier styling for both attributes and movement */
-.glog2d6 .modifier-overridden {
-    color: var(--danger-color);
-    text-decoration: line-through;
-    font-size: 8px;
-    margin-left: 2px;
+    background: var(bg-section) !important;
 }
 
 .glog2d6 .movement-input {
@@ -545,692 +956,13 @@
     padding: 3px;
 }
 
-/* Form Groups */
-.glog2d6 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 80px;
-}
-
-.glog2d6 .form-group label {
-    font-weight: bold;
-    font-size: 10px;
-    color: var(--secondary-color);
-}
-
-.glog2d6 .form-group input {
-    font-size: 12px;
-    padding: 2px 4px;
-    border: 1px solid var(--border-color);
-    border-radius: 2px;
-}
-
-.glog2d6 .form-group.stacked {
-    margin: 15px 0;
-}
-
-.glog2d6 .field-display {
-    font-size: 12px;
-    padding: 2px 4px;
-    min-height: 16px;
-    color: #333;
-}
-
-/* Sections */
-.glog2d6 .attributes-section,
-.glog2d6 .combat-section,
-.glog2d6 .inventory-section {
-    margin: 15px 0;
-}
-
-/* Attribute and Combat Cards */
-.glog2d6 .attributes-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.glog2d6 .combat-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.glog2d6 .attribute-card {
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    transition: all 0.3s ease;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.glog2d6 .combat-card {
-    border: 1px solid var(--primary-color);
-    border-radius: var(--border-radius-large);
-    overflow: hidden;
-    background: white;
-    transition: var(--transition);
-}
-
-.glog2d6 .attribute-card.clickable,
-.glog2d6 .combat-card.clickable {
-    cursor: pointer;
-}
-
-.glog2d6 .combat-card.clickable:hover {
-    border-color: var(--primary-hover);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.glog2d6 .attribute-card.clickable:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(120, 46, 34, 0.15);
-    transform: translateY(-1px);
-    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
-}
-
-.glog2d6 .attribute-card.clickable:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(120, 46, 34, 0.2);
-}
-
-.glog2d6 .combat-card {
-    flex: 1;
-}
-
-/* Enhanced attribute main section */
-.glog2d6 .attribute-main {
-    padding: 8px 6px;
-    text-align: center;
-    background: transparent;
-    position: relative;
-    min-height: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.glog2d6 .attribute-name {
-    font-weight: bold;
-    font-size: 9px;
-    color: var(--primary-color);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.glog2d6 .combat-main {
-    padding: 6px;
-    text-align: center;
-    background: var(--background-light);
-}
-
-.glog2d6 .combat-name {
-    font-weight: bold;
-    font-size: 10px;
-    color: var(--primary-color);
-    margin-bottom: 3px;
-}
-
-/* Split defense buttons for Acrobats */
-.glog2d6 .combat-card.defense-split {
-    min-width: 80px;
-    /* Slightly smaller to fit both */
-}
-
-.glog2d6 .combat-card.defense-split .combat-name {
-    font-size: 9px;
-    /* Smaller text to fit */
-    line-height: 1.1;
-}
-
-/* View mode styling for attribute values */
-.glog2d6 .attribute-value {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 2px;
-    transition: color 0.3s ease;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1;
-}
-
-/* Color states for attribute values */
-.glog2d6 .attribute-value.normal {
-    color: #2c3e50;
-}
-
-.glog2d6 .attribute-value.negatively-impacted {
-    color: var(--danger-color);
-    text-shadow: 0 0 2px rgba(211, 47, 47, 0.2);
-}
-
-.glog2d6 .attribute-value.positively-impacted {
-    color: var(--success-color);
-    text-shadow: 0 0 2px rgba(76, 175, 80, 0.2);
-}
-
-.glog2d6 .combat-input {
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-    width: 40px;
-    padding: 1px;
-}
-
-.glog2d6 .attribute-input {
-    margin: 0 auto 2px;
-}
-
-/* Effective attribute value styling */
-.glog2d6 .effective-attr-value {
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.glog2d6 .original-attr-value {
-    font-size: 10px;
-    color: var(--danger-color);
-    text-decoration: line-through;
-    margin-top: 1px;
-    opacity: 0.8;
-}
-
-.glog2d6 .combat-input,
-.glog2d6 .combat-value {
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.glog2d6 .attribute-modifier {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(120, 46, 34, 0.95);
-    color: white;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 10;
-    min-width: 80px;
-    text-align: center;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
-.glog2d6 .attribute-modifier::before {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: rgba(120, 46, 34, 0.95);
-}
-
-/* Show modifier on hover */
-.glog2d6 .attribute-card:hover .attribute-modifier {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Current modifier display - bigger font */
-.glog2d6 .modifier-current {
-    font-size: 18px;
-    line-height: 1.2;
-    font-weight: 900;
-}
-
-/* Original modifier (slashed out) - bigger font */
-.glog2d6 .modifier-original {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: line-through;
-    margin-top: 4px;
-    display: block;
-    font-weight: 700;
-}
-
-/* Enhanced save button */
-.glog2d6 .attribute-save {
-    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
-    padding: 4px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glog2d6 .attribute-save:hover {
-    background: linear-gradient(135deg, var(--secondary-hover) 0%, #6a6864 100%);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.glog2d6 .save-label {
-    color: white;
-    font-size: 8px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-
-/* Inventory */
-.glog2d6 .inventory-header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.glog2d6 .slots-info {
-    font-weight: bold;
-    font-size: 14px;
-    justify-self: start;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
-
-/* Enhanced encumbrance warning styles */
-.glog2d6 .encumbrance-warning {
-    color: var(--danger-color);
-    font-weight: bold;
-    font-size: 12px;
-    margin-left: 8px;
-    padding: 2px 6px;
-    background: rgba(211, 47, 47, 0.1);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(211, 47, 47, 0.3);
-    line-height: 1.3;
-    max-width: 300px;
-    word-wrap: break-word;
-}
-
-.glog2d6 .encumbrance-warning:hover {
-    background: rgba(211, 47, 47, 0.15);
-    border-color: rgba(211, 47, 47, 0.4);
-}
-
-.glog2d6 .encumbrance-info {
-    justify-self: end;
-    display: flex;
-    align-items: center;
-}
-
-.glog2d6 .encumbrance-display {
-    background: var(--danger-color);
-    color: white;
-    padding: 4px 8px;
-    border-radius: var(--border-radius);
-    font-size: 12px;
-    font-weight: bold;
-    white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
-}
-
-.glog2d6 .encumbrance-penalty {
-    font-size: 8px;
-    color: var(--danger-color);
-    text-decoration: line-through;
-    margin-left: 2px;
-}
-
-.glog2d6 .item-controls {
-    justify-self: center;
-    display: flex;
-    gap: 10px;
-}
-
-.glog2d6 .item-control {
-    background: var(--secondary-color);
-    color: white;
-    padding: 6px 10px;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.glog2d6 .item-control:hover {
-    background: var(--secondary-hover);
-    color: white;
-}
-
-.glog2d6 .inventory-header.edit-mode {
-    grid-template-columns: 1fr;
-    justify-items: center;
-}
-
-.glog2d6 .inventory-header.edit-mode .item-controls {
-    grid-column: 1;
-    justify-self: center;
-}
-
-.glog2d6 .items-list {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-}
-
-.glog2d6 .item {
-    display: grid;
-    grid-template-columns: auto 1fr 2fr auto auto;
-    gap: 8px;
-    align-items: center;
-    padding: 6px 10px;
-    border-bottom: 1px solid #eee;
-    background: white;
-    min-height: 36px;
-}
-
-.glog2d6 .item:last-child {
-    border-bottom: none;
-}
-
-.glog2d6 .item:hover {
-    background: var(--background-light);
-}
-
-.glog2d6 .item-equipped {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 22px;
-}
-
-.glog2d6 .equipped-toggle {
-    width: 12px;
-    height: 12px;
-    cursor: pointer;
-}
-
-.glog2d6 .item-name {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-}
-
-.glog2d6 .item-name .item-image {
-    flex-shrink: 0;
-    background: var(--secondary-color);
-    border-radius: var(--border-radius);
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-}
-
-.glog2d6 .item-name .item-image img {
-    border-radius: 2px;
-    width: 24px;
-    height: 24px;
-    object-fit: cover;
-}
-
-.glog2d6 .item-name h4 {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.glog2d6 .item-details {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    min-width: 0;
-}
-
-.glog2d6 .item-detail {
-    font-size: 10px;
-    color: var(--text-muted);
-    background: #f0f0f0;
-    padding: 1px 3px;
-    border-radius: 2px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.glog2d6 .item-detail.equipment-penalty {
-    background: rgba(211, 47, 47, 0.1);
-    color: var(--danger-color);
-    border: 1px solid rgba(211, 47, 47, 0.3);
-    font-weight: bold;
-}
-
-.glog2d6 .item-detail.equipment-penalty::before {
-    content: "⚠ ";
-}
-
-/* Slot overflow indicator */
-.glog2d6 .slots-info .slot-overflow {
-    color: var(--danger-color);
-    font-weight: bold;
-    background: rgba(211, 47, 47, 0.1);
-    padding: 1px 4px;
-    border-radius: 2px;
-    margin-left: 4px;
-}
-
-/* Fixed weapon attack button size */
-.glog2d6 .weapon-attack-btn {
-    background: var(--primary-color);
-    color: white;
-    padding: 4px 6px;
-    font-size: 10px;
-    width: 28px;
-    height: 24px;
-    flex-shrink: 0;
-}
-
-.glog2d6 .weapon-attack-btn:hover {
-    background: var(--primary-hover);
-}
-
-.glog2d6 .item-slots {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-align: center;
-    justify-self: center;
-    min-width: 50px;
-}
-
-.glog2d6 .item .item-controls {
-    gap: 2px;
-    justify-self: end;
-}
-
-.glog2d6 .item .item-control {
-    padding: 2px 4px;
-    font-size: 9px;
-}
-
-/* Item Sheets */
-.glog2d6.item .sheet-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.glog2d6.item .header-fields {
-    flex: 1;
-}
-
-.glog2d6.item .charname input {
-    font-size: 20px;
-    font-weight: bold;
-    border: none;
-    background: transparent;
-    width: 100%;
-}
-
-.glog2d6 .weapon-properties,
-.glog2d6 .weapon-penalties,
-.glog2d6 .armor-properties,
-.glog2d6 .gear-properties,
-.glog2d6 .shield-properties {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin: 20px 0;
-}
-
-/* Tabbed Content */
-.glog2d6 .tabbed-content {
-    margin-top: 20px;
-}
-
-.glog2d6 .sheet-tabs {
-    border-bottom: 2px solid var(--primary-color);
-    margin-bottom: 15px;
-    display: flex;
-    background: var(--background-section);
-    border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
-    box-shadow: none;
-}
-
-.glog2d6 .sheet-tabs .item {
-    flex: 1;
-    text-align: center;
-    padding: 10px 15px;
-    cursor: pointer;
-    background: var(--background-section);
-    color: var(--secondary-color);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 12px;
-    border-right: 1px solid var(--border-color);
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    border-top: none;
-    border-left: none;
-    border-bottom: none;
-    box-shadow: none;
-}
-
-.glog2d6 .sheet-tabs .item:last-child {
-    border-right: none;
-}
-
-.glog2d6 .sheet-tabs .item:hover {
-    background: var(--background-darker);
-    color: #333;
-}
-
-.glog2d6 .sheet-tabs .item i {
-    width: 14px;
-    text-align: center;
-    display: inline-block;
-    /* Ensure icons don't affect button appearance */
-    vertical-align: middle;
-}
-
-.glog2d6 .sheet-tabs .item.active {
-    background: var(--primary-color);
-    color: white;
-}
-
-.glog2d6 .tab {
-    display: none;
-}
-
-.glog2d6 .tab.active {
-    display: block;
-}
-
-/* Features Section Enhanced Styling */
-.glog2d6 .features-section,
-.glog2d6 .spells-section {
-    margin: 0;
-}
-
-.glog2d6 .features-header,
-.glog2d6 .spells-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.glog2d6 .features-info h3,
-.glog2d6 .spells-info h3 {
-    margin: 0 0 5px 0;
-    color: var(--primary-color);
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.glog2d6 .feature-class-info {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-/* Glowing Add Class Features Button */
-.glog2d6 .add-class-features.features-available {
-    background: var(--success-color) !important;
-    color: white !important;
-    animation: featureGlow 2s ease-in-out infinite alternate;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
-}
-
-.glog2d6 .add-class-features.features-available:hover {
-    background: var(--success-hover) !important;
-    animation: featureGlowHover 1s ease-in-out infinite alternate;
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-}
-
-@keyframes featureGlow {
-    0% {
-        box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
-    }
-
-    100% {
-        box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
-    }
-}
-
-@keyframes featureGlowHover {
-    0% {
-        box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-    }
-
-    100% {
-        box-shadow: 0 0 12px rgba(76, 175, 80, 0.8);
-    }
-}
-
-/* Rest Button - redesigned for its own section */
+/* Rest Button */
 .glog2d6 .rest-btn {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-hover) 100%);
     color: white;
     font-size: 11px;
     font-weight: bold;
@@ -1241,7 +973,7 @@
     width: 100%;
     height: 100%;
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -1255,447 +987,77 @@
     transform: translateY(0);
 }
 
-.glog2d6 .rest-btn:hover {
-    background: var(--secondary-hover);
-}
-
-/* Enhanced Feature and Spell Cards */
-.glog2d6 .features-list,
-.glog2d6 .spells-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.glog2d6 .feature-card {
-    background: var(--background-section);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-large);
-    padding: 12px;
-    transition: var(--transition);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.glog2d6 .feature-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.glog2d6 .feature-card.feature-inactive {
-    opacity: 0.6;
-    background: var(--background-darker);
-}
-
-.glog2d6 .feature-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-}
-
-.glog2d6 .feature-main {
-    flex: 1;
-}
-
-.glog2d6 .feature-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 4px;
-    line-height: 1.2;
-}
-
-.glog2d6 .feature-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.glog2d6 .feature-source {
-    background: var(--secondary-color);
-    color: white;
-    padding: 2px 6px;
-    border-radius: var(--border-radius);
-    font-size: 9px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.glog2d6 .feature-template {
-    background: var(--background-light);
-    color: var(--secondary-color);
-    border: 1px solid var(--border-color);
-    padding: 2px 6px;
-    border-radius: var(--border-radius);
-    font-size: 9px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.glog2d6 .feature-controls {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.glog2d6 .feature-controls .item-control {
-    padding: 2px 4px;
-    font-size: 9px;
-    min-width: auto;
-}
-
-.glog2d6 .feature-prerequisites {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px;
+/* Edit Toggle Button */
+.glog2d6 .edit-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(bg-darker);
     color: var(--text-muted);
-    font-style: italic;
-    margin-bottom: 8px;
-    padding: 4px 6px;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: var(--border-radius);
-    border-left: 3px solid var(--secondary-color);
-}
-
-.glog2d6 .feature-prerequisites i {
-    font-size: 8px;
-    color: var(--secondary-color);
-}
-
-.glog2d6 .feature-description {
-    font-size: 12px;
-    line-height: 1.4;
-    color: #333;
-    white-space: pre-line;
-}
-
-/* Enhanced Empty Section */
-.glog2d6 .empty-section {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-style: italic;
-    background: var(--background-section);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius-large);
-}
-
-.glog2d6 .empty-section .empty-icon {
-    font-size: 32px;
-    color: var(--border-color);
-    margin-bottom: 10px;
-}
-
-.glog2d6 .empty-section p {
-    margin: 8px 0;
-}
-
-/* Spell-specific styling */
-.glog2d6 .spell-cast-btn {
-    background: var(--success-color);
-    color: white;
-    padding: 4px 8px;
+    padding: 4px;
+    border-radius: var(--radius);
     font-size: 10px;
-    border-radius: var(--border-radius);
-}
-
-.glog2d6 .spell-cast-btn:hover {
-    background: var(--success-hover);
-}
-
-.glog2d6 .spell-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-
-/* Inventory Section in Tab */
-.glog2d6 .inventory-section {
-    margin: 0;
-}
-
-.glog2d6 .inventory-section h3 {
-    display: none;
-    /* Hide the h3 since we have the tab title */
-}
-
-/* Chat Messages */
-.glog2d6-roll {
-    border: 1px solid var(--primary-color);
-    border-radius: 5px;
-    padding: 10px;
-    background: var(--background-light);
-}
-
-.glog2d6-roll h3 {
-    margin: 0 0 10px 0;
-    color: var(--primary-color);
-    font-size: 16px;
-}
-
-.glog2d6-roll .roll-result {
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.damage-roll-btn {
-    background: var(--success-color);
-    color: white;
-    padding: 6px 12px;
-    font-size: 12px;
-    margin-top: 8px;
-}
-
-.damage-roll-btn:hover:not(:disabled) {
-    background: var(--success-hover);
-}
-
-.damage-roll-btn:disabled {
-    background: var(--border-color);
-    cursor: not-allowed;
-}
-
-/* Section Headers */
-.glog2d6 h3 {
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--primary-color);
-    padding-bottom: 3px;
-    margin: 15px 0 8px 0;
-    font-size: 14px;
-}
-
-.glog2d6 .tab h3 {
-    display: none;
-}
-
-/* Special effects notice styling */
-.glog2d6-roll .special-effects-notice {
-    margin-top: 6px;
-    padding: 4px 6px;
-    background: rgba(120, 46, 34, 0.1);
-    border-left: 2px solid var(--primary-color);
-    border-radius: 2px;
-    font-size: 11px;
-    color: var(--primary-color);
-}
-
-.glog2d6-roll .special-effects-notice i {
-    margin-right: 4px;
-    font-size: 10px;
-}
-
-.glog2d6 .actions-section {
-    margin: 15px 0;
-}
-
-.glog2d6 .actions-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.glog2d6 .action-card {
-    border: 1px solid var(--primary-color);
-    border-radius: var(--border-radius-large);
-    overflow: hidden;
-    background: white;
-    transition: var(--transition);
-}
-
-.glog2d6 .action-card.clickable:hover {
-    border-color: var(--primary-hover);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.glog2d6 .action-main {
-    padding: 6px;
-    text-align: center;
-    background: var(--background-light);
-}
-
-.glog2d6 .action-name {
-    font-weight: bold;
-    font-size: 10px;
-    color: var(--primary-color);
-    margin-bottom: 3px;
-}
-
-/* Torch-specific inventory styles */
-.glog2d6 .torch-icon {
     width: 20px;
     height: 20px;
+    border: 1px solid var(--border);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: #ddd;
+    z-index: 10;
+}
+
+.glog2d6 .edit-toggle:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: #333;
+}
+
+/* Inactive torch - no background */
+.torch-icon {
+    background: transparent; /* or #ddd for light gray */
     color: #666;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border);
 }
 
-.glog2d6 .torch-icon:hover {
-    background: #ccc;
-    transform: scale(1.1);
-}
-
-.glog2d6 .torch-icon.torch-active {
+/* Active torch - orange background */
+.torch-icon.torch-active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    flex-shrink: 0;
     background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
+    border-radius: 50%;
     border-color: #d64933;
     box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+    height: 22px;
+    width: 22px;
     animation: torchGlow 2s ease-in-out infinite alternate;
 }
 
-.glog2d6 .torch-icon.torch-active:hover {
-    background: linear-gradient(135deg, #e55a2b 0%, #d64933 100%);
-    box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
-}
-
 @keyframes torchGlow {
-    0% {
-        box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
-    }
-
-    100% {
-        box-shadow: 0 0 15px rgba(255, 107, 53, 0.7);
-    }
+    0% { box-shadow: 0 0 8px rgba(255, 107, 53, 0.4); }
+    100% { box-shadow: 0 0 15px rgba(255, 107, 53, 0.7); }
 }
 
-/* Torch item sheet styles */
-.glog2d6 .torch-properties,
-.glog2d6 .torch-duration,
-.glog2d6 .torch-animation {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin: 20px 0;
-}
-
-/* Torch item sheet layout fixes */
-.glog2d6.torch-item-sheet {
-    min-height: 400px;
-}
-
-.glog2d6.torch-item-sheet .sheet-header {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 15px;
-    padding: 10px 15px;
-    background: var(--background-darker);
-    border-bottom: 2px solid var(--primary-color);
-}
-
-.glog2d6.torch-item-sheet .item-img {
-    flex-shrink: 0;
-}
-
-.glog2d6.torch-item-sheet .header-fields {
-    flex: 1;
-}
-
-.glog2d6.torch-item-sheet .header-fields .charname {
-    margin: 0;
-}
-
-.glog2d6.torch-item-sheet .header-fields .charname input {
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    background: transparent;
-    width: 100%;
-    color: var(--primary-color);
-}
-
-.glog2d6 .torch-animation {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-/* Enhanced torch button animations */
-.glog2d6 .torch-btn.torch-lit {
-    animation: torchFlicker 2s ease-in-out infinite alternate;
-}
-
-@keyframes torchFlicker {
-    0% {
-        box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
-        transform: scale(1);
-    }
-
-    50% {
-        box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
-        transform: scale(1.02);
-    }
-
-    100% {
-        box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
-        transform: scale(1);
-    }
-}
-
-/* Torch duration indicators */
-.glog2d6 .torch-duration-warning {
-    color: var(--danger-color);
-    font-weight: bold;
-    background: rgba(211, 47, 47, 0.1);
-    border: 1px solid rgba(211, 47, 47, 0.3);
-}
-
-.glog2d6 .torch-duration-low {
-    color: #ff9800;
-    font-weight: bold;
-    background: rgba(255, 152, 0, 0.1);
-    border: 1px solid rgba(255, 152, 0, 0.3);
-}
-
-.glog2d6 .torch-active-badge {
-    background: var(--success-color) !important;
-    color: white !important;
-    font-weight: bold;
-    font-size: 8px;
-    text-transform: uppercase;
-    padding: 1px 4px !important;
-    border-radius: 2px;
-    animation: pulseGreen 2s ease-in-out infinite alternate;
-}
-
-@keyframes pulseGreen {
-    0% {
-        background: var(--success-color) !important;
-        box-shadow: 0 0 3px rgba(76, 175, 80, 0.3);
-    }
-
-    100% {
-        background: var(--success-hover) !important;
-        box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
-    }
-}
-
+/* Mobile Responsive */
 @media (max-width: 600px) {
-    .glog2d6 .attributes-grid {
+    .grid-6 {
         grid-template-columns: repeat(3, 1fr);
         gap: 4px;
     }
 
-    .glog2d6 .attribute-card {
+    .attribute-card {
         border-radius: 6px;
     }
 
-    .glog2d6 .attribute-main {
+    .attribute-main {
         padding: 6px 4px;
         min-height: 50px;
     }
 
-    .glog2d6 .attribute-value {
+    .attribute-value {
         font-size: 16px;
-    }
-
-    .glog2d6 .attribute-name {
-        font-size: 8px;
     }
 }
