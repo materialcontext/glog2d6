@@ -8,6 +8,8 @@ import { createDefaultFolders } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { setupGlobalErrorHandler } from './module/systems/global-error-handler.mjs';
 import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
+import { initReconSystem } from "./module/systems/recon-system.mjs";
+import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
 
 // Define custom Document classes
 CONFIG.Actor.documentClass = GLOG2D6Actor;
@@ -83,7 +85,25 @@ Hooks.once('init', async function() {
         default: false
     });
 
+    game.settings.register("glog2d6", "gridDistance", {
+        name: "Grid Distance",
+        hint: "Distance represented by each grid square",
+        scope: "world",
+        config: true,
+        type: String,
+        choices: {
+            "5": "5 feet per square",
+            "10": "10 feet per square"
+        },
+        default: "5",
+        onChange: value => {
+            // Update existing scenes if desired
+            ui.notifications.info(`Grid distance changed to ${value} feet per square`);
+        }
+    });
+
     initGMRolls();
+    initReconSystem();
 
     console.log('glog2d6 | System initialization complete');
 });
@@ -104,7 +124,8 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/item/item-spell-sheet.hbs",
         "systems/glog2d6/templates/item/item-feature-sheet.hbs",
         "systems/glog2d6/templates/item/item-torch-sheet.hbs",
-        "systems/glog2d6/templates/dialogs/gm-roll.hbs"
+        "systems/glog2d6/templates/dialogs/gm-roll.hbs",
+        "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
     ]);
 
     // Register partials
@@ -132,6 +153,7 @@ Hooks.once("ready", async function() {
     // Add torch burn macro for GMs
     if (game.user.isGM) {
         game.glog2d6 = {
+            ...(game.glog2d6 || {}),
             burnTorches: async function(hours = 0.1, onlyDurationEnabled = true) {
                 const characters = game.actors.filter(a =>
                     a.type === "character" &&
@@ -157,6 +179,39 @@ Hooks.once("ready", async function() {
     }
 });
 
+Hooks.on('renderChatLog', (chatLog, html) => {
+    if (!game.user.isGM) return;
+
+    // Make sure we don't add multiple buttons
+    if (html.find('#recon-chat-btn').length) return;
+
+    const reconBtn = $(`
+        <a id="recon-chat-btn" class="chat-control-icon" title="Recon Check" style="margin-left: 4px;">
+            <i class="fas fa-search"></i>
+        </a>
+    `);
+
+    reconBtn.click(() => {
+        import("./module/dialogs/recon-dialog.mjs").then(({ReconDialog}) => {
+            new ReconDialog().render(true);
+        });
+    });
+
+    // Add some spacing and prevent overlap
+    html.find('#chat-controls').css('gap', '2px');
+    html.find('#chat-controls .chat-control-icon').last().after(reconBtn);
+});
+
+// GM Chat Commands
+Hooks.on("chatMessage", (log, msg) => {
+    if (!game.user.isGM) return;
+
+    if (msg === "/recon") {
+        new ReconDialog().render(true);
+        return false;
+    }
+});
+
 Hooks.on("renderChatMessage", (message, html) => {
     html.find('.magic-die-btn').click(async (event) => {
         event.preventDefault();
@@ -172,6 +227,18 @@ Hooks.on("renderChatMessage", (message, html) => {
             await actor.castSpellWithDice(spell, diceCount);
             // Disable all buttons in this message
             html.find('.magic-die-btn').prop('disabled', true).text('Cast!');
+        }
+    });
+
+    html.find('[data-recon-id]').click(async e => {
+        e.preventDefault();
+        const { reconId, actorId } = e.currentTarget.dataset;
+        try {
+            await game.glog2d6.reconSystem.execute(reconId, actorId);
+            e.currentTarget.disabled = true;
+            e.currentTarget.textContent = 'Rolled';
+        } catch (error) {
+            ui.notifications.error(error.message);
         }
     });
 

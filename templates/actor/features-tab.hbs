@@ -1,8 +1,8 @@
-{{!-- Features Tab - Enhanced Version --}}
+{{!-- Features Tab - Enhanced with GM Roll Indicators --}}
 <div class="tab" data-group="primary" data-tab="features">
     <div class="features-section">
-        <div class="features-header flex flex row flex-between mb-10 p-10 section">
-            <div class="features-info flex flex-row">
+        <div class="features-header flex flex-between mb-10 p-10 section">
+            <div class="features-info flex flex-center flex-gap-4">
                 <div class="text-bold text-primary">Class Features & Abilities</div>
                 {{#if system.details.class}}
                 <span class="text-small text-muted">({{system.details.class}} Level {{system.details.level}})</span>
@@ -10,11 +10,13 @@
             </div>
             {{#if editMode}}
             <div class="flex flex-gap-8">
-                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="feature" title="Create Feature">
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create"
+                    data-type="feature" title="Create Feature">
                     <i class="fas fa-star"></i> Feature
                 </a>
                 {{#if system.details.class}}
-                <a class="btn btn-success p-6 text-small flex flex-center flex-gap-4 add-class-features" title="Add Class Features">
+                <a class="btn btn-success p-6 text-small flex flex-center flex-gap-4 add-class-features"
+                    title="Add Class Features">
                     <i class="fas fa-magic"></i> Add Class Features
                 </a>
                 {{/if}}
@@ -25,15 +27,22 @@
         <div class="features-list flex flex-col flex-gap-8">
             {{#each actor.items as |item id|}}
             {{#if (eq item.type "feature")}}
-            <div class="feature-card {{#unless item.system.active}}feature-inactive{{/unless}}"
+            <div class="feature-card {{#unless item.system.active}}feature-inactive{{/unless}} section p-10"
                 data-item-id="{{item.id}}">
                 <div class="feature-header flex flex-between mb-8">
-                    <div class="feature-name text-bold text-primary">{{item.name}}</div>
+                    <div class="feature-name text-bold text-primary flex flex-center flex-gap-4">
+                        {{item.name}}
+                        {{#if (or (eq item.name "Tracker") (eq item.name "Stalker") (eq item.name "Danger Sense"))}}
+                        <span class="btn btn-primary p-2 text-small"
+                            style="border-radius: 50%; width: 16px; height: 16px; font-size: 8px;"
+                            title="This feature affects GM-initiated recon rolls">GM</span>
+                        {{/if}}
+                    </div>
                     <div class="feature-badges flex flex-gap-4">
                         {{#if item.system.classSource}}
-                        <span class="feature-source">{{item.system.classSource}}</span>
+                        <span class="text-small text-muted">{{item.system.classSource}}</span>
                         {{/if}}
-                        <span class="feature-template">{{item.system.template}}</span>
+                        <span class="text-small text-primary">{{item.system.template}}</span>
                     </div>
                     {{#if ../editMode}}
                     <div class="item-controls flex flex-gap-2">
@@ -57,7 +66,8 @@
                 </div>
                 <p class="text-muted mb-8">No features yet.</p>
                 {{#if editMode}}
-                <p class="text-muted">Click "Feature" above to add abilities, or "Add Class Features" to automatically add
+                <p class="text-muted">Click "Feature" above to add abilities, or "Add Class Features" to automatically
+                    add
                     features for your current class and level.</p>
                 {{/if}}
             </div>

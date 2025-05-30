@@ -56,7 +56,7 @@ async function toggleTorchItem(actor, event) {
     } catch (err) {
         console.error("Error toggling torch item:", err);
         ui.notifications.error("Failed to toggle torch: " + err.message);
-        return { "ok": false}
+        return { "ok": false }
     }
 }
 
@@ -72,13 +72,23 @@ async function updateTokenLighting(actor, isLit, torch) {
     }
 }
 
-function getTorchLightConfig(torch, canvasDistance) {
+function getTorchLightConfig(torch) {
+    // Use the system setting, fallback to scene setting, then default to 5
+    const systemGridDistance = parseInt(game.settings.get("glog2d6", "gridDistance"));
+    const gridDistance = systemGridDistance || canvas.scene?.grid?.distance || 5;
+
+    const brightRadius = (torch.system.lightRadius?.bright || 20);
+    const dimRadius = (torch.system.lightRadius?.dim || 40);
+
+    const brightGrid = Math.max(0.01, Math.round((brightRadius / gridDistance) * 100) / 100);
+    const dimGrid = Math.max(0.01, Math.round((dimRadius / gridDistance) * 100) / 100);
+
     return {
         alpha: 0.15,
         angle: torch.system.lightAngle || 360,
-        bright: (torch.system.lightRadius?.bright || 20) / canvasDistance,
+        bright: brightGrid,
         coloration: 1,
-        dim: (torch.system.lightRadius?.dim || 40) / canvasDistance,
+        dim: dimGrid,
         luminosity: 0.15,
         saturation: -0.3,
         contrast: 0.05,
