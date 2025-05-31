@@ -51,6 +51,14 @@ Hooks.once('init', async function() {
         return a < b;
     });
 
+    Handlebars.registerHelper('range', function(start, end) {
+        const result = [];
+        for (let i = start; i <= end; i++) {
+            result.push(i);
+        }
+        return result;
+    });
+
     // Register sheet application classes
     Actors.unregisterSheet("core", ActorSheet);
     Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
@@ -141,6 +149,8 @@ Hooks.once("ready", async function() {
         await getTemplate('systems/glog2d6/templates/actor/features-tab.hbs'));
     Handlebars.registerPartial('spells-tab',
         await getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
+    Handlebars.registerPartial('wounds-tab',
+        await getTemplate('systems/glog2d6/templates/actor/wounds-tab.hbs'));
 
     setupGlobalUtils();
 
@@ -192,7 +202,7 @@ Hooks.on('renderChatLog', (chatLog, html) => {
     `);
 
     reconBtn.click(() => {
-        import("./module/dialogs/recon-dialog.mjs").then(({ReconDialog}) => {
+        import("./module/dialogs/recon-dialog.mjs").then(({ ReconDialog }) => {
             new ReconDialog().render(true);
         });
     });
@@ -230,6 +240,22 @@ Hooks.on("renderChatMessage", (message, html) => {
         }
     });
 
+    html.find('.apply-wound-btn').click(async (event) => {
+        event.preventDefault();
+        const button = event.currentTarget;
+        const actorId = button.dataset.actorId;
+        const damage = parseInt(button.dataset.damage);
+
+        const actor = game.actors.get(actorId);
+        if (actor) {
+            await actor.applyWound(damage);
+            button.disabled = true;
+            button.textContent = "Applied";
+        } else {
+            ui.notifications.error("Actor not found!");
+        }
+    });
+
     html.find('[data-recon-id]').click(async e => {
         e.preventDefault();
         const { reconId, actorId } = e.currentTarget.dataset;
@@ -239,6 +265,26 @@ Hooks.on("renderChatMessage", (message, html) => {
             e.currentTarget.textContent = 'Rolled';
         } catch (error) {
             ui.notifications.error(error.message);
+        }
+    });
+
+    html.find('.break-item-btn').click(async (event) => {
+        event.preventDefault();
+        const button = event.currentTarget;
+        const actorId = button.dataset.actorId;
+        const itemType = button.dataset.itemType;
+
+        const actor = game.actors.get(actorId);
+        console.log('Actor found:', actor);
+        console.log('Actor methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(actor)));
+        console.log('breakEquippedItem exists:', typeof actor.breakEquippedItem);
+
+        if (actor && typeof actor.breakEquippedItem === 'function') {
+            await actor.breakEquippedItem(itemType);
+            button.disabled = true;
+            button.textContent = "Broken!";
+        } else {
+            ui.notifications.error("Actor or method not found!");
         }
     });
 

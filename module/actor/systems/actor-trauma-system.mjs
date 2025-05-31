@@ -4,6 +4,25 @@ class ActorTraumaSystem {
         this.actor = actor;
     }
 
+    get wounds() {
+        if (!this.actor.system.wounds) {
+            // This shouldn't happen with proper templates, but ensures safety
+            this.actor.system.wounds = {
+                count: 0,
+                list: [],
+                effects: {
+                    statReductions: {},
+                    movementReduction: 0,
+                    noHealing: false,
+                    attackPenalty: 0,
+                    defensePenalty: 0,
+                    reactionPenalty: 0
+                }
+            };
+        }
+        return this.actor.system.wounds;
+    }
+
     async initiateTraumaSave() {
         const dialog = new TraumaSaveDialog(this.actor);
         return dialog.render(true);
@@ -32,7 +51,7 @@ class ActorTraumaSystem {
     }
 
     getWoundPenalties() {
-        const wounds = this.actor.system.wounds?.list || [];
+        const wounds = this.wounds?.list || [];
         const penalties = {
             stats: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
             movement: 0,
@@ -168,7 +187,7 @@ class TraumaSaveRoller {
         const chatMessage = await this._createChatMessage(roll, success);
 
         if (!success) {
-            this._addApplyWoundButton(chatMessage);
+            this._addApplyWoundButton(chatMessage, roll); // Pass the roll separately
         }
 
         return { roll, success };
@@ -254,21 +273,21 @@ class TraumaSaveRoller {
         return `[${diceResults.join(', ')}]`;
     }
 
-    async _addApplyWoundButton(chatMessage) {
+    async _addApplyWoundButton(chatMessage, roll) {
         const buttonHtml = `
-            <button type="button" class="btn btn-danger p-8 mt-8 apply-wound-btn w-full"
-                    data-actor-id="${this.actor.id}"
-                    data-damage="${this.excessDamage}"
-                    data-roll-id="${chatMessage.roll._id}">
-                <i class="fas fa-plus"></i> Apply Wound (${this.excessDamage} damage)
-            </button>
-        `;
+        <button type="button" class="btn btn-danger p-8 mt-8 apply-wound-btn w-full"
+                data-actor-id="${this.actor.id}"
+                data-damage="${this.excessDamage}"
+                data-roll-id="${roll._id}">
+            <i class="fas fa-plus"></i> Apply Wound (${this.excessDamage} damage)
+        </button>
+    `;
 
         setTimeout(async () => {
             const message = game.messages.get(chatMessage.id);
             if (message) {
                 const content = message.content.replace(
-                    `<div id="wound-application-${chatMessage.roll._id}"></div>`,
+                    `<div id="wound-application-${roll._id}"></div>`,
                     buttonHtml
                 );
                 await message.update({ content });

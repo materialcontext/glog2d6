@@ -37,23 +37,10 @@ export class ActorBonusSystem {
     }
 
     applyWoundPenalties() {
-        if (!this.actor.traumaSystem) return;
+        if (!this.actor.traumaSystem) console.log("NO TRAUMA SYSTEM!!!");
 
         // Ensure wounds structure exists
-        if (!this.actor.system.wounds) {
-            this.actor.system.wounds = {
-                count: 0,
-                list: [],
-                effects: {
-                    statReductions: {},
-                    movementReduction: 0,
-                    noHealing: false,
-                    attackPenalty: 0,
-                    defensePenalty: 0,
-                    reactionPenalty: 0
-                }
-            };
-        }
+        if (!this.actor.system.wounds) console.log("NO WOUNDS SYSTEM");
 
         const penalties = this.actor.traumaSystem.getWoundPenalties();
 

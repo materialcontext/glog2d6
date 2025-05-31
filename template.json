@@ -211,13 +211,21 @@
             "attackPenalty": 0,
             "encumbrancePenalty": 0,
             "properties": "",
-            "equipped": false
+            "equipped": false,
+            "breakage": {
+                "level": 0,
+                "maxLevel": 2
+            }
         },
         "armor": {
             "description": "",
             "type": "light",
             "armorBonus": 1,
-            "encumbrancePenalty": 0
+            "encumbrancePenalty": 0,
+            "breakage": {
+                "level": 0,
+                "maxLevel": 1
+            }
         },
         "gear": {
             "templates": [

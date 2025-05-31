@@ -85,7 +85,11 @@ class DefenseCalculator {
 
     getEquippedArmorBonus() {
         const armor = this.items.find(item => item.type === "armor" && item.system.equipped);
-        return armor?.system.armorBonus || 0;
+        if (!armor) return 0;
+
+        const originalBonus = armor.system.armorBonus || 0;
+        const breakageLevel = armor.system.breakage?.level || 0;
+        return BreakageCalculator.calculateArmorBonus(originalBonus, breakageLevel);
     }
 
     getEquippedShieldBonus() {

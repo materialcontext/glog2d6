@@ -100,6 +100,32 @@ export class GLOG2D6Actor extends Actor {
         );
     }
 
+    async breakEquippedItem(itemType) {
+        const equippedItem = this.items.find(i =>
+            i.type === itemType && i.system.equipped
+        );
+
+        if (!equippedItem) {
+            ui.notifications.warn(`No equipped ${itemType} to break!`);
+            return;
+        }
+
+        const currentLevel = equippedItem.system.breakage?.level || 0;
+        const maxLevel = equippedItem.system.breakage?.maxLevel || 2;
+
+        if (currentLevel >= maxLevel) {
+            ui.notifications.warn(`${equippedItem.name} is already broken!`);
+            return;
+        }
+
+        const newLevel = currentLevel + 1;
+        await equippedItem.update({ "system.breakage.level": newLevel });
+
+        const statusText = newLevel >= maxLevel ? "broken" : "damaged";
+        ui.notifications.info(`${equippedItem.name} is now ${statusText}!`);
+    }
+
+
     // System delegations
     async toggleTorch() { return this.torchSystem.toggleTorch(); }
     getAvailableTorches() { return this.torchSystem.getAvailableTorches(); }
@@ -224,18 +250,56 @@ class RollChatMessageBuilder {
     buildContent() {
         const rollDisplay = this.parseRollDisplay();
         const specialEffectsHtml = this.buildSpecialEffectsHtml();
+        const breakageButtonHtml = this.buildBreakageButtonHtml();
 
         return `
-            <div class="glog2d6-roll">
-                <h3>${this.title}</h3>
-                <div class="roll-result">
-                    <strong>Roll:</strong> ${rollDisplay}<br>
-                    <strong>Total:</strong> ${this.roll.total}
-                    ${this.extraContent}
-                    ${specialEffectsHtml}
-                </div>
+        <div class="glog2d6-roll">
+            <h3>${this.title}</h3>
+            <div class="roll-result">
+                <strong>Roll:</strong> ${rollDisplay}<br>
+                <strong>Total:</strong> ${this.roll.total}
+                ${this.extraContent}
+                ${specialEffectsHtml}
+                ${breakageButtonHtml}
             </div>
-        `;
+        </div>
+    `;
+    }
+
+    buildBreakageButtonHtml() {
+        if (!this.title.includes("Attack") && !this.title.includes("Defense")) {
+            return '';
+        }
+
+        const diceResults = this.roll.terms[0]?.results?.map(r => r.result) || [];
+        const hasSnakeEyes = diceResults.length === 2 &&
+            diceResults[0] === 1 &&
+            diceResults[1] === 1;
+
+        if (!hasSnakeEyes) return '';
+
+        const isAttack = this.title.includes("Attack");
+
+        // For attacks, only show break button if there's an equipped weapon
+        if (isAttack) {
+            const equippedWeapon = this.actor.items.find(i =>
+                i.type === "weapon" && i.system.equipped
+            );
+            if (!equippedWeapon) return ''; // No equipped weapon = unarmed
+        }
+
+        const buttonText = isAttack ? "Break Weapon" : "Break Armor";
+        const itemType = isAttack ? "weapon" : "armor";
+
+        return `
+        <div class="breakage-button mt-8">
+            <button type="button" class="btn btn-danger p-4 text-small break-item-btn"
+                    data-actor-id="${this.actor.id}"
+                    data-item-type="${itemType}">
+                <i class="fas fa-hammer"></i> ${buttonText}
+            </button>
+        </div>
+    `;
     }
 
     parseRollDisplay() {

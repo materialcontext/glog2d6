@@ -1,7 +1,7 @@
 // module/actor/actor-sheet.mjs - Refactored
 import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
-import { addClassFeatures, toggleFeature, hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
+import { addClassFeatures, toggleFeature } from './handlers/feature-handlers.mjs';
 
 import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
 import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
@@ -45,7 +45,10 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async getData() {
         const context = super.getData();
-        return this.dataContextBuilder.buildCompleteContext(context);
+        const result = this.dataContextBuilder.buildCompleteContext(context);
+
+        console.log('Template context:', result.system);
+        return result;
     }
 
     activateListeners(html) {

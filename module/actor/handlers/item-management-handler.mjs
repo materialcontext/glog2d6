@@ -37,7 +37,7 @@ export class ItemManagementHandler {
     }
 
     extractItemFromEvent(event) {
-        const itemElement = $(event.currentTarget).parents(".item, .feature-item");
+        const itemElement = $(event.currentTarget).parents(".gear-item, .feature-card");
         const itemId = itemElement.data("itemId");
         return this.actor.items.get(itemId);
     }

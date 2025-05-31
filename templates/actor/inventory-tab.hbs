@@ -3,8 +3,7 @@
     <div class="inventory-section">
 
         {{!-- Enhanced inventory header with encumbrance display --}}
-        <div class="inventory-header flex flex-between flex-center mb-10 p-10
-            section">
+        <div class="inventory-header flex flex-between flex-center mb-10 p-10 section">
             <div class="slots-info text-bold flex flex-center flex-gap-8">
                 Slots: {{system.inventory.slots.used}} / {{system.inventory.slots.max}}
                 {{#if (gt system.inventory.encumbrance 0)}}
@@ -24,23 +23,23 @@
             </div>
             {{#if editMode}}
             <div class="flex flex-gap-8">
-                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4" data-type="weapon"
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="weapon"
                     title="Create Weapon">
                     <i class="fas fa-sword"></i> Weapon
                 </a>
-                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4" data-type="armor"
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="armor"
                     title="Create Armor">
                     <i class="fas fa-shield-alt"></i> Armor
                 </a>
-                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4" data-type="shield"
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="shield"
                     title="Create Shield">
                     <i class="fas fa-shield"></i> Shield
                 </a>
-                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4" data-type="gear"
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="gear"
                     title="Create Gear">
                     <i class="fas fa-suitcase"></i> Gear
                 </a>
-                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4" data-type="torch"
+                <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create" data-type="torch"
                     title="Create Torch">
                     <i class="fas fa-fire"></i> Torch
                 </a>
@@ -121,18 +120,40 @@
                 {{/if}}
             </div>
 
-            <div class="item-slots text-small text-muted text-center">
+            {{!-- Breakage Status and Slots --}}
+            <div class="gear-slots text-small text-muted">
+                {{!-- Show breakage status for weapons and armor --}}
+                {{#if (or (eq item.type "weapon") (eq item.type "armor") (eq item.type "shield"))}}
+                {{#if (gt item.system.breakage.level 0)}}
+                {{#if (eq item.type "weapon")}}
+                {{#if (eq item.system.breakage.level 1)}}
+                <span class="gear-detail breakage-damaged">DMG</span>
+                {{else if (eq item.system.breakage.level 2)}}
+                <span class="gear-detail breakage-broken">BROKEN</span>
+                {{/if}}
+                {{else}}
+                {{!-- Armor/Shield breakage --}}
+                {{#if (gt item.system.breakage.level item.system.breakage.maxLevel)}}
+                <span class="gear-detail breakage-broken">BROKEN</span>
+                {{else}}
+                <span class="gear-detail breakage-damaged">DMG {{item.system.breakage.level}}</span>
+                {{/if}}
+                {{/if}}
+                {{/if}}
+                {{/if}}
+
+                {{!-- Slots display --}}
                 {{#unless (eq item.type "armor")}}
-                {{item.system.slots}} slots
+                <span class="text-small text-muted">{{item.system.slots}} slots</span>
                 {{/unless}}
             </div>
 
             {{#if ../editMode}}
             <div class="gear-controls flex flex-gap-2">
-                <a class="btn btn-secondary p-2 text-small" title="Edit Item">
+                <a class="btn btn-secondary p-2 text-small item-control item-edit" title="Edit Item">
                     <i class="fas fa-edit"></i>
                 </a>
-                <a class="btn btn-danger p-2 text-small" title="Delete Item">
+                <a class="btn btn-danger p-2 text-small item-control item-delete" title="Delete Item">
                     <i class="fas fa-trash"></i>
                 </a>
             </div>

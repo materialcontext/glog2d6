@@ -14,7 +14,7 @@
 
         <div class="weapon-properties section p-10 mt-15">
             <h3>Properties</h3>
-            <div class="grid-2 flex-gap-8 mt-8">
+            <div class="grid-3 flex-gap-8 mt-8">
                 <div class="form-group flex flex-col flex-gap-2">
                     <label for="system.weaponType" class="text-small text-bold text-upper text-muted">Weapon
                         Type</label>
@@ -34,6 +34,17 @@
                         <option value="light">Light</option>
                         <option value="medium">Medium</option>
                         <option value="heavy">Heavy</option>
+                        {{/select}}
+                    </select>
+                </div>
+
+                <div class="form-group flex flex-col flex-gap-2">
+                    <label for="system.breakage.level" class="text-small text-bold text-upper text-muted">Condition</label>
+                    <select name="system.breakage.level" class="input">
+                        {{#select system.breakage.level}}
+                        <option value="0">Fine</option>
+                        <option value="1">Damaged</option>
+                        <option value="2">Broken</option>
                         {{/select}}
                     </select>
                 </div>

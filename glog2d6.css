@@ -261,19 +261,6 @@
 
 /* === SPECIFIC COMPONENTS === */
 
-/* Trauma save button specific styling */
-.trauma-save-btn {
-    background: linear-gradient(135deg, var(--danger) 0%, #c62828 100%);
-    border: 1px solid #b71c1c;
-    box-shadow: 0 2px 4px rgba(211, 47, 47, 0.3);
-}
-
-.trauma-save-btn:hover {
-    background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(211, 47, 47, 0.4);
-}
-
 /* Apply wound button */
 .apply-wound-btn {
     font-weight: bold;
@@ -1104,6 +1091,50 @@
     height: 22px;
     width: 22px;
     animation: torchGlow 2s ease-in-out infinite alternate;
+}
+
+/* Breakage Status Badges */
+.gear-detail.breakage-damaged {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.4);
+    font-weight: bold;
+}
+
+.gear-detail.breakage-broken {
+    background: rgba(100, 100, 100, 0.3);
+    color: #666;
+    border: 1px solid rgba(100, 100, 100, 0.5);
+    font-weight: bold;
+    text-decoration: line-through;
+}
+
+/* Disabled Chat Buttons */
+.btn:disabled,
+.btn[disabled] {
+    background: #ccc !important;
+    color: #888 !important;
+    border-color: #bbb !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn:disabled:hover,
+.btn[disabled]:hover {
+    background: #ccc !important;
+    color: #888 !important;
+    transform: none !important;
+}
+
+/* Specific disabled button styling for chat */
+.break-item-btn:disabled,
+.apply-wound-btn:disabled,
+.damage-roll-btn:disabled {
+    background: linear-gradient(135deg, #ccc 0%, #bbb 100%) !important;
+    color: #888 !important;
+    border-color: #aaa !important;
 }
 
 @keyframes torchGlow {
