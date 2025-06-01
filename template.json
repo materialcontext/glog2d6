@@ -212,6 +212,8 @@
             "encumbrancePenalty": 0,
             "properties": "",
             "equipped": false,
+            "range": "",
+            "reload": 0,
             "breakage": {
                 "level": 0,
                 "maxLevel": 2

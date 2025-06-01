@@ -266,6 +266,16 @@ export class ActorRolls {
             parts.push(`<br>${damageButton}`);
         }
 
+        // reload
+        if (attackData.weapon?.system.reload) {
+            const diceResults = this.roll.terms[0]?.results?.map(r => r.result) || [];
+            const hasReload = diceResults.some(die => die <= attackData.weapon.system.reload);
+
+            if (hasReload) {
+                parts.push(`<br><div class="reload-notice text-danger"><strong>🔄 RELOAD REQUIRED!</strong> Rolled ${attackData.weapon.system.reload} or lower</div>`);
+            }
+        }
+
         return parts.join('');
     }
 
