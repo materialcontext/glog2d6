@@ -338,6 +338,7 @@
 }
 
 /* Combat Cards */
+.action-card,
 .combat-card {
     border: 1px solid var(--primary);
     border-radius: var(--radius-lg);

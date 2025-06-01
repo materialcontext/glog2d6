@@ -39,34 +39,34 @@
 <div class="actions-section mt-15">
     <h3>Actions</h3>
     <div class="grid-6 mt-8">
-        <div class="action-card combat-card clickable" data-action="sneak">
+        <div class="action-card clickable" data-action="sneak">
             <div class="combat-main">
-                <div class="text-small text-bold text-primary">Sneak</div>
+                <div class="text-md text-bold text-primary">Sneak</div>
             </div>
         </div>
-        <div class="action-card combat-card clickable" data-action="hide">
+        <div class="action-card clickable" data-action="hide">
             <div class="combat-main">
-                <div class="text-small text-bold text-primary">Hide</div>
+                <div class="text-md text-bold text-primary">Hide</div>
             </div>
         </div>
-        <div class="action-card combat-card clickable" data-action="disguise">
+        <div class="action-card clickable" data-action="disguise">
             <div class="combat-main">
-                <div class="text-small text-bold text-primary">Disguise</div>
+                <div class="text-md text-bold text-primary">Disguise</div>
             </div>
         </div>
-        <div class="action-card combat-card clickable" data-action="reaction">
+        <div class="action-card clickable" data-action="reaction">
             <div class="combat-main">
-                <div class="text-small text-bold text-primary">Reaction</div>
+                <div class="text-md text-bold text-primary">Reaction</div>
             </div>
         </div>
-        <div class="action-card combat-card clickable" data-action="diplomacy">
+        <div class="action-card clickable" data-action="diplomacy">
             <div class="combat-main">
-                <div class="text-small text-bold text-primary">Diplomacy</div>
+                <div class="text-md text-bold text-primary">Diplomacy</div>
             </div>
         </div>
-        <div class="action-card combat-card clickable" data-action="intimidate">
+        <div class="action-card clickable" data-action="intimidate">
             <div class="combat-main">
-                <div class="text-small text-bold text-primary">Intimidate</div>
+                <div class="text-md text-bold text-primary">Intimidate</div>
             </div>
         </div>
     </div>
@@ -82,21 +82,21 @@
                 {{!-- Split buttons for mixed weapon types --}}
                 <div class="combat-card clickable" data-action="attack" data-attack-type="melee">
                     <div class="combat-main">
-                        <div class="text-small text-bold text-primary mb-4">Melee</div>
+                        <div class="text-md text-bold text-primary mb-4">Melee</div>
                         <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
                 {{#if weaponAnalysis.hasThrowable}}
                 <div class="combat-card clickable" data-action="attack" data-attack-type="thrown">
                     <div class="combat-main">
-                        <div class="text-small text-bold text-primary mb-4">Thrown</div>
+                        <div class="text-md text-bold text-primary mb-4">Thrown</div>
                         <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
                 {{else}}
                 <div class="combat-card clickable" data-action="attack" data-attack-type="ranged">
                     <div class="combat-main">
-                        <div class="text-small text-bold text-primary mb-4">Ranged</div>
+                        <div class="text-md text-bold text-primary mb-4">Ranged</div>
                         <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
                 {{!-- Single ranged button --}}
                 <div class="combat-card clickable" data-action="attack">
                     <div class="combat-main">
-                        <div class="text-small text-bold text-primary mb-4">Ranged Attack</div>
+                        <div class="text-md text-bold text-primary mb-4">Ranged Attack</div>
                         <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
                 {{!-- Single melee button --}}
                 <div class="combat-card clickable" data-action="attack">
                     <div class="combat-main">
-                        <div class="text-small text-bold text-primary mb-4">Melee Attack</div>
+                        <div class="text-md text-bold text-primary mb-4">Melee Attack</div>
                         <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
                 {{!-- Generic attack button --}}
                 <div class="combat-card clickable" data-action="attack">
                     <div class="combat-main">
-                        <div class="text-small text-bold text-primary mb-4">Unarmed Attack</div>
+                        <div class="text-md text-bold text-primary mb-4">Unarmed Attack</div>
                         <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
             {{!-- No weapons equipped --}}
             <div class="combat-card clickable" data-action="attack">
                 <div class="combat-main">
-                    <div class="text-small text-bold text-primary mb-4">Attack</div>
+                    <div class="text-md text-bold text-primary mb-4">Attack</div>
                     <div class="text-bold">{{add system.combat.attack.value system.combat.attack.bonus}}</div>
                 </div>
             </div>
@@ -141,13 +141,13 @@
             {{!-- Split defense for Acrobats --}}
             <div class="combat-card defense-split clickable" data-action="defend-melee">
                 <div class="combat-main">
-                    <div class="text-small text-bold text-primary mb-4">Melee Defense</div>
+                    <div class="text-md text-bold text-primary mb-4">Melee Defense</div>
                     <div class="text-bold">{{system.defense.meleeTotal}}</div>
                 </div>
             </div>
             <div class="combat-card defense-split clickable" data-action="defend-ranged">
                 <div class="combat-main">
-                    <div class="text-small text-bold text-primary mb-4">Ranged Defense</div>
+                    <div class="text-md text-bold text-primary mb-4">Ranged Defense</div>
                     <div class="text-bold">{{system.defense.rangedTotal}}</div>
                 </div>
             </div>
@@ -155,7 +155,7 @@
             {{!-- Regular defense for everyone else --}}
             <div class="combat-card clickable" data-action="defend">
                 <div class="combat-main">
-                    <div class="text-small text-bold text-primary mb-4">Defend</div>
+                    <div class="text-md text-bold text-primary mb-4">Defend</div>
                     <div class="text-bold">{{system.defense.total}}</div>
                 </div>
             </div>

@@ -66,6 +66,6 @@
     "primaryTokenAttribute": "hp",
     "secondaryTokenAttribute": null,
     "url": "https://github.com/yourusername/glog2d6-foundry",
-    "manifest": "https://github.com/materialcontext/glog2d6/releases/latest/download/system.json",
-    "download": "https://github.com/materialcontext/glog2d6/releases/latest/download/glog2d6.zip"
+    "manifest": "https://github.com/materialcontext/glog2d6/releases/download/release/system.json",
+    "download": "https://github.com/materialcontext/glog2d6/releases/download/release/glog2d6.zip"
 }
