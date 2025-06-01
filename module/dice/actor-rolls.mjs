@@ -8,7 +8,7 @@ export class ActorRolls {
     }
 
     // Attribute rolls
-    async rollAttribute(attributeKey, targetNumber = 7) {
+    async rollAttribute(attributeKey, _targetNumber = 7) {
         const attribute = this.actor.system.attributes[attributeKey];
 
         // Determine context based on attribute
@@ -19,9 +19,15 @@ export class ActorRolls {
         const roll = this.actor.createRoll("2d6 + @mod", { mod: attribute.mod }, context);
         await roll.evaluate();
 
+        let extraContent = '';
+        if (attribute.mod !== 0) {
+            extraContent = `<br><small>${attributeKey.toUpperCase()}: ${attribute.mod >= 0 ? '+' : ''}${attribute.mod}</small>`;
+        }
+
         this.actor._createRollChatMessage(
             `${this.actor.name} - ${attributeKey.toUpperCase()} Check`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;
@@ -410,8 +416,8 @@ export class ActorRolls {
     // Stealth rolls
     async rollSneak() {
         const dexMod = this.actor.system.attributes.dex.effectiveMod;
-        const stealthBonus = this.actor.system.skills?.stealth?.bonus || 0;
-        const roll = this.actor.createRoll("2d6 + @dex + @stealth", {
+        const sneakBonus = this.actor.system.skills?.sneak?.bonus || 0;
+        const roll = this.actor.createRoll("2d6 + @dex + @sneak", {
             dex: dexMod,
             stealth: stealthBonus
         }, 'stealth');
@@ -419,7 +425,7 @@ export class ActorRolls {
 
         let extraContent = '';
         if (stealthBonus > 0) {
-            extraContent = `<br><small>Stealth bonus: +${stealthBonus}</small>`;
+            extraContent = `<br><small>Stealth bonus: +${sneakBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(
@@ -433,8 +439,8 @@ export class ActorRolls {
 
     async rollHide() {
         const wisMod = this.actor.system.attributes.wis.effectiveMod;
-        const stealthBonus = this.actor.system.skills?.stealth?.bonus || 0;
-        const roll = this.actor.createRoll("2d6 + @wis + @stealth", {
+        const hideBonus = this.actor.system.skills?.hide?.bonus || 0;
+        const roll = this.actor.createRoll("2d6 + @wis + @hide", {
             wis: wisMod,
             stealth: stealthBonus
         }, 'stealth');
@@ -442,7 +448,7 @@ export class ActorRolls {
 
         let extraContent = '';
         if (stealthBonus > 0) {
-            extraContent = `<br><small>Stealth bonus: +${stealthBonus}</small>`;
+            extraContent = `<br><small>Stealth bonus: +${hideBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(
@@ -456,7 +462,7 @@ export class ActorRolls {
 
     async rollDisguise() {
         const intMod = this.actor.system.attributes.int.effectiveMod;
-        const stealthBonus = this.actor.system.skills?.stealth?.bonus || 0;
+        const disguiseBonus = this.actor.system.skills?.disguise?.bonus || 0;
         const roll = this.actor.createRoll("2d6 + @int + @stealth", {
             int: intMod,
             stealth: stealthBonus
@@ -465,7 +471,7 @@ export class ActorRolls {
 
         let extraContent = '';
         if (stealthBonus > 0) {
-            extraContent = `<br><small>Stealth bonus: +${stealthBonus}</small>`;
+            extraContent = `<br><small>Stealth bonus: +${disguiseBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(
@@ -504,36 +510,37 @@ export class ActorRolls {
         const roll = this.actor.createRoll("2d6 + @cha", { cha: chaMod }, 'social');
         await roll.evaluate();
 
+        let extraContent = '';
+        if (reactionBonus > 0) {
+            extraContent = `<br><small>Reaction bonus: +${reactionBonus}</small>`;
+        }
+
         this.actor._createRollChatMessage(
             `${this.actor.name} - Diplomacy`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;
     }
 
     async rollIntimidate() {
+        const intimidateBonus = this.actor.system.skills?.intimidate?.bonus || 0;
         const chaMod = this.actor.system.attributes.cha.effectiveMod;
         const roll = this.actor.createRoll("2d6 + @cha", { cha: chaMod }, 'social');
         await roll.evaluate();
 
+        let extraContent = '';
+        if (reactionBonus > 0) {
+            extraContent = `<br><small>Reaction bonus: +${intimidateBonus}</small>`;
+        }
+
         this.actor._createRollChatMessage(
             `${this.actor.name} - Intimidate`,
-            roll
+            roll,
+            extraContent
         );
 
         return roll;
-    }
-
-    // Trauma system (placeholder)
-    async rollTraumaSave(reason = "Critical Hit") {
-        ui.notifications.warn(`${this.actor.name} needs to make a Trauma Save (${reason}) - System not yet implemented!`);
-
-        // TODO: Implement trauma save mechanics
-        // - Roll 2d6 + Con modifier?
-        // - Target number based on current wounds?
-        // - Apply trauma effects on failure
-
-        console.log(`TODO: Implement trauma save for ${this.actor.name} due to ${reason}`);
     }
 }

@@ -1,7 +1,7 @@
 // module/actor/actor-sheet.mjs - Refactored
 import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
-import { addClassFeatures, toggleFeature } from './handlers/feature-handlers.mjs';
+import { addClassFeatures, toggleFeature, displayFeature } from './handlers/feature-handlers.mjs';
 
 import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
 import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
