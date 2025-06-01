@@ -10,7 +10,7 @@ import { EquipmentHandler } from './handlers/equipment-handler.mjs';
 import { ItemManagementHandler } from './handlers/item-management-handler.mjs';
 import { DataContextBuilder } from './data-context-builder.mjs';
 
-export class GLOG2D6ActorSheet extends ActorSheet {
+export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     constructor(...args) {
         super(...args);
         this.initializeMixinsAndComponents();

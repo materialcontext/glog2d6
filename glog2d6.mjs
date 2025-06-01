@@ -85,15 +85,15 @@ Hooks.once('init', async function() {
     });
 
     // Register sheet application classes
-    Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
+    foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
         types: ["character", "npc"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Actor"
     });
 
-    Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+    foundry.documents.collections.Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
+    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
         types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Item"
@@ -146,7 +146,7 @@ Hooks.once("ready", async function() {
     console.log('glog2d6 | System Ready');
 
     // Preload templates
-    await loadTemplates([
+    await foundry.applications.handlebars.loadTemplates([
         // sheets
         "systems/glog2d6/templates/actor/actor-character-sheet.hbs",
         "systems/glog2d6/templates/actor/actor-npc-sheet.hbs",
@@ -163,19 +163,19 @@ Hooks.once("ready", async function() {
 
     // Register partials
     Handlebars.registerPartial('character-header',
-        await getTemplate('systems/glog2d6/templates/actor/character-header.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/character-header.hbs'));
     Handlebars.registerPartial('character-stats',
-        await getTemplate('systems/glog2d6/templates/actor/character-stats.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/character-stats.hbs'));
     Handlebars.registerPartial('character-tabs',
-        await getTemplate('systems/glog2d6/templates/actor/character-tabs.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/character-tabs.hbs'));
     Handlebars.registerPartial('inventory-tab',
-        await getTemplate('systems/glog2d6/templates/actor/inventory-tab.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/inventory-tab.hbs'));
     Handlebars.registerPartial('features-tab',
-        await getTemplate('systems/glog2d6/templates/actor/features-tab.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/features-tab.hbs'));
     Handlebars.registerPartial('spells-tab',
-        await getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
     Handlebars.registerPartial('wounds-tab',
-        await getTemplate('systems/glog2d6/templates/actor/wounds-tab.hbs'));
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/wounds-tab.hbs'));
 
     setupGlobalUtils();
 
@@ -214,27 +214,31 @@ Hooks.once("ready", async function() {
     }
 });
 
-Hooks.on('renderChatLog', (chatLog, html) => {
-    if (!game.user.isGM) return;
+// Replace your renderChatLog hook with this V13-compatible version:
+Hooks.on('renderSidebarTab', (app, html) => {
+   if (app.tabName !== 'chat' || !game.user.isGM) return;
 
-    // Make sure we don't add multiple buttons
-    if (html.find('#recon-chat-btn').length) return;
+   // Convert to jQuery if needed
+   const $html = html instanceof jQuery ? html : $(html);
 
-    const reconBtn = $(`
-        <a id="recon-chat-btn" class="chat-control-icon" title="Recon Check" style="margin-left: 4px;">
-            <i class="fas fa-search"></i>
-        </a>
-    `);
+   // Make sure we don't add multiple buttons
+   if ($html.find('#recon-chat-btn').length) return;
 
-    reconBtn.click(() => {
-        import("./module/dialogs/recon-dialog.mjs").then(({ ReconDialog }) => {
-            new ReconDialog().render(true);
-        });
-    });
+   const reconBtn = $(`
+       <a id="recon-chat-btn" class="chat-control-icon" title="Recon Check" style="margin-left: 4px;">
+           <i class="fas fa-search"></i>
+       </a>
+   `);
 
-    // Add some spacing and prevent overlap
-    html.find('#chat-controls').css('gap', '2px');
-    html.find('#chat-controls .chat-control-icon').last().after(reconBtn);
+   reconBtn.click(() => {
+       import("./module/dialogs/recon-dialog.mjs").then(({ ReconDialog }) => {
+           new ReconDialog().render(true);
+       });
+   });
+
+   // Add some spacing and prevent overlap
+   $html.find('#chat-controls').css('gap', '2px');
+   $html.find('#chat-controls .chat-control-icon').last().after(reconBtn);
 });
 
 // GM Chat Commands

@@ -89,7 +89,7 @@ export class ReconSystem {
         if (recon.messageId) {
             await game.messages.get(recon.messageId)?.update({ content });
         } else {
-            const msg = await ChatMessage.create({ content, flags: { glog2d6: { reconRequest: recon.id }}});
+            const msg = await ChatMessage.create({ content, flags: { glog2d6: { reconRequest: recon.id } } });
             recon.messageId = msg.id;
         }
     }
@@ -102,29 +102,29 @@ export class ReconSystem {
             `<div class="mb-8">
                 <h4 class="text-bold text-primary">${type}</h4>
                 ${actors.map(r => {
-                    const breakdown = [];
-                    if (r.encounter) breakdown.push(`Encounter: ${r.encounter}`);
-                    if (r.recon) breakdown.push(`Recon: ${r.recon}${r.features.includes('Tracker') ? ' (5-6 success)' : ' (6 success)'}`);
-                    if (r.features.length) breakdown.push(`Features: ${r.features.join(', ')}`);
+                const breakdown = [];
+                if (r.encounter) breakdown.push(`Encounter: ${r.encounter}`);
+                if (r.recon) breakdown.push(`Recon: ${r.recon}${r.features.includes('Tracker') ? ' (5-6 success)' : ' (6 success)'}`);
+                if (r.features.length) breakdown.push(`Features: ${r.features.join(', ')}`);
 
-                    let result = `<div class="mb-4">
+                let result = `<div class="mb-4">
                         <strong>${r.actorName}:</strong> [${breakdown.join(', ')}]`;
 
-                    if (r.success && ['Active Encounter', 'Passive Encounter'].includes(r.encounterType)) {
-                        result += `<br><span class="text-success text-bold">• Surprise gained!</span>`;
-                    }
-                    if (r.success && r.encounterType === 'Nothing') {
-                        result += `<br><span class="text-primary">• Footprints found</span>`;
-                    }
-                    if (r.effects.includes('Stalker: Ambush +1')) {
-                        result += `<br><span class="text-muted">• Ambush resistance improved</span>`;
-                    }
-                    if (r.effects.includes('Danger Sense: Ambush +1')) {
-                        result += `<br><span class="text-muted">• Danger Sense: Ambush resistance improved</span>`;
-                    }
+                if (r.success && ['Active Encounter', 'Passive Encounter'].includes(r.encounterType)) {
+                    result += `<br><span class="text-success text-bold">• Surprise gained!</span>`;
+                }
+                if (r.success && r.encounterType === 'Nothing') {
+                    result += `<br><span class="text-primary">• Footprints found</span>`;
+                }
+                if (r.effects.includes('Stalker: Ambush +1')) {
+                    result += `<br><span class="text-muted">• Ambush resistance improved</span>`;
+                }
+                if (r.effects.includes('Danger Sense: Ambush +1')) {
+                    result += `<br><span class="text-muted">• Danger Sense: Ambush resistance improved</span>`;
+                }
 
-                    return result + `</div>`;
-                }).join('')}
+                return result + `</div>`;
+            }).join('')}
             </div>`
         ).join('');
 
@@ -184,9 +184,14 @@ export function initReconSystem() {
     }
 
     // Add recon button to scene controls for GMs
+    // Add recon button to scene controls for GMs
     Hooks.on('getSceneControlButtons', controls => {
+        console.log('controls type:', typeof controls);
+        console.log('controls:', controls);
+        console.log('is array:', Array.isArray(controls));
         if (!game.user.isGM) return;
 
+        // controls is an array, not jQuery - use Array.find()
         const tokenControls = controls.find(c => c.name === 'token');
         if (tokenControls) {
             tokenControls.tools.push({

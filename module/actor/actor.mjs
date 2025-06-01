@@ -203,9 +203,9 @@ export class GLOG2D6Actor extends Actor {
     }
 
     // Chat message helper
-    _createRollChatMessage(title, roll, extraContent = '') {
+    async _createRollChatMessage(title, roll, extraContent = '') {
         const chatMessageBuilder = new RollChatMessageBuilder(this, title, roll, extraContent);
-        return chatMessageBuilder.createAndSend();
+        return await chatMessageBuilder.createAndSend();
     }
 
     // Dice result extraction helper
@@ -275,21 +275,24 @@ class RollChatMessageBuilder {
         this.extraContent = extraContent;
     }
 
-    createAndSend() {
+    async createAndSend() {
         const content = this.buildContent();
         this.handleSpecialRollEffects();
 
-        return ChatMessage.create({
+        const message = await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this.actor }),
             content: content,
             roll: this.roll
         });
+
+        return message;
     }
 
     buildContent() {
         const rollDisplay = this.parseRollDisplay();
         const specialEffectsHtml = this.buildSpecialEffectsHtml();
         const breakageButtonHtml = this.buildBreakageButtonHtml();
+        const safeExtraContent = this.extraContent || "";
 
         return `
         <div class="glog2d6-roll">
@@ -297,7 +300,7 @@ class RollChatMessageBuilder {
             <div class="roll-result">
                 <strong>Roll:</strong> ${rollDisplay}<br>
                 <strong>Total:</strong> ${this.roll.total}
-                ${this.extraContent}
+                ${safeExtraContent}
                 ${specialEffectsHtml}
                 ${breakageButtonHtml}
             </div>

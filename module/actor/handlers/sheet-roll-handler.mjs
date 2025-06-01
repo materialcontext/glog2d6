@@ -8,6 +8,11 @@ export class SheetRollHandler {
 
     async handleAttributeRoll(event) {
         event.preventDefault();
+
+        if (this.actor.getFlag("glog2d6", "editMode") === true) {
+            return;
+        }
+
         const attributeKey = this.extractAttributeFromElement(event.currentTarget);
         const defaultTargetNumber = 7;
 

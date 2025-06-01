@@ -2,10 +2,10 @@
     "id": "glog2d6",
     "title": "GLOG 2d6",
     "description": "A minimal 2d6-based system for Foundry VTT",
-    "version": "1.0.01",
+    "version": "1.0.02",
     "compatibility": {
-        "minimum": "12",
-        "verified": "12"
+        "minimum": "11",
+        "verified": "13"
     },
     "authors": [
         {

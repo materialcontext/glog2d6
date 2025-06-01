@@ -1,4 +1,4 @@
-export class GLOG2D6ItemSheet extends ItemSheet {
+export class GLOG2D6ItemSheet extends foundry.appv1.sheets.ActorSheet {
 
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
