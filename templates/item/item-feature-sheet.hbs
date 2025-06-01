@@ -64,14 +64,22 @@
             </div>
         </div>
 
+        {{#if (or (contains name "Reputation for") (contains name "reputation for"))}}
         <div class="form-group flex flex-col flex-gap-2 mt-15">
-            <label for="system.prerequisites" class="text-small text-bold text-upper text-muted">Prerequisites</label>
-            <input type="text" name="system.prerequisites" value="{{system.prerequisites}}"
-                placeholder="e.g., Fighter Template A, Level 3" class="input" />
+            <label for="system.reputationType" class="text-small text-bold text-upper text-muted">Reputation
+                Type</label>
+            <select name="system.reputationType" class="input">
+                {{#select system.reputationType}}
+                <option value="">Select a reputation...</option>
+                {{#each (getReputations) as |rep|}}
+                <option value="{{rep.name}}">{{rep.name}} - {{rep.description}}</option>
+                {{/each}}
+                {{/select}}
+            </select>
         </div>
-
+        {{/if}}
         <div class="form-group flex flex-col flex-gap-2 mt-15">
-        i    <label for="system.description" class="text-small text-bold text-upper text-muted">Description</label>
+            i <label for="system.description" class="text-small text-bold text-upper text-muted">Description</label>
             <textarea name="system.description" rows="12" class="input">{{system.description}}</textarea>
         </div>
 

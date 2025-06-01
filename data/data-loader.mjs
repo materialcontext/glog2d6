@@ -116,6 +116,19 @@ async function loadSystemData() {
 
     // Load spells from multiple files
     await loadSpellData();
+    await loadReputationData();
+}
+
+export async function loadReputationData() {
+    try {
+        const response = await fetch("systems/glog2d6/data/reputations.json");
+        const data = await response.json();
+        CONFIG.GLOG.REPUTATIONS = data;
+        console.log('glog2d6 | Loaded reputation data');
+    } catch (error) {
+        console.error('glog2d6 | Failed to load reputation data:', error);
+        CONFIG.GLOG.REPUTATIONS = { reputations: [] };
+    }
 }
 
 async function loadSpellData() {

@@ -246,7 +246,8 @@
             "template": "level-0",
             "level": 1,
             "active": true,
-            "prerequisites": ""
+            "prerequisites": "",
+            "reputationType": ""
         },
         "spell": {
             "description": "",

@@ -183,7 +183,7 @@ class TraumaSaveRoller {
         const roll = this.actor.createRoll("2d6 + @con + @trauma + @custom", rollData, 'trauma');
         await roll.evaluate();
 
-        const success = roll.total >= 7;
+        const success = roll.total >= 10;
         const chatMessage = await this._createChatMessage(roll, success);
 
         if (!success) {
@@ -225,7 +225,7 @@ class TraumaSaveRoller {
                 <div class="p-8 section mb-8" style="background: linear-gradient(135deg, #fff8f8 0%, white 100%);">
                     <div class="text-small mb-4"><strong>Roll:</strong> ${this._formatRollDisplay(roll)}</div>
                     <div class="text-small mb-4"><strong>Total:</strong> ${roll.total}</div>
-                    <div class="text-small mb-4"><strong>Target:</strong> 7</div>
+                    <div class="text-small mb-4"><strong>Target:</strong> 10</div>
                     <div class="text-small mb-4"><strong>Result:</strong> <span class="${resultClass} text-bold">${resultText}</span></div>
                     <div class="text-small"><strong>Excess Damage:</strong> ${this.excessDamage}</div>
                     ${breakdown}

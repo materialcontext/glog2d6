@@ -19,8 +19,8 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ["glog2d6", "sheet", "actor"],
-            width: 520,
-            height: 760,
+            width: 600,
+            height: 1050,
             tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "inventory" }]
         });
     }
@@ -85,6 +85,20 @@ export class GLOG2D6ActorSheet extends ActorSheet {
         return this.actionMap.executeAction(action, event);
     }
 
+    async handleFeatureRoll(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const featureName = event.currentTarget.dataset.featureName;
+
+        if (!this.featureRollHandler) {
+            const { FeatureRollHandler } = await import('./handlers/feature-roll-handler.mjs');
+            this.featureRollHandler = new FeatureRollHandler(this.actor);
+        }
+
+        await this.featureRollHandler.rollFeature(featureName);
+    }
+
     async handleGenericAction(event) {
         event.preventDefault();
         const action = event.currentTarget.dataset.action;
@@ -116,9 +130,38 @@ export class GLOG2D6ActorSheet extends ActorSheet {
     }
 
     async handleFeatureToggle(event) {
-        return toggleFeature(this, event);
+        return displayFeature(this, event);
+        // return toggleFeature(this, event);
+        //  move ^ this ^ later when you want to use it
     }
 
+    async handleReputationSelect(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const itemId = event.currentTarget.dataset.itemId;
+        const reputationType = event.currentTarget.value;
+
+        const item = this.actor.items.get(itemId);
+        if (item && reputationType) {
+            await item.update({ "system.reputationType": reputationType });
+            this.render(false);
+        }
+    }
+
+    async rollFeature(featureName) {
+        const config = this.rollConfigs[featureName];
+        if (!config) {
+            ui.notifications.warn(`No roll configuration for ${featureName}`);
+            return;
+        }
+
+        if (config.dialog) {
+            return this.openAttributeDialog(featureName);
+        }
+
+        return this.executeRoll(featureName, config);
+    }
     async handleTorchToggle(event) {
         const result = await toggleTorch(this.actor, event);
         if (result.ok) this.render();
@@ -199,6 +242,27 @@ export class GLOG2D6ActorSheet extends ActorSheet {
 
     async handleItemDelete(event) {
         return this.itemManager.handleItemDelete(event);
+    }
+
+    async handleHeal(event) {
+        event.preventDefault();
+
+        try {
+            const healResult = await this.actor.heal();
+            this.notifyHealResult(healResult);
+            this.render(false);
+        } catch (error) {
+            console.error("Error during healing:", error);
+            ui.notifications.error("Failed to heal: " + error.message);
+        }
+    }
+
+    notifyHealResult(healResult) {
+        if (healResult.healed > 0) {
+            ui.notifications.info(`${this.actor.name} heals ${healResult.healed} HP!`);
+        } else {
+            ui.notifications.info(`${this.actor.name} is already at full health.`);
+        }
     }
 
     // Spell casting

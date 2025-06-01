@@ -1,4 +1,5 @@
-// module/actor/systems/actor-combat-system.mjs
+import { BreakageCalculator } from "../systems/breakage-calculator.mjs";
+
 export class ActorCombatSystem {
     constructor(actor) {
         this.actor = actor;

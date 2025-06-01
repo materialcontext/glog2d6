@@ -106,6 +106,39 @@ async function addClassFeaturesEnhanced(sheet, className, currentLevel) {
     }
 }
 
+async function displayFeature(sheet, event) {
+    event.preventDefault();
+    const itemId = event.currentTarget.dataset.itemId;
+    const feature = sheet.actor.items.get(itemId);
+
+    if (feature) {
+        await sendFeatureChatMessage(feature, sheet.actor);
+    }
+}
+
+async function sendFeatureChatMessage(feature, actor) {
+    const content = `
+        <div class="glog2d6-roll">
+            <h3>${actor.name} - ${feature.name}</h3>
+            <div class="roll-result">
+                <div class="feature-info">
+                    ${feature.system.classSource ? `<strong>Class:</strong> ${feature.system.classSource}<br>` : ''}
+                    ${feature.system.template ? `<strong>Template:</strong> ${feature.system.template}<br>` : ''}
+                    ${feature.system.level ? `<strong>Level:</strong> ${feature.system.level}<br>` : ''}
+                    <br>
+                    <strong>Description:</strong><br>
+                    ${feature.system.description || 'No description available.'}
+                </div>
+            </div>
+        </div>
+    `;
+
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: actor }),
+        content: content
+    });
+}
+
 /**
  * Toggle feature active state when clicked
  */
@@ -213,6 +246,7 @@ export {
     addClassFeatures,
     addClassFeaturesEnhanced,
     toggleFeature,
+    displayFeature,
     hasAvailableClassFeatures,
     createFeatureData,
     getFeatureIcon

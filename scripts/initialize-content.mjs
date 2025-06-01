@@ -60,6 +60,10 @@ export async function createDefaultFolders() {
             await createWoundsTable();
         }
 
+        if (CONFIG.GLOG.REPUTATIONS) {
+            await createReputationsTable();
+        }
+
         // Create items from data files
         await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id, classFolders);
 
@@ -76,6 +80,46 @@ export async function createDefaultFolders() {
         console.error('glog2d6 | Error creating default folders:', error);
         ui.notifications.error("Failed to create default folders: " + error.message);
     }
+}
+
+async function createReputationsTable() {
+    // Check if reputations table already exists
+    const existingTable = game.tables.find(t => t.name === "GLOG Reputations Table");
+    if (existingTable) {
+        console.log('glog2d6 | Reputations table already exists');
+        return existingTable;
+    }
+
+    console.log('glog2d6 | Creating reputations roll table...');
+
+    const reputationsData = CONFIG.GLOG.REPUTATIONS?.reputations || [];
+    if (reputationsData.length === 0) {
+        console.warn('glog2d6 | No reputations data available for table creation');
+        return;
+    }
+
+    // Create table results
+    const results = reputationsData.map((reputation) => ({
+        type: CONST.TABLE_RESULT_TYPES.TEXT,
+        text: `${reputation.name}: ${reputation.description}`,
+        weight: 1,
+        range: [reputation.id, reputation.id],
+        drawn: false
+    }));
+
+    // Create the roll table
+    const tableData = {
+        name: "GLOG Reputations Table",
+        formula: `1d${reputationsData.length}`,
+        replacement: false,
+        displayRoll: true,
+        results: results,
+        folder: null
+    };
+
+    const reputationsTable = await RollTable.create(tableData);
+    console.log('glog2d6 | Created reputations roll table with', results.length, 'entries');
+    return reputationsTable;
 }
 
 // Rest of the file remains the same...
@@ -297,6 +341,46 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
     } else {
         console.warn('glog2d6 | No items to create');
     }
+}
+
+async function createReputationsTable() {
+    // Check if reputations table already exists
+    const existingTable = game.tables.find(t => t.name === "GLOG Reputations Table");
+    if (existingTable) {
+        console.log('glog2d6 | Reputations table already exists');
+        return existingTable;
+    }
+
+    console.log('glog2d6 | Creating reputations roll table...');
+
+    const reputationsData = CONFIG.GLOG.REPUTATIONS?.reputations || [];
+    if (reputationsData.length === 0) {
+        console.warn('glog2d6 | No reputations data available for table creation');
+        return;
+    }
+
+    // Create table results
+    const results = reputationsData.map((reputation, index) => ({
+        type: CONST.TABLE_RESULT_TYPES.TEXT,
+        text: `${reputation.name}: ${reputation.description}`,
+        weight: 1,
+        range: [index + 1, index + 1],
+        drawn: false
+    }));
+
+    // Create the roll table
+    const tableData = {
+        name: "GLOG Reputations Table",
+        formula: `1d${reputationsData.length}`,
+        replacement: false,
+        displayRoll: true,
+        results: results,
+        folder: null
+    };
+
+    const reputationsTable = await RollTable.create(tableData);
+    console.log('glog2d6 | Created reputations roll table with', results.length, 'entries');
+    return reputationsTable;
 }
 
 /**

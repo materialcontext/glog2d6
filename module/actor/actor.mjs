@@ -163,6 +163,45 @@ export class GLOG2D6Actor extends Actor {
         return effectsAnalyzer.getEffects();
     }
 
+    async heal() {
+        const healRoll = new Roll("1d6");
+        await healRoll.evaluate();
+
+        const currentHP = this.system.hp.value;
+        const maxHP = this.system.hp.max;
+        const healAmount = healRoll.total;
+
+        const newHP = Math.min(currentHP + healAmount, maxHP);
+        const actualHealed = newHP - currentHP;
+
+        if (actualHealed > 0) {
+            await this.update({ "system.hp.value": newHP });
+
+            // Send chat message
+            await this._createHealChatMessage(healRoll, actualHealed);
+        }
+
+        return { healed: actualHealed, rolled: healAmount };
+    }
+
+    async _createHealChatMessage(roll, actualHealed) {
+        const content = `
+        <div class="glog2d6-roll">
+            <h3>${this.name} - Healing</h3>
+            <div class="roll-result">
+                <strong>Roll:</strong> [${roll.terms[0].results.map(r => r.result).join(', ')}]<br>
+                <strong>Healed:</strong> ${actualHealed} HP
+            </div>
+        </div>
+    `;
+
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: content,
+            roll: roll
+        });
+    }
+
     // Chat message helper
     _createRollChatMessage(title, roll, extraContent = '') {
         const chatMessageBuilder = new RollChatMessageBuilder(this, title, roll, extraContent);
@@ -304,14 +343,18 @@ class RollChatMessageBuilder {
 
     parseRollDisplay() {
         const parts = [];
+        let totalBonus = 0;
+
         for (const term of this.roll.terms || []) {
             if (Array.isArray(term.results)) {
                 parts.push(`[${term.results.map(r => r.result).join(', ')}]`);
             } else if (term.number !== undefined && term.operator) {
-                parts.push(`${term.operator}${Math.abs(term.number)}`);
+                totalBonus += term.operator === '+' ? term.number : -term.number;
             }
         }
-        return parts.join(' ') || this.roll.formula || this.roll.result;
+
+        const diceDisplay = parts.join(' ');
+        return totalBonus !== 0 ? `${diceDisplay} + ${totalBonus}` : diceDisplay;
     }
 
     buildSpecialEffectsHtml() {

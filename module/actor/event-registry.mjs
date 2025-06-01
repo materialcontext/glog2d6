@@ -13,6 +13,7 @@ export class EventHandlerRegistry {
             { selector: '.combat-card.clickable', event: 'click', handler: 'handleCombatAction' },
             { selector: '.action-card.clickable', event: 'click', handler: 'handleGenericAction' },
             { selector: '.movement-display.clickable', event: 'click', handler: '_onMovementRoll' },
+            { selector: '.heal-btn', event: 'click', handler: 'handleHeal' },
 
             // Item interactions
             { selector: '.weapon-attack-btn', event: 'click', handler: '_onWeaponAttack' },
@@ -38,6 +39,12 @@ export class EventHandlerRegistry {
             { selector: '.trauma-save-btn', event: 'click', handler: 'handleTraumaSave' },
             { selector: '.remove-wound-btn', event: 'click', handler: 'handleRemoveWound' },
             { selector: '.remove-wound-btn', event: 'click', handler: 'handleRemoveWound' },
+
+            // rollable featues
+            { selector: '.feature-roll-btn', event: 'click', handler: 'handleFeatureRoll' },
+
+            // reputation
+            { selector: '.reputation-select', event: 'change', handler: 'handleReputationSelect' },
         ];
     }
 

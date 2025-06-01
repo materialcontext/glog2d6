@@ -32,6 +32,22 @@
                 <div class="feature-header flex flex-between mb-8">
                     <div class="feature-name text-bold text-primary flex flex-center flex-gap-4">
                         {{item.name}}
+                        {{#unless ../editMode}}
+                        {{#if (or (hasFeatureRoll item.name) (and (contains item.name "Reputation for")
+                        item.system.reputationType))}}
+                        <button type="button" class="feature-roll-btn btn btn-primary p-2 text-small"
+                            data-item-id="{{item.id}}" data-feature-name="{{item.name}}" title="Roll {{item.name}}">
+                            <i class="fas fa-dice"></i>
+                        </button>
+                        {{/if}}
+                        {{/unless}}
+                        {{#if (hasFeatureTip item.name)}}
+                        <span class="feature-info-btn btn btn-secondary p-2 text-small"
+                            style="border-radius: 50%; width: 16px; height: 16px; font-size: 8px;"
+                            title="{{getFeatureTip item.name}}">
+                            <i class="fas fa-info"></i>
+                        </span>
+                        {{/if}}
                         {{#if (or (eq item.name "Tracker") (eq item.name "Stalker") (eq item.name "Danger Sense"))}}
                         <span class="btn btn-primary p-2 text-small"
                             style="border-radius: 50%; width: 16px; height: 16px; font-size: 8px;"
@@ -56,7 +72,31 @@
                     {{/if}}
                 </div>
 
-                <div class="feature-description text-small">{{item.system.description}}</div>
+                {{#if (and (contains item.name "Reputation for") (not ../editMode))}}
+                {{#unless item.system.reputationType}}
+                <div class="reputation-selection mb-8 p-6 section bg-danger-light">
+                    <div class="flex flex-between flex-center">
+                        <span class="text-small text-bold">Select your reputation:</span>
+                        <select class="reputation-select input text-small" data-item-id="{{item.id}}"
+                            onclick="event.stopPropagation();" onmousedown="event.stopPropagation();">
+                            <option value="">Choose...</option>
+                            {{#each (getReputations) as |rep|}}
+                            <option value="{{rep.name}}">{{rep.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+                {{/unless}}
+                {{/if}}
+
+                <div class="feature-description text-md">
+                    {{#if (and (contains item.name "Reputation for") item.system.reputationType)}}
+                    <strong>Reputation for {{item.system.reputationType}}:</strong>
+                    {{lookup (getReputationDescription item.system.reputationType) "description"}}
+                    <br><br>
+                    {{/if}}
+                    {{item.system.description}}
+                </div>
             </div>
             {{/if}}
             {{else}}

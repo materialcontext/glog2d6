@@ -212,10 +212,6 @@ export class ActorRolls {
     _buildAttackFormula(context, baseStats) {
         let formula = "2d6 + @atk + @bonus + @dual";
 
-        if (context.bonuses.useStr) {
-            formula += " + @str";
-        }
-
         if (context.bonuses.useArchery) {
             formula += " + @archery";
         }
@@ -233,7 +229,6 @@ export class ActorRolls {
             atk: baseStats.atkValue,
             bonus: baseStats.atkBonus,
             dual: baseStats.dualWieldBonus,
-            str: context.bonuses.useStr ? baseStats.strMod : 0,
             archery: context.bonuses.useArchery ? baseStats.archeryBonus : 0,
             penalty: context.bonuses.penalty || 0
         };

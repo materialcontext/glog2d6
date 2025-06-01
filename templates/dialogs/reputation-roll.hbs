@@ -1,0 +1,32 @@
+<form autocomplete="off">
+    <div class="form-group flex flex-col flex-gap-2 mb-15">
+        <label class="text-small text-bold text-upper text-muted">{{featureName}} Roll</label>
+        <p class="text-small text-muted">Choose the type of roll for your reputation:</p>
+    </div>
+
+    <div class="grid-2 flex-gap-8 mb-15">
+        <label class="flex flex-center flex-gap-4 p-8 section clickable">
+            <input type="radio" name="rollType" value="reaction" checked>
+            <div class="flex flex-col flex-center">
+                <span class="text-bold">Reaction Roll</span>
+                <span class="text-small text-muted">CHA {{numberFormat chaMod decimals=0 sign=true}}{{#if reactionBonus}} + {{reactionBonus}}{{/if}}</span>
+            </div>
+        </label>
+
+        <label class="flex flex-center flex-gap-4 p-8 section clickable">
+            <input type="radio" name="rollType" value="diplomacy">
+            <div class="flex flex-col flex-center">
+                <span class="text-bold">Charisma Check</span>
+                <span class="text-small text-muted">CHA {{numberFormat chaMod decimals=0 sign=true}}{{#if diplomacyBonus}} + {{diplomacyBonus}}{{/if}}</span>
+            </div>
+        </label>
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2 mb-15">
+        <label class="text-small text-muted">Remember to apply reputation modifiers:</label>
+        <ul class="text-small text-muted" style="margin: 0; padding-left: 16px;">
+            <li><strong>Reaction Roll:</strong> General social interactions</li>
+            <li><strong>Charisma Check:</strong> Specific persuasion attempts</li>
+        </ul>
+    </div>
+</form>

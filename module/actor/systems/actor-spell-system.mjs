@@ -102,14 +102,39 @@ class SpellResultMessageBuilder {
         const { results, exhausted, returned, total, newCurrent } = this.magicDiceResult;
         const maxMD = this.actor.system.magicDiceMax;
 
+        // Check for mishaps and dooms
+        const warnings = this.checkForMishapsAndDooms(results);
+        const warningHtml = warnings.length > 0 ?
+            `<div class="spell-warning text-danger text-bold">${warnings.join(' ')}</div>` : '';
+
         return `
-            <div class="magic-dice-result">
-                <strong>Magic Dice:</strong> [${results.join(', ')}] = ${total}<br>
-                <strong>Dice Exhausted:</strong> ${exhausted} (rolled 4-6)<br>
-                <strong>Dice Returned:</strong> ${returned} (rolled 1-3)<br>
-                <strong>Remaining MD:</strong> ${newCurrent}/${maxMD}
-            </div>
-        `;
+        <div class="magic-dice-result">
+            <strong>Magic Dice:</strong> [${results.join(', ')}] = ${total}<br>
+            <strong>Dice Exhausted:</strong> ${exhausted} (rolled 4-6)<br>
+            <strong>Dice Returned:</strong> ${returned} (rolled 1-3)<br>
+            <strong>Remaining MD:</strong> ${newCurrent}/${maxMD}
+            ${warningHtml}
+        </div>
+    `;
+    }
+
+    checkForMishapsAndDooms(results) {
+        const warnings = [];
+        const counts = {};
+
+        // Count occurrences of each die result
+        results.forEach(result => {
+            counts[result] = (counts[result] || 0) + 1;
+        });
+
+        // Check for dooms (3+ of same number) first, then mishaps (2+ of same number)
+        for (const [value, count] of Object.entries(counts)) {
+            if (count >= 4) warnings.push('🔥 QUAD DOOM! 🔥');
+            else if (count >= 3) warnings.push('💀 DOOM! 💀');
+            else if (count >= 2) warnings.push('⚠️ MISHAP! ⚠️');
+        }
+
+        return warnings;
     }
 
     buildSpellEffectSection() {

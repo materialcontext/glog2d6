@@ -59,6 +59,31 @@ Hooks.once('init', async function() {
         return result;
     });
 
+    Handlebars.registerHelper('contains', function(str, substring) {
+        return str && str.toLowerCase().includes(substring.toLowerCase());
+    });
+
+    Handlebars.registerHelper('getReputations', function() {
+        return CONFIG.GLOG?.REPUTATIONS?.reputations || [];
+    });
+
+    Handlebars.registerHelper('getReputationDescription', function(reputationType) {
+        const reputations = CONFIG.GLOG?.REPUTATIONS?.reputations || [];
+        return reputations.find(rep => rep.name === reputationType) || {};
+    });
+
+    Handlebars.registerHelper('hasFeatureTip', function(featureName) {
+        const tippedFeatures = ['Barbarian Heritage'];
+        return tippedFeatures.includes(featureName);
+    });
+
+    Handlebars.registerHelper('getFeatureTip', function(featureName) {
+        const tips = {
+            'Barbarian Heritage': 'Choose one exotic weapon and set its Attack Penalty to -1 to represent your +1 exotic weapon bonus.'
+        };
+        return tips[featureName] || '';
+    });
+
     // Register sheet application classes
     Actors.unregisterSheet("core", ActorSheet);
     Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
@@ -286,6 +311,19 @@ Hooks.on("renderChatMessage", (message, html) => {
         } else {
             ui.notifications.error("Actor or method not found!");
         }
+    });
+
+    Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
+        const rollableFeatures = [
+            'Nimble', 'Escape Artist', 'Poisoner', 'At the Gates',
+            'Tough', 'Courtly Education', 'Welcome Guest', 'Never Forget a Face',
+            'Trapper', 'Thievery Training', 'Well-Planned Heist', 'Black Market Gossip',
+            'Ancient Tongues'
+        ];
+
+        // check for any version of "Reputation for..."
+        const hasReputation = featureName.toLowerCase().includes('reputation for');
+        return rollableFeatures.includes(featureName) || hasReputation;
     });
 
     html.find('.damage-roll-btn').click(async (event) => {
