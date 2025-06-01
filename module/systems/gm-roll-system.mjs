@@ -150,8 +150,10 @@ export function initGMRolls() {
         });
     }
 
-    Hooks.on("renderChatMessage", (msg, html) => {
-        html.find('.gm-roll-btn').click(async e => {
+    Hooks.on("renderChatMessageHTML", (msg, html) => {
+        const $html = $(html);
+
+        $html.find('.gm-roll-btn').click(async e => {
             e.preventDefault();
             const {rollId, actorId} = e.currentTarget.dataset;
             try {

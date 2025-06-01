@@ -244,24 +244,19 @@ export class ActorRolls {
 
     // Private helper: Build chat message content
     _buildAttackChatContent(attackData) {
+        const bonuses = [
+            { key: 'atk', label: 'Base attack', value: attackData.data.atk },
+            { key: 'bonus', label: 'Attack bonus', value: attackData.data.bonus },
+            { key: 'dual', label: 'Dual wielding', value: attackData.data.dual },
+            { key: 'archery', label: 'Archery bonus', value: attackData.data.archery }
+        ].filter(b => b.value > 0)
+            .map(b => `${b.label}: +${b.value}`)
+            .join(', ');
+
         const parts = [];
+        if (bonuses) parts.push(`<br><small>${bonuses}</small>`);
 
-        // Dual wield bonus
-        if (attackData.data.dual > 0) {
-            parts.push(`<br><small>Dual wielding: +${attackData.data.dual}</small>`);
-        }
-
-        // Attack bonus breakdown
-        if (attackData.data.bonus > 0) {
-            parts.push(`<br><small>Attack bonus: +${attackData.data.bonus}</small>`);
-        }
-
-        // Archery bonus
-        if (attackData.data.archery > 0) {
-            parts.push(`<br><small>Archery bonus: +${attackData.data.archery}</small>`);
-        }
-
-        // Damage info
+        // Damage and buttons
         const damageText = attackData.damageFormula === "0" ? "Base damage only" :
             `${attackData.damageFormula} + base damage`;
         parts.push(`<br><small>Damage: ${damageText}</small>`);
@@ -419,13 +414,13 @@ export class ActorRolls {
         const sneakBonus = this.actor.system.skills?.sneak?.bonus || 0;
         const roll = this.actor.createRoll("2d6 + @dex + @sneak", {
             dex: dexMod,
-            stealth: stealthBonus
+            sneak: sneakBonus
         }, 'stealth');
         await roll.evaluate();
 
         let extraContent = '';
-        if (stealthBonus > 0) {
-            extraContent = `<br><small>Stealth bonus: +${sneakBonus}</small>`;
+        if (sneakBonus > 0) {
+            extraContent = `<br><small>Sneak bonus: +${sneakBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(
@@ -442,13 +437,13 @@ export class ActorRolls {
         const hideBonus = this.actor.system.skills?.hide?.bonus || 0;
         const roll = this.actor.createRoll("2d6 + @wis + @hide", {
             wis: wisMod,
-            stealth: stealthBonus
+            hide: hideBonus
         }, 'stealth');
         await roll.evaluate();
 
         let extraContent = '';
-        if (stealthBonus > 0) {
-            extraContent = `<br><small>Stealth bonus: +${hideBonus}</small>`;
+        if (hideBonus > 0) {
+            extraContent = `<br><small>Hide bonus: +${hideBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(
@@ -465,12 +460,12 @@ export class ActorRolls {
         const disguiseBonus = this.actor.system.skills?.disguise?.bonus || 0;
         const roll = this.actor.createRoll("2d6 + @int + @stealth", {
             int: intMod,
-            stealth: stealthBonus
+            disguise: disguiseBonus
         }, 'stealth');
         await roll.evaluate();
 
         let extraContent = '';
-        if (stealthBonus > 0) {
+        if (disguiseBonus > 0) {
             extraContent = `<br><small>Stealth bonus: +${disguiseBonus}</small>`;
         }
 
@@ -488,7 +483,7 @@ export class ActorRolls {
         const reactionBonus = this.actor.system.skills?.reaction?.bonus || 0;
         const roll = this.actor.createRoll("2d6 + @reaction", {
             reaction: reactionBonus
-        }, 'social');
+        }, 'reaction');
         await roll.evaluate();
 
         let extraContent = '';
@@ -511,8 +506,8 @@ export class ActorRolls {
         await roll.evaluate();
 
         let extraContent = '';
-        if (reactionBonus > 0) {
-            extraContent = `<br><small>Reaction bonus: +${reactionBonus}</small>`;
+        if (diplomacyBonus > 0) {
+            extraContent = `<br><small>Diplomacy bonus: +${reactionBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(
@@ -531,8 +526,8 @@ export class ActorRolls {
         await roll.evaluate();
 
         let extraContent = '';
-        if (reactionBonus > 0) {
-            extraContent = `<br><small>Reaction bonus: +${intimidateBonus}</small>`;
+        if (intimidateBonus > 0) {
+            extraContent = `<br><small>Intimidate bonus: +${intimidateBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(

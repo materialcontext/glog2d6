@@ -10,11 +10,13 @@ export class FeatureRollHandler {
         return {
             'Nimble': {
                 dialog: true,
-                description: 'Nimble maneuver'
+                description: 'Nimble maneuver',
+                localBonus: 1
             },
             'Escape Artist': {
                 dialog: true,
-                description: 'Escape attempt'
+                description: 'Escape attempt',
+                localBonus: 2
             },
             'Poisoner': {
                 formula: '2d6 + @int',
@@ -23,16 +25,19 @@ export class FeatureRollHandler {
             },
             'At the Gates': {
                 dialog: true,
-                description: 'Trying to keep you out is foolish'
+                description: 'Trying to keep you out is foolish',
+                localBonus: 1
             },
             'Tough': {
                 formula: '2d6 + @con + 1',
                 attribute: 'con',
-                description: 'Endurance check'
+                description: 'Endurance check',
+                localBonus: 1
             },
             'Courtly Education': {
                 dialog: true,
-                description: 'Courtly knowledge'
+                description: 'Courtly knowledge',
+                localBonus: 1
             },
             'Welcome Guest': {
                 formula: '1d6',
@@ -44,11 +49,13 @@ export class FeatureRollHandler {
             },
             'Trapper': {
                 dialog: true,
-                description: 'Trap knowledge/setting'
+                description: 'Trap knowledge/setting',
+                localBonus: 2
             },
             'Thievery Training': {
                 dialog: true,
-                description: 'Thievery check'
+                description: 'Thievery check',
+                localBonus: 1
             },
             'Well-Planned Heist': {
                 formula: '1d6',
@@ -89,11 +96,19 @@ export class FeatureRollHandler {
         const { ReputationRollDialog } = await import('../../dialogs/reputation-roll-dialog.mjs');
 
         const dialog = new ReputationRollDialog(this.actor, featureName, async (rollType) => {
+            const reputationFeature = this.actor.items.find(i =>
+                i.type === "feature" &&
+                i.system.active &&
+                i.name.includes("Reputation for")
+            );
+
+            const reputationMod = this.getReputationModifier(reputationFeature);
+
             const config = {
-                formula: '2d6 + @attr + @bonus',
-                attribute: rollType === 'reaction' ? 'cha' : 'cha', // Both use CHA
-                skill: rollType, // 'reaction' or 'diplomacy'
-                description: `${featureName} (${rollType === 'reaction' ? 'Reaction' : 'Charisma check'})`
+                formula: rollType === 'reaction' ? '2d6 + @reputation' : '2d6 + @attr + @reputation',
+                attribute: rollType === 'reaction' ? null : 'cha',
+                reputationMod: reputationMod,
+                description: `${featureName} (${rollType === 'reaction' ? 'Reaction' : 'Diplomacy'})`
             };
             await this.executeRoll(featureName, config);
         });
@@ -101,12 +116,24 @@ export class FeatureRollHandler {
         dialog.render(true);
     }
 
+    getReputationModifier(reputationFeature) {
+        if (!reputationFeature?.system.reputationType) return 0;
+
+        // Get reputation data and return modifier
+        const reputations = CONFIG.GLOG?.REPUTATIONS?.reputations || [];
+        const repData = reputations.find(r => r.name === reputationFeature.system.reputationType);
+
+        // Parse the modifier from description (e.g., "+1 bonus" or "-1 penalty")
+        if (repData?.description.includes('+1')) return 1;
+        if (repData?.description.includes('-1')) return -1;
+        return 0;
+    }
+
     async openAttributeDialog(featureName) {
         const dialog = new AttributeSelectionDialog(this.actor, featureName, async (selectedAttribute) => {
             const config = {
                 formula: '2d6 + @attr + @bonus',
                 attribute: selectedAttribute,
-                skill: skill,
                 description: `${featureName} (${selectedAttribute.toUpperCase()})`
             };
             await this.executeRoll(featureName, config);
@@ -116,6 +143,13 @@ export class FeatureRollHandler {
     }
 
     async executeRoll(featureName, config) {
+        const featureConfig = this.rollConfigs[featureName];
+
+        // Add local bonus from feature config
+        if (featureConfig?.localBonus && !config.localBonus) {
+            config.localBonus = featureConfig.localBonus;
+        }
+
         const rollData = this.buildRollData(config);
         const roll = this.actor.createRoll(config.formula, rollData, 'feature');
         await roll.evaluate();
@@ -134,17 +168,13 @@ export class FeatureRollHandler {
     buildRollData(config) {
         const data = {};
 
-        // Add attribute modifier if specified
         if (config.attribute) {
-            data[config.attribute] = this.actor.system.attributes[config.attribute].effectiveMod;
+            data.attr = this.actor.system.attributes[config.attribute].effectiveMod;
+        } else {
+            data.attr = 0;
         }
 
-        // Add skill bonus if applicable
-        if (config.skill && this.actor.system.skills[config.skill]) {
-            data.bonus = this.actor.system.skills[config.skill].bonus || 0;
-        } else {
-            data.bonus = 0;
-        }
+        data.reputation = config.reputationMod || 0;
 
         return data;
     }
@@ -152,11 +182,12 @@ export class FeatureRollHandler {
     buildExtraContent(config, rollData) {
         const parts = [];
 
-        if (config.attribute) {
-            const attrMod = rollData[config.attribute];
-            if (attrMod !== 0) {
-                parts.push(`${config.attribute.toUpperCase()}: ${attrMod >= 0 ? '+' : ''}${attrMod}`);
-            }
+        if (config.attribute && rollData.attr !== 0) {
+            parts.push(`${config.attribute.toUpperCase()}: ${rollData.attr >= 0 ? '+' : ''}${rollData.attr}`);
+        }
+
+        if (rollData.reputation !== 0) {
+            parts.push(`Reputation: ${rollData.reputation >= 0 ? '+' : ''}${rollData.reputation}`);
         }
 
         if (rollData.bonus > 0) {

@@ -183,29 +183,10 @@ export function initReconSystem() {
         };
     }
 
-    // Add recon button to scene controls for GMs
-    // Add recon button to scene controls for GMs
-    Hooks.on('getSceneControlButtons', controls => {
-        console.log('controls type:', typeof controls);
-        console.log('controls:', controls);
-        console.log('is array:', Array.isArray(controls));
-        if (!game.user.isGM) return;
+    Hooks.on("renderChatMessageHTML", (_, html) => {
+        const $html = $(html);
 
-        // controls is an array, not jQuery - use Array.find()
-        const tokenControls = controls.find(c => c.name === 'token');
-        if (tokenControls) {
-            tokenControls.tools.push({
-                name: 'recon',
-                title: 'Quick Recon Check',
-                icon: 'fas fa-search',
-                button: true,
-                onClick: () => game.glog2d6.quickRecon()
-            });
-        }
-    });
-
-    Hooks.on("renderChatMessage", (_, html) => {
-        html.find('[data-recon-id]').click(async e => {
+        $html.find('[data-recon-id]').click(async e => {
             e.preventDefault();
             const { reconId, actorId } = e.currentTarget.dataset;
             try {

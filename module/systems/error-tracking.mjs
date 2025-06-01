@@ -40,7 +40,7 @@ export const ErrorTrackingMixin = {
         const wrappedMethods = new Set();
 
         // Walk up the prototype chain to catch inherited methods
-        while (proto && proto !== ActorSheet.prototype && proto !== Object.prototype) {
+        while (proto && proto !== foundry.appv1.sheets.ActorSheet.prototype && proto !== Object.prototype) {
             Object.getOwnPropertyNames(proto)
                 .filter(name =>
                     name.startsWith('_on') &&
@@ -173,6 +173,7 @@ export const ErrorTrackingMixin = {
         // Add this for getData specifically
         if (errorInfo.method === 'getData') {
             console.log('Actor System:', errorInfo.context.systemData);
+        // Remove the last argument which is the handlebars options object
             console.log('Edit Mode:', errorInfo.context.editMode);
             console.log('Rendered:', errorInfo.context.rendered);
         }

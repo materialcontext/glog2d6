@@ -34,7 +34,6 @@ Hooks.once('init', async function() {
     });
 
     Handlebars.registerHelper('add', function(...args) {
-        // Remove the last argument which is the handlebars options object
         const numbers = args.slice(0, -1);
         return numbers.reduce((sum, num) => sum + (num || 0), 0);
     });
@@ -214,7 +213,6 @@ Hooks.once("ready", async function() {
     }
 });
 
-// Replace your renderChatLog hook with this V13-compatible version:
 Hooks.on('renderSidebarTab', (app, html) => {
    if (app.tabName !== 'chat' || !game.user.isGM) return;
 
@@ -251,8 +249,10 @@ Hooks.on("chatMessage", (log, msg) => {
     }
 });
 
-Hooks.on("renderChatMessage", (message, html) => {
-    html.find('.magic-die-btn').click(async (event) => {
+Hooks.on("renderChatMessageHTML", (message, html) => {
+    const $html = $(html);
+
+    $html.find('.magic-die-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
         const diceCount = parseInt(button.dataset.diceCount);
@@ -265,11 +265,11 @@ Hooks.on("renderChatMessage", (message, html) => {
         if (actor && spell) {
             await actor.castSpellWithDice(spell, diceCount);
             // Disable all buttons in this message
-            html.find('.magic-die-btn').prop('disabled', true).text('Cast!');
+            $html.find('.magic-die-btn').prop('disabled', true).text('Cast!');
         }
     });
 
-    html.find('.apply-wound-btn').click(async (event) => {
+    $html.find('.apply-wound-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
         const actorId = button.dataset.actorId;
@@ -285,7 +285,7 @@ Hooks.on("renderChatMessage", (message, html) => {
         }
     });
 
-    html.find('[data-recon-id]').click(async e => {
+    $html.find('[data-recon-id]').click(async e => {
         e.preventDefault();
         const { reconId, actorId } = e.currentTarget.dataset;
         try {
@@ -297,7 +297,7 @@ Hooks.on("renderChatMessage", (message, html) => {
         }
     });
 
-    html.find('.break-item-btn').click(async (event) => {
+    $html.find('.break-item-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
         const actorId = button.dataset.actorId;
@@ -330,7 +330,7 @@ Hooks.on("renderChatMessage", (message, html) => {
         return rollableFeatures.includes(featureName) || hasReputation;
     });
 
-    html.find('.damage-roll-btn').click(async (event) => {
+    $html.find('.damage-roll-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
         const actorId = button.dataset.actorId;
