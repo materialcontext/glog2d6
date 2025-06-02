@@ -186,7 +186,7 @@ export class RuleEngine {
      */
     applyCalculationRules(actionType, context) {
         const modifiers = [];
-        const this.context = { ...this.context, ...context };
+        this.context = { ...this.context, ...context };
 
         // Apply each rule category
         for (const [categoryName, category] of Object.entries(this.rules)) {
