@@ -2,14 +2,14 @@
     "id": "glog2d6",
     "title": "GLOG 2d6",
     "description": "A minimal 2d6-based system for Foundry VTT",
-    "version": "1.0.03",
+    "version": "2.0.001",
     "compatibility": {
         "minimum": "11",
         "verified": "13"
     },
     "authors": [
         {
-            "name": "System Developer"
+            "name": "materialcontext"
         }
     ],
     "esmodules": [
@@ -18,29 +18,7 @@
     "styles": [
         "glog2d6.css"
     ],
-    "packs": [
-        {
-            "name": "basic-weapons",
-            "label": "Basic Weapons",
-            "path": "packs/basic-weapons.db",
-            "type": "Item",
-            "system": "glog2d6"
-        },
-        {
-            "name": "basic-armor",
-            "label": "Basic Armor & Shields",
-            "path": "packs/basic-armor.db",
-            "type": "Item",
-            "system": "glog2d6"
-        },
-        {
-            "name": "basic-classes",
-            "label": "Character Classes",
-            "path": "packs/basic-classes.db",
-            "type": "Item",
-            "system": "glog2d6"
-        }
-    ],
+   
     "languages": [
         {
             "lang": "en",
@@ -65,7 +43,7 @@
     },
     "primaryTokenAttribute": "hp",
     "secondaryTokenAttribute": null,
-    "url": "https://github.com/yourusername/glog2d6-foundry",
+    "url": "https://github.com/materialcontext/glog2d6-foundry",
     "manifest": "https://github.com/materialcontext/glog2d6/releases/download/release/system.json",
     "download": "https://github.com/materialcontext/glog2d6/releases/download/release/glog2d6.zip"
 }
