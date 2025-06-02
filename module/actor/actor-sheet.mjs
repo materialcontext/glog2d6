@@ -52,7 +52,7 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     }
 
     activateListeners(html) {
-        super.activateListeners(html);
+            super.activateListeners(html);
 
         this.stateManager.updateAllVisualElements(html);
 
