@@ -1,0 +1,70 @@
+USER ACTION (click, button, etc.)
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│              APPLICATION v2 LAYER                           │
+├─────────────────────────────────────────────────────────────┤
+│ GLOG2D6ActorSheetV2 ✅                                      │
+│ ├── _onClickAction() → delegates to ActionFactory          │
+│ ├── _prepareContext() → clean data prep                    │
+│ ├── Auto-reactivity via Foundry's document system          │
+│ └── Medium-grained reusable components                     │
+│                                                             │
+│ Choice Dialogs (when needed) ██████████████████████████████ │
+│ ├── Weapon selection, spell dice, etc.                     │
+│ └── Only for user choices, not results                     │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    ACTION LAYER                             │
+├─────────────────────────────────────────────────────────────┤
+│ ActionFactory ✅                                            │
+│ ├── .attack(actor) → AttackBuilder                         │
+│ ├── .spell(actor, spell) → SpellBuilder                    │
+│ └── .save(actor, attr) → SaveBuilder                       │
+│                                                             │
+│ BaseBuilder ✅                                              │
+│ ├── .withModifier(source, value, reason)                   │
+│ ├── .withContext({environmental: {}, tactical: {}})        │
+│ ├── .withExpectation(rule, override)                       │
+│ ├── Centralized validation via ActionValidation            │
+│ └── .execute() → creates ActionDocument → sends to chat    │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  DOCUMENT LAYER                             │
+├─────────────────────────────────────────────────────────────┤
+│ ActionDocument (BASE) ████████████████████████████████████  │
+│ ├── .execute() → orchestrates everything                   │
+│ ├── .performCalculations() → uses ExpectationEngine        │
+│ ├── .trackResources() → records changes                    │
+│ ├── .applyEffects() → handles outcomes                     │
+│ └── .sendToChatMessage() → comprehensive chat result       │
+│                                                             │
+│ AttackDocument ████████████████████████████████████████████ │
+│ SpellDocument  ████████████████████████████████████████████ │
+│ SaveDocument   ████████████████████████████████████████████ │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  CALCULATION ENGINE                         │
+├─────────────────────────────────────────────────────────────┤
+│ ExpectationEngine ██████████████████████████████████████    │
+│ ├── .checkExpectation(source, context, actor)              		│
+│ ├── .shouldShow(source, value, expected)                   │
+│ └── .evaluateRule(jsExpression, {actor, context})          │
+│                                                             │
+│ CalculationTracker ████████████████████████████████████████ │
+│ ├── .addBase(source, value, reason)                        │
+│ ├── .addBonus(source, value, reason)                       │
+│ └── .getBreakdown() → formatted for display                │
+│                                                             │
+│ ActionValidation ████████████████████████████████████████   │
+│ ├── .requireActor(), .requireWeapon(), etc.                │
+│ └── Throws ValidationError with UI notifications           │
+│                                                             │
+│ ActionErrorHandler ████████████████████████████████████████ │
+│ ├── Categorizes ValidationError vs bugs                    │
+│ └── UI notifications vs console logging                    │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+FOUNDRY CHAT MESSAGES (with interactive buttons)

@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant User
+    participant Sheet as ActorSheetV2
+    participant Factory as ActionFactory
+    participant Builder as AttackBuilder
+    participant Validator as ActionValidation
+    participant Document as AttackDocument
+    participant Engine as ExpectationEngine
+    participant Tracker as CalculationTracker
+    participant Chat as Foundry Chat
+    
+    User->>Sheet: Click "Attack" button
+    Sheet->>Factory: ActionFactory.attack(actor)
+    Factory->>Builder: new AttackBuilder(actor)
+    
+    Builder->>Builder: withWeapon(sword)
+    Builder->>Builder: withContext({lighting: 'dim'})
+    User->>Builder: execute()
+    
+    Builder->>Validator: requireActor(actor)
+    Builder->>Validator: requireWeapon(actor)
+    Validator-->>Builder: ✅ Valid
+    
+    Builder->>Document: new AttackDocument(config)
+    Builder->>Document: execute()
+    
+    Document->>Engine: checkExpectation('strength', 'melee', actor)
+    Engine-->>Document: {expected: true, show: true}
+    
+    Document->>Tracker: addBase('attack', 1, 'Level 1')
+    Document->>Tracker: addBonus('strength', 1, 'STR mod')
+    Tracker-->>Document: breakdown data
+    
+    Document->>Chat: ChatMessage.create(comprehensive result)
+    Chat-->>User: 📨 Detailed breakdown with buttons
+    
+    Note over User,Chat: If user clicks "Roll Damage" button
+    User->>Chat: Click damage button
+    Chat->>Factory: ActionFactory.damage(actor, weapon)
+    Note over Factory: Process repeats for damage...

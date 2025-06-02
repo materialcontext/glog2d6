@@ -1,0 +1,62 @@
+graph TD
+    User["👤 User Action (Click/Command)"] --> Sheet["📱 GLOG2D6ActorSheetV2 (Application v2)"]
+    
+    Sheet --> Factory["🏭 ActionFactory (attack, spell, save)"]
+    
+    Factory --> Builder["🔧 BaseBuilder (Fluent Interface)"]
+    Builder --> Builder1["withModifier(source, value, reason)"]
+    Builder --> Builder2["withContext({environmental, tactical})"]
+    Builder --> Builder3["withExpectation(rule, override)"]
+    Builder1 --> Execute["execute()"]
+    Builder2 --> Execute
+    Builder3 --> Execute
+    
+    Execute --> Validate["🛡️ ActionValidation (requireActor, requireWeapon)"]
+    
+    Validate -->|✅ Valid| CreateDoc["📄 Create ActionDocument"]
+    Validate -->|❌ Invalid| ValidationError["⚠️ ValidationError (UI Notification)"]
+    
+    CreateDoc --> DocExecute["ActionDocument.execute()"]
+    
+    DocExecute --> CalcEngine["⚙️ Calculation Engine"]
+    CalcEngine --> ExpEngine["🧠 ExpectationEngine (checkExpectation, shouldShow)"]
+    CalcEngine --> CalcTracker["📊 CalculationTracker (addBase, addBonus)"]
+    CalcEngine --> ResourceTracker["📦 ResourceTracker (Track Changes)"]
+    
+    ExpEngine --> Rules[("📋 Expectation Rules (JS Expressions)")]
+    
+    CalcEngine --> ChatResult["💬 Comprehensive Chat Message"]
+    ChatResult --> ChatDisplay["📨 Foundry Chat (Interactive Buttons)"]
+    
+    DocExecute -->|System Error| ErrorHandler["🚨 ActionErrorHandler (Categorize & Route)"]
+    ErrorHandler -->|ValidationError| UINotification["🔔 UI Notification"]
+    ErrorHandler -->|Bug/ConfigError| ConsoleLog["📝 Console Logging"]
+    
+    ChatDisplay -->|Button Click| Factory
+    
+    %% Foundry Integration
+    DocExecute -->|Actor Changes| FoundryReact["🔄 Foundry Reactivity (Auto Re-render)"]
+    FoundryReact --> Sheet
+    
+    %% Choice Dialogs
+    Execute -->|Needs User Choice| ChoiceDialog["🎛️ Choice Dialog (Weapon/Dice Selection)"]
+    ChoiceDialog -->|Choice Made| CreateDoc
+    
+    %% Styling
+    classDef userAction fill:#e1f5fe
+    classDef factory fill:#f3e5f5
+    classDef builder fill:#fff3e0
+    classDef document fill:#e8f5e8
+    classDef engine fill:#fff8e1
+    classDef error fill:#ffebee
+    classDef chat fill:#f1f8e9
+    classDef foundry fill:#fafafa
+    
+    class User,Sheet userAction
+    class Factory factory
+    class Builder,Builder1,Builder2,Builder3,Execute builder
+    class CreateDoc,DocExecute document
+    class CalcEngine,ExpEngine,CalcTracker,ResourceTracker engine
+    class Validate,ValidationError,ErrorHandler,UINotification,ConsoleLog error
+    class ChatResult,ChatDisplay chat
+    class FoundryReact,ChoiceDialog foundry
