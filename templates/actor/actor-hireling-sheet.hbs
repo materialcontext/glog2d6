@@ -1,83 +1,108 @@
 <form class="{{cssClass}} {{actor.type}}" autocomplete="off">
-    <header class="sheet-header section p-10 mb-10">
-        <div class="header-fields grid-2 flex-gap-8">
-            <div class="form-group flex flex-col flex-gap-2">
-                <label for="name" class="text-small text-bold text-upper text-muted">Name</label>
-                <input name="name" type="text" value="{{actor.name}}" placeholder="Hireling Name" class="input" />
+    {{!-- Compact Header --}}
+    <header class="section p-10 mb-10">
+        <div class="flex flex-gap-8">
+            {{!-- Portrait --}}
+            <div class="character-portrait">
+                <img src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" title="Hireling Portrait" />
             </div>
 
-            <div class="form-group flex flex-col flex-gap-2">
-                <label for="system.details.type" class="text-small text-bold text-upper text-muted">Type</label>
-                <select name="system.details.type" class="hireling-type-select input">
-                    <option value="henchman" {{#if (eq system.details.type "henchman" )}}selected{{/if}}>Henchman
-                    </option>
-                    <option value="mercenary" {{#if (eq system.details.type "mercenary" )}}selected{{/if}}>Mercenary
-                    </option>
+            {{!-- Info and Stats --}}
+            <div class="flex flex-col flex-gap-4 w-full">
+                <input name="name" type="text" value="{{actor.name}}" placeholder="Hireling Name" class="input text-bold w-full" />
+
+                <select name="system.details.type" class="input">
+                    <option value="henchman" {{#if (eq system.details.type "henchman")}}selected{{/if}}>Henchman</option>
+                    <option value="mercenary" {{#if (eq system.details.type "mercenary")}}selected{{/if}}>Mercenary</option>
                 </select>
-            </div>
 
-            <div class="form-group flex flex-col flex-gap-2">
-                <label for="system.details.dailyWage" class="text-small text-bold text-upper text-muted">Daily Wage
-                    (silver)</label>
-                <input name="system.details.dailyWage" type="number" value="{{system.details.dailyWage}}" min="1"
-                    class="input text-center" />
-                <small class="text-small text-muted">{{#if (eq system.details.type "henchman")}}(1s/day or half
-                    share){{else}}(10s/day or full share){{/if}}</small>
-            </div>
+                {{!-- Stats Grid --}}
+                <div class="grid-3 flex-gap-4">
+                    <div class="flex flex-col flex-center flex-gap-2">
+                        <label class="text-small text-bold text-upper text-primary">HP</label>
+                        <div class="flex flex-center flex-gap-2">
+                            <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0" class="input text-center" />
+                            <span>/</span>
+                            <input name="system.hp.max" type="number" value="{{system.hp.max}}" min="1" class="input text-center" />
+                        </div>
+                    </div>
 
-            <div class="form-group flex flex-col flex-gap-2">
-                <label for="system.details.loyalty" class="text-small text-bold text-upper text-muted">Loyalty</label>
-                <input name="system.details.loyalty" type="number" value="{{system.details.loyalty}}" min="1" max="12"
-                    class="input text-center" />
-            </div>
+                    <div class="flex flex-col flex-center flex-gap-2">
+                        <label class="text-small text-bold text-upper text-primary">Morale</label>
+                        <input name="system.details.loyalty" type="number" value="{{system.details.loyalty}}" min="1" max="12" class="input text-center" />
+                    </div>
 
-            <div class="form-group flex flex-col flex-gap-2">
-                <label for="system.details.employer" class="text-small text-bold text-upper text-muted">Employer</label>
-                <input name="system.details.employer" type="text" value="{{system.details.employer}}"
-                    placeholder="Who hired them?" class="input" />
+                    <div class="flex flex-col flex-center flex-gap-2">
+                        <label class="text-small text-bold text-upper text-primary">Wage</label>
+                        <div class="flex flex-center flex-gap-2">
+                            <input name="system.details.dailyWage" type="number" value="{{system.details.dailyWage}}" min="1" class="input text-center" />
+                            <span class="text-small text-muted">s</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
-    <section class="sheet-body">
-        {{#if (eq system.details.type "mercenary")}}
-        <div class="combat-section section p-10 mt-15">
-            <h3>Combat (Level 0 Fighter)</h3>
-            <div class="grid-2 flex-gap-8 mt-8">
-                <div class="form-group flex flex-col flex-gap-2">
-                    <label for="system.combat.attack.value" class="text-small text-bold text-upper text-muted">Base
-                        Attack</label>
-                    <input name="system.combat.attack.value" type="number" value="{{system.combat.attack.value}}"
-                        min="0" class="input text-center" />
+    {{!-- Inventory Section --}}
+    <section class="section p-10">
+        <div class="flex flex-between mb-8">
+            <h3 class="text-primary text-bold">Inventory</h3>
+            <div class="text-small text-muted text-bold">
+                {{system.inventory.slots.used}}/8 slots used
+            </div>
+        </div>
+
+        {{!-- Item List --}}
+        {{#if actor.items.size}}
+        <div class="flex flex-col flex-gap-2">
+            {{#each actor.items as |item id|}}
+            <div class="gear-item" data-item-id="{{item.id}}">
+                <div class="gear-equipped flex flex-center">
+                    <i class="fas fa-box text-muted"></i>
                 </div>
-                <div class="form-group flex flex-col flex-gap-2">
-                    <label for="system.combat.attack.bonus" class="text-small text-bold text-upper text-muted">Attack
-                        Bonus</label>
-                    <input name="system.combat.attack.bonus" type="number" value="{{system.combat.attack.bonus}}"
-                        min="0" class="input text-center" />
+                <div class="gear-name">
+                    <div class="item-image section p-2 flex flex-center">
+                        <img src="{{item.img}}" title="{{item.name}}" width="20" height="20" />
+                    </div>
+                    <h4 class="text-small">{{item.name}}</h4>
+                </div>
+                <div class="gear-details">
+                    {{#if (gt item.system.quantity 1)}}
+                    <span class="gear-detail">×{{item.system.quantity}}</span>
+                    {{/if}}
+                </div>
+                <div class="gear-slots text-small text-muted">
+                    {{item.system.slots}} slots
+                </div>
+                <div class="gear-controls">
+                    <a class="btn btn-danger p-2 text-small item-control item-delete" title="Remove Item">
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </div>
             </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <div class="section p-10 text-center">
+            <div class="text-muted mb-4">
+                <i class="fas fa-box"></i>
+            </div>
+            <p class="text-muted text-small">No items in inventory</p>
         </div>
         {{/if}}
 
-        <div class="inventory-section section p-10 mt-15">
-            <h3>Inventory</h3>
-            <div class="form-group flex flex-col flex-gap-2 mt-8">
-                <label class="text-small text-bold text-upper text-muted">Slots: {{system.inventory.slots.used}} /
-                    {{system.inventory.slots.max}}</label>
-            </div>
-            {{#if (eq system.details.type "henchman")}}
-            <p class="text-small text-muted"><small>Henchmen have 8 inventory slots and will carry torches, but won't
-                    fight.</small></p>
-            {{else}}
-            <p class="text-small text-muted"><small>Mercenaries have default equipment: medium armor, two melee
-                    weapons.</small></p>
-            {{/if}}
+        {{!-- Add Item Button --}}
+        <div class="flex flex-center mt-8">
+            <button class="btn btn-secondary p-6 item-control item-create" data-type="gear" type="button">
+                <i class="fas fa-plus"></i> Add Item
+            </button>
         </div>
+    </section>
 
-        <div class="form-group flex flex-col flex-gap-2 mt-15">
-            <label for="system.details.description" class="text-small text-bold text-upper text-muted">Notes</label>
-            <textarea name="system.details.description" rows="6" class="input">{{system.details.description}}</textarea>
-        </div>
+    {{!-- Notes --}}
+    <section class="section p-10 mt-10">
+        <label class="text-small text-bold text-upper text-primary mb-4 flex">Notes</label>
+        <textarea name="system.details.description" rows="3" class="input w-full">{{system.details.description}}</textarea>
     </section>
 </form>

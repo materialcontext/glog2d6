@@ -455,6 +455,13 @@
     font-weight: bold;
 }
 
+/* Grid utility for hireling inventory */
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
 /* Torch Effects */
 .torch-lit {
     background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%) !important;

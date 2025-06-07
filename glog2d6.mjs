@@ -1,6 +1,7 @@
 import { GLOG2D6Actor } from "./module/actor/actor.mjs";
 import { GLOG2D6Item } from "./module/item/item.mjs";
 import { GLOG2D6ActorSheet } from "./module/actor/actor-sheet.mjs";
+import { GLOG2D6HirelingSheet } from "./module/actor/hireling-sheet.mjs";
 import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
 import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
@@ -96,6 +97,12 @@ Hooks.once('init', async function() {
         types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Item"
+    });
+
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
+        types: ["hireling"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Hireling"
     });
 
     // Register game settinngs
@@ -214,29 +221,29 @@ Hooks.once("ready", async function() {
 });
 
 Hooks.on('renderSidebarTab', (app, html) => {
-   if (app.tabName !== 'chat' || !game.user.isGM) return;
+    if (app.tabName !== 'chat' || !game.user.isGM) return;
 
-   // Convert to jQuery if needed
-   const $html = html instanceof jQuery ? html : $(html);
+    // Convert to jQuery if needed
+    const $html = html instanceof jQuery ? html : $(html);
 
-   // Make sure we don't add multiple buttons
-   if ($html.find('#recon-chat-btn').length) return;
+    // Make sure we don't add multiple buttons
+    if ($html.find('#recon-chat-btn').length) return;
 
-   const reconBtn = $(`
+    const reconBtn = $(`
        <a id="recon-chat-btn" class="chat-control-icon" title="Recon Check" style="margin-left: 4px;">
            <i class="fas fa-search"></i>
        </a>
    `);
 
-   reconBtn.click(() => {
-       import("./module/dialogs/recon-dialog.mjs").then(({ ReconDialog }) => {
-           new ReconDialog().render(true);
-       });
-   });
+    reconBtn.click(() => {
+        import("./module/dialogs/recon-dialog.mjs").then(({ ReconDialog }) => {
+            new ReconDialog().render(true);
+        });
+    });
 
-   // Add some spacing and prevent overlap
-   $html.find('#chat-controls').css('gap', '2px');
-   $html.find('#chat-controls .chat-control-icon').last().after(reconBtn);
+    // Add some spacing and prevent overlap
+    $html.find('#chat-controls').css('gap', '2px');
+    $html.find('#chat-controls .chat-control-icon').last().after(reconBtn);
 });
 
 // GM Chat Commands
