@@ -13,10 +13,18 @@ import { ActorTraumaSystem } from "./systems/actor-trauma-system.mjs";
 export class GLOG2D6Actor extends Actor {
     constructor(data, context) {
         super(data, context);
+
+        console.log(`🏗️ [${this.name || 'Unknown'}] GLOG2D6Actor constructor called`);
+        console.log(`   - User: ${game.user.name}`);
+        console.log(`   - Context:`, context);
+        console.log(`   - Is this a fresh instance?`, !this._alreadyConstructed);
+
+        this._alreadyConstructed = true;
     }
 
     /** @override */
     async _preCreate(data, options, user) {
+        console.log(`📋 [${this.name}] _preCreate called by user ${user.name}`);
         await super._preCreate(data, options, user);
         await this.updateSource({
             "flags.glog2d6.editMode": false
@@ -24,6 +32,30 @@ export class GLOG2D6Actor extends Actor {
     }
 
     initializeComponents() {
+        console.log(`🔧 [${this.name}] initializeComponents called by user ${game.user.name}`);
+        console.log(`   - Is already initialized?`, !!this._systemsInitialized);
+        console.log(`   - Has attributeSystem?`, !!this.attributeSystem);
+
+        // Check if CONFIG.GLOG is available
+        if (!CONFIG.GLOG) {
+            console.error(`❌ [${this.name}] CONFIG.GLOG not available during initializeComponents!`);
+            throw new Error('CONFIG.GLOG not available - system data not loaded');
+        }
+
+        // Check if required classes are available
+        const requiredClasses = [
+            'ActorRolls', 'ActorAttributeSystem', 'ActorInventorySystem',
+            'ActorBonusSystem', 'ActorCombatSystem', 'ActorMovementSystem'
+        ];
+
+        for (const className of requiredClasses) {
+            const ClassRef = eval(className); // In real code, import properly
+            if (!ClassRef) {
+                console.error(`❌ [${this.name}] Required class ${className} not available!`);
+                throw new Error(`Required class ${className} not available`);
+            }
+        }
+
         // Roll system
         this.rolls = new ActorRolls(this);
 
@@ -38,28 +70,53 @@ export class GLOG2D6Actor extends Actor {
         this.torchSystem = new ActorTorchSystem(this);
         this.restSystem = new ActorRestSystem(this);
         this.spellSystem = new ActorSpellSystem(this);
+
+        console.log(`✅ [${this.name}] initializeComponents completed successfully`);
     }
 
     // Data preparation lifecycle
     prepareData() {
+        console.log(`📊 [${this.name}] prepareData called by user ${game.user.name}`);
+        console.log(`   - _systemsInitialized: ${this._systemsInitialized}`);
+        console.log(`   - Has attributeSystem: ${!!this.attributeSystem}`);
+        console.log(`   - CONFIG.GLOG available: ${!!CONFIG.GLOG}`);
+
         // ATOMIC: Either all systems initialize or actor is dead
         if (!this._systemsInitialized) {
+            console.log(`🔄 [${this.name}] Systems not initialized, calling initializeComponents...`);
             try {
                 this.initializeComponents();
                 this._validateAllSystems();
                 this._systemsInitialized = true;
+                console.log(`✅ [${this.name}] Systems initialization completed`);
             } catch (error) {
                 console.error(`🚨 FATAL: Actor ${this.name} (${this.id}) system initialization failed`);
                 console.error('Error details:', error);
+                console.error('Stack trace:', error.stack);
+
+                // Additional debugging
+                console.error('Debug info:');
+                console.error('  - CONFIG.GLOG exists:', !!CONFIG.GLOG);
+                console.error('  - Game user:', game.user.name);
+                console.error('  - Game ready:', game.ready);
+                console.error('  - System ready:', game.system.ready);
+
                 throw new Error(`Actor ${this.name} is corrupted and cannot be used. Delete and recreate this actor.`);
             }
+        } else {
+            console.log(`✅ [${this.name}] Systems already initialized, skipping`);
         }
 
         super.prepareData();
     }
 
     prepareBaseData() {
-        console.log("calculating base data");
+        console.log(`📈 [${this.name}] prepareBaseData called`);
+
+        if (!this.attributeSystem) {
+            console.error(`❌ [${this.name}] attributeSystem missing in prepareBaseData!`);
+            return;
+        }
 
         this.attributeSystem.calculateAttributeModifiers();
         this.inventorySystem.calculateInventoryData();
@@ -68,10 +125,14 @@ export class GLOG2D6Actor extends Actor {
     }
 
     prepareDerivedData() {
+        console.log(`📊 [${this.name}] prepareDerivedData called`);
+
+        if (!this.attributeSystem) {
+            console.error(`❌ [${this.name}] attributeSystem missing in prepareDerivedData!`);
+            return;
+        }
 
         try {
-            console.log("calculating derived data");
-
             this.attributeSystem.initializeEffectiveModifiers();
             this.bonusSystem.calculateAndApplyAllBonuses();
             this.attributeSystem.applyEncumbranceToAttributes();
@@ -83,6 +144,8 @@ export class GLOG2D6Actor extends Actor {
     }
 
     _validateAllSystems() {
+        console.log(`✅ [${this.name}] Validating all systems...`);
+
         const requiredSystems = [
             'attributeSystem', 'inventorySystem', 'bonusSystem',
             'combatSystem', 'movementSystem', 'rolls'
@@ -90,9 +153,12 @@ export class GLOG2D6Actor extends Actor {
 
         for (const system of requiredSystems) {
             if (!this[system]) {
+                console.error(`❌ [${this.name}] System validation failed: ${system} is missing`);
                 throw new Error(`Required system '${system}' failed to initialize`);
             }
         }
+
+        console.log(`✅ [${this.name}] All systems validated successfully`);
     }
 
     // Roll method delegations
