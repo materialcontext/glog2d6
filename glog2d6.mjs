@@ -63,27 +63,6 @@ Hooks.once('init', async function() {
         return str && str.toLowerCase().includes(substring.toLowerCase());
     });
 
-    // Register sheet application classes
-    foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
-    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Actor"
-    });
-
-    foundry.documents.collections.Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
-    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Item"
-    });
-
-    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
-        types: ["hireling"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Hireling"
-    });
-
     // Register game settinngs
     game.settings.register("glog2d6", "hasSetupDefaultFolders", {
         name: "Default Folders Created",
@@ -186,6 +165,27 @@ Hooks.once("ready", async function() {
         if (!featureName) return false;
         const rollableFeatures = ['Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training'];
         return rollableFeatures.includes(featureName);
+    });
+
+    // Register sheet application classes
+    foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
+        types: ["character", "npc"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Actor"
+    });
+
+    foundry.documents.collections.Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
+    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Item"
+    });
+
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
+        types: ["hireling"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Hireling"
     });
 
     setupGlobalUtils();
