@@ -12,6 +12,7 @@ import { DataContextBuilder } from './data-context-builder.mjs';
 
 export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     constructor(...args) {
+        console.log(`🏗️ [SHEET] Constructor called for actor:`, args[0]?.name, `by user:`, game.user?.name);
         super(...args);
         this._componentsInitialized = false;
 
@@ -30,6 +31,7 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     }
 
     _ensureComponentsInitialized() {
+        console.log(`🔧 [SHEET] _ensureComponentsInitialized called for ${this.actor.name} by ${game.user.name}`);
         if (this._componentsInitialized) return;
 
         this.diagnostics.checkpoint('component_init_start', {
@@ -113,6 +115,7 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     }
 
     async getData() {
+        console.log(`📊 [SHEET] getData called for ${this.actor.name} by ${game.user.name}`);
         this.diagnostics.checkpoint('getData_start');
 
         try {
