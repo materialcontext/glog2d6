@@ -16,8 +16,6 @@ CONFIG.Actor.documentClass = GLOG2D6Actor;
 CONFIG.Item.documentClass = GLOG2D6Item;
 
 Hooks.once('init', async function() {
-    console.log('glog2d6 | Initializing GLOG 2d6 System');
-
     // Load all JSON data files
     await loadSystemData();
     await loadSpellData();
@@ -220,8 +218,6 @@ Hooks.once("ready", async function() {
             }
         };
     }
-    console.log('glog2d6 | Initializing diagnostic system...');
-    await initializeDiagnosticSystem();
 });
 
 Hooks.on('renderSidebarTab', (app, html) => {
