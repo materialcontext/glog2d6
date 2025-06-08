@@ -1,3 +1,91 @@
+{{!-- Add this to the top of your actor sheet template (actor-character-sheet.hbs) --}}
+
+{{#if emergencyMode}}
+<div class="emergency-mode-banner"
+    style="background: linear-gradient(45deg, #ff5722, #ff9800); color: white; padding: 12px; text-align: center; font-weight: bold; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+    <div style="font-size: 16px; margin-bottom: 4px;">⚠️ EMERGENCY MODE ACTIVE ⚠️</div>
+    <div style="font-size: 12px; opacity: 0.9;">{{emergencyMessage}}</div>
+    <div style="margin-top: 8px;">
+        <button type="button" class="recovery-attempt" data-actor-id="{{actor.id}}"
+            style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 4px 12px; border-radius: 3px; margin-right: 8px; cursor: pointer;">
+            🔧 Attempt Recovery
+        </button>
+        <button type="button" class="debug-info" data-actor-id="{{actor.id}}"
+            style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 4px 12px; border-radius: 3px; cursor: pointer;">
+            🐛 Debug Info
+        </button>
+    </div>
+</div>
+{{/if}}
+
+{{!-- Add debug panel for GMs --}}
+{{#if @root.user.isGM}}
+<details class="debug-panel"
+    style="margin-bottom: 10px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px;">
+    <summary style="padding: 8px; background: #e0e0e0; cursor: pointer; font-weight: bold; border-radius: 3px 3px 0 0;">
+        🔧 GM Debug Panel
+    </summary>
+    <div style="padding: 10px; font-size: 11px; font-family: monospace;">
+        <div><strong>Systems Status:</strong></div>
+        <div style="margin-left: 10px;">
+            ✓ Actor System: {{#if actor.system}}OK{{else}}<span style="color: red;">MISSING</span>{{/if}}<br>
+            ✓ Systems Init: {{#if actor._systemsInitialized}}OK{{else}}<span
+                style="color: orange;">PENDING</span>{{/if}}<br>
+            ✓ Attribute System: {{#if actor.attributeSystem}}OK{{else}}<span
+                style="color: red;">MISSING</span>{{/if}}<br>
+            ✓ Items: {{actor.items.size}} items loaded<br>
+            ✓ Edit Mode: {{#if editMode}}ENABLED{{else}}DISABLED{{/if}}
+        </div>
+
+        {{#if emergencyMode}}
+        <div style="margin-top: 8px;"><strong style="color: red;">Emergency Mode Active</strong></div>
+        {{/if}}
+
+        <div style="margin-top: 10px;">
+            <button type="button" onclick="game.glog2d6?.debugSheet?.('{{actor.id}}')"
+                style="padding: 2px 6px; font-size: 10px; margin-right: 4px;">Debug</button>
+            <button type="button" onclick="game.glog2d6?.forceActorRecovery?.('{{actor.id}}')"
+                style="padding: 2px 6px; font-size: 10px; margin-right: 4px;">Recover</button>
+            <button type="button" onclick="game.glog2d6?.resetActor?.('{{actor.id}}')"
+                style="padding: 2px 6px; font-size: 10px; background: #ff5722; color: white; border: none;">Reset</button>
+        </div>
+    </div>
+</details>
+{{/if}}
+
+{{!-- Add this JavaScript to handle the emergency mode buttons --}}
+<script>
+    (function () {
+        // Handle recovery button clicks
+        $(document).on('click', '.recovery-attempt', function () {
+            const actorId = $(this).data('actor-id');
+            if (game.glog2d6?.forceActorRecovery) {
+                game.glog2d6.forceActorRecovery(actorId);
+            } else {
+                console.error('Recovery function not available');
+            }
+        });
+
+        // Handle debug info button clicks
+        $(document).on('click', '.debug-info', function () {
+            const actorId = $(this).data('actor-id');
+            if (game.glog2d6?.debugSheet) {
+                game.glog2d6.debugSheet(actorId);
+            } else {
+                console.error('Debug function not available');
+            }
+        });
+    })();
+</script>
+
+{{!-- Add diagnostic information to help track rendering issues --}}
+{{#if @root.user.isGM}}
+<!-- Render Timestamp: {{@root.timestamp}} -->
+<!-- Actor ID: {{actor.id}} -->
+<!-- Sheet Mode: {{#if editMode}}EDIT{{else}}VIEW{{/if}} -->
+<!-- Emergency: {{#if emergencyMode}}YES{{else}}NO{{/if}} -->
+{{/if}}
+
 <form class="{{cssClass}} {{actor.type}}" autocomplete="off">
 
     {{> character-header }}

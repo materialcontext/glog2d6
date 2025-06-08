@@ -501,6 +501,7 @@ export class ActorRolls {
     }
 
     async rollDiplomacy() {
+        const diplomacyBonus = this.actor.system.skills?.diplomacy?.bonus || 0;
         const chaMod = this.actor.system.attributes.cha.effectiveMod;
         const roll = this.actor.createRoll("2d6 + @cha", { cha: chaMod }, 'social');
         await roll.evaluate();

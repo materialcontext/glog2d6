@@ -153,7 +153,6 @@ Hooks.once('init', async function() {
     console.log('glog2d6 | System initialization complete');
 });
 
-// Load spell data from multiple files
 Hooks.once("ready", async function() {
     console.log('glog2d6 | System Ready');
 
@@ -224,7 +223,383 @@ Hooks.once("ready", async function() {
             }
         };
     }
+    console.log('glog2d6 | Initializing diagnostic system...');
+    await initializeDiagnosticSystem();
 });
+
+async function initializeDiagnosticSystem() {
+    try {
+        // Run system health check
+        const healthCheck = await runSystemHealthCheck();
+
+        if (healthCheck.critical.length > 0) {
+            console.error('🚨 CRITICAL SYSTEM ISSUES DETECTED:', healthCheck.critical);
+            ui.notifications.error(`GLOG2D6 System has critical issues: ${healthCheck.critical.join(', ')}`, { permanent: true });
+        }
+
+        if (healthCheck.warnings.length > 0) {
+            console.warn('⚠️ System warnings:', healthCheck.warnings);
+            ui.notifications.warn(`GLOG2D6 warnings: ${healthCheck.warnings.join(', ')}`);
+        }
+
+        // Set up diagnostic commands for GMs
+        if (game.user.isGM) {
+            await setupDiagnosticCommands();
+            console.log('🔧 Diagnostic commands available: game.glog2d6.diagnoseActor(id), game.glog2d6.forceActorRecovery(id)');
+        }
+
+        // Set up actor sheet monitoring
+        setupActorSheetMonitoring();
+
+        console.log('✅ GLOG2D6 Diagnostic system ready');
+
+    } catch (error) {
+        console.error('❌ Failed to initialize diagnostic system:', error);
+        // Don't let diagnostic system failure break the main system
+    }
+}
+
+async function runSystemHealthCheck() {
+    const results = { critical: [], warnings: [], info: [] };
+
+    try {
+        // Check core system registration
+        if (game.system.id !== "glog2d6") {
+            results.critical.push("System ID mismatch");
+        }
+
+        // Check document classes are properly registered
+        if (!CONFIG.Actor.documentClass?.name === 'GLOG2D6Actor') {
+            results.warnings.push("Actor document class registration issue");
+        }
+
+        if (!CONFIG.Item.documentClass?.name === 'GLOG2D6Item') {
+            results.warnings.push("Item document class registration issue");
+        }
+
+        // Check for existing actors and their states
+        const actorIssues = await checkExistingActors();
+        results.warnings.push(...actorIssues);
+
+        // Check settings exist
+        const settingsIssues = checkSystemSettings();
+        results.warnings.push(...settingsIssues);
+
+        // Check that your existing systems are properly loaded
+        if (!game.glog2d6?.reconSystem) {
+            results.warnings.push("Recon system not initialized");
+        }
+
+        results.info.push(`Checked ${game.actors.size} actors`);
+        results.info.push(`System version: ${game.system.version}`);
+
+    } catch (error) {
+        results.critical.push(`Health check failed: ${error.message}`);
+    }
+
+    return results;
+}
+
+async function checkExistingActors() {
+    const issues = [];
+    let corruptedActors = 0;
+    let uninitializedActors = 0;
+
+    for (const actor of game.actors) {
+        try {
+            // Check for basic corruption
+            if (!actor.system) {
+                corruptedActors++;
+                console.error(`Actor ${actor.name} (${actor.id}) has no system data`);
+                continue;
+            }
+
+            // Check if your custom systems are initialized
+            if (!actor._systemsInitialized && actor.initializeComponents) {
+                uninitializedActors++;
+
+                // Try to auto-fix
+                try {
+                    actor.initializeComponents();
+                    actor._validateAllSystems();
+                    actor._systemsInitialized = true;
+                    console.log(`✅ Auto-fixed actor systems for ${actor.name}`);
+                } catch (fixError) {
+                    console.error(`❌ Failed to auto-fix ${actor.name}:`, fixError);
+                }
+            }
+
+        } catch (error) {
+            corruptedActors++;
+            console.error(`Error checking actor ${actor.name}:`, error);
+        }
+    }
+
+    if (corruptedActors > 0) {
+        issues.push(`${corruptedActors} actors have system corruption`);
+    }
+
+    if (uninitializedActors > 0) {
+        issues.push(`${uninitializedActors} actors had uninitialized systems (auto-fixed)`);
+    }
+
+    return issues;
+}
+
+function checkSystemSettings() {
+    const issues = [];
+
+    try {
+        // Check your actual system settings
+        const expectedSettings = [
+            'gridDistance',
+            'autoBurnTorches',
+            // Add any other settings your system uses
+        ];
+
+        for (const setting of expectedSettings) {
+            try {
+                game.settings.get("glog2d6", setting);
+            } catch (error) {
+                issues.push(`Setting '${setting}' not properly registered`);
+            }
+        }
+    } catch (error) {
+        issues.push(`Settings check failed: ${error.message}`);
+    }
+
+    return issues;
+}
+
+function setupActorSheetMonitoring() {
+    // Monitor sheet render failures
+    Hooks.on("renderActorSheet", (sheet, html, data) => {
+        try {
+            // Check if this is your actor sheet type
+            if (!(sheet instanceof GLOG2D6ActorSheet)) return;
+
+            // Check if sheet rendered in emergency mode
+            if (data.emergencyMode) {
+                console.warn(`🚨 Actor sheet ${sheet.actor.name} rendered in emergency mode`);
+
+                // Add recovery button if not present
+                if (!html.find('.recovery-button').length) {
+                    const recoveryButton = $(`
+                        <button type="button" class="recovery-button" style="position: absolute; top: 5px; right: 60px; z-index: 1000; background: #ff9800; color: white; border: none; padding: 4px 8px; border-radius: 3px; font-size: 11px;">
+                            🔧 Recover
+                        </button>
+                    `);
+
+                    recoveryButton.click(() => {
+                        game.glog2d6?.forceActorRecovery?.(sheet.actor.id);
+                    });
+
+                    html.find('.window-header').append(recoveryButton);
+                }
+            }
+        } catch (error) {
+            console.error('Sheet monitoring error:', error);
+        }
+    });
+
+    // Monitor for sheet close/render cycles that might indicate problems
+    let sheetRenderCounts = new Map();
+
+    Hooks.on("renderActorSheet", (sheet) => {
+        if (!(sheet instanceof GLOG2D6ActorSheet)) return;
+
+        const actorId = sheet.actor.id;
+        const count = sheetRenderCounts.get(actorId) || 0;
+        sheetRenderCounts.set(actorId, count + 1);
+
+        // If a sheet is rendering excessively, log it
+        if (count > 10) {
+            console.warn(`🔄 Actor sheet ${sheet.actor.name} has rendered ${count} times - possible render loop`);
+        }
+    });
+
+    // Clear render counts when sheets close
+    Hooks.on("closeActorSheet", (sheet) => {
+        if (sheet instanceof GLOG2D6ActorSheet) {
+            sheetRenderCounts.delete(sheet.actor.id);
+        }
+    });
+
+    // Monitor actor data updates that might cause sheet issues
+    Hooks.on("updateActor", (actor, updateData, options, userId) => {
+        try {
+            // Only monitor GLOG2D6 actors
+            if (!(actor instanceof GLOG2D6Actor)) return;
+
+            // Check for potentially problematic updates
+            if (updateData.system && !actor.system) {
+                console.error(`🚨 Actor ${actor.name} system data updated but actor.system is missing`);
+            }
+
+            // If an actor sheet is open and gets updated, ensure it's still functional
+            if (actor.sheet?.rendered && actor.sheet instanceof GLOG2D6ActorSheet) {
+                setTimeout(() => {
+                    if (actor.sheet.diagnostics && actor.sheet.diagnostics.failures.length > 0) {
+                        console.warn(`Actor ${actor.name} sheet has recorded failures after update`);
+                    }
+                }, 100);
+            }
+        } catch (error) {
+            console.error('Actor update monitoring error:', error);
+        }
+    });
+}
+
+// Enhanced diagnostic commands that work with your existing system
+async function setupDiagnosticCommands() {
+    // Ensure the glog2d6 namespace exists (it should from your existing code)
+    game.glog2d6 = game.glog2d6 || {};
+
+    // Import the diagnostic functions
+    try {
+        const { setupDiagnosticCommands: setupSheetDiagnostics } = await import('./module/actor/sheet-diagnostics.mjs');
+        setupSheetDiagnostics();
+    } catch (error) {
+        console.warn('Could not load sheet diagnostics module:', error);
+    }
+
+    // Additional system-level diagnostic commands
+    game.glog2d6.runHealthCheck = async function() {
+        console.log('🔍 Running system health check...');
+        const results = await runSystemHealthCheck();
+
+        console.group('🏥 System Health Report');
+        if (results.critical.length) {
+            console.error('Critical Issues:', results.critical);
+        }
+        if (results.warnings.length) {
+            console.warn('Warnings:', results.warnings);
+        }
+        if (results.info.length) {
+            console.info('Info:', results.info);
+        }
+        console.groupEnd();
+
+        return results;
+    };
+
+    game.glog2d6.fixAllActors = async function() {
+        if (!game.user.isGM) {
+            ui.notifications.error("Only GMs can run this command");
+            return;
+        }
+
+        console.log('🔧 Attempting to fix all actors...');
+        let fixed = 0;
+        let failed = 0;
+
+        for (const actor of game.actors) {
+            if (!(actor instanceof GLOG2D6Actor)) continue;
+
+            try {
+                if (!actor._systemsInitialized && actor.initializeComponents) {
+                    actor.initializeComponents();
+                    actor._validateAllSystems();
+                    actor._systemsInitialized = true;
+                    fixed++;
+                    console.log(`✅ Fixed ${actor.name}`);
+                }
+            } catch (error) {
+                failed++;
+                console.error(`❌ Failed to fix ${actor.name}:`, error);
+            }
+        }
+
+        const message = `Fixed ${fixed} actors, ${failed} failed`;
+        console.log(message);
+        ui.notifications.info(message);
+
+        return { fixed, failed };
+    };
+
+    game.glog2d6.resetActor = async function(actorId) {
+        if (!game.user.isGM) {
+            ui.notifications.error("Only GMs can run this command");
+            return;
+        }
+
+        const actor = game.actors.get(actorId);
+        if (!actor || !(actor instanceof GLOG2D6Actor)) {
+            console.error('GLOG2D6 Actor not found:', actorId);
+            return;
+        }
+
+        console.log(`🔄 Resetting actor ${actor.name}...`);
+
+        try {
+            // Close sheet if open
+            if (actor.sheet?.rendered) {
+                await actor.sheet.close();
+            }
+
+            // Reset all cached state
+            delete actor._systemsInitialized;
+            delete actor._preparedSystemData;
+
+            // Reinitialize your actor systems
+            actor.initializeComponents();
+            actor._validateAllSystems();
+            actor._systemsInitialized = true;
+
+            // Refresh sheet
+            setTimeout(() => {
+                actor.sheet.render(true);
+            }, 200);
+
+            ui.notifications.info(`Reset ${actor.name} successfully`);
+            return { success: true };
+
+        } catch (error) {
+            console.error(`Failed to reset ${actor.name}:`, error);
+            ui.notifications.error(`Failed to reset ${actor.name}: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    };
+
+    game.glog2d6.debugSheet = function(actorId) {
+        const actor = game.actors.get(actorId);
+        if (!actor || !(actor instanceof GLOG2D6Actor)) {
+            console.error('GLOG2D6 Actor not found:', actorId);
+            return;
+        }
+
+        const sheet = actor.sheet;
+        const diagnostics = sheet.diagnostics?.generateReport() || { error: 'No diagnostics' };
+
+        console.group(`🐛 Debug Info: ${actor.name}`);
+        console.log('Actor State:', {
+            hasSystem: !!actor.system,
+            systemsInitialized: actor._systemsInitialized,
+            hasAttributeSystem: !!actor.attributeSystem,
+            hasInventorySystem: !!actor.inventorySystem,
+            hasBonusSystem: !!actor.bonusSystem,
+            hasItems: !!actor.items,
+            itemCount: actor.items?.size || 0
+        });
+        console.log('Sheet State:', {
+            rendered: sheet.rendered,
+            componentsInitialized: sheet._componentsInitialized,
+            emergencyMode: sheet._emergencyMode,
+            hasEventRegistry: !!sheet.eventRegistry,
+            hasDiagnostics: !!sheet.diagnostics
+        });
+        console.log('Diagnostics:', diagnostics);
+        console.groupEnd();
+
+        return { actor: actor, sheet: sheet, diagnostics: diagnostics };
+    };
+
+    console.log('🎯 Diagnostic commands loaded:');
+    console.log('  - game.glog2d6.runHealthCheck()');
+    console.log('  - game.glog2d6.fixAllActors()');
+    console.log('  - game.glog2d6.resetActor(id)');
+    console.log('  - game.glog2d6.debugSheet(id)');
+}
 
 Hooks.on('renderSidebarTab', (app, html) => {
     if (app.tabName !== 'chat' || !game.user.isGM) return;
