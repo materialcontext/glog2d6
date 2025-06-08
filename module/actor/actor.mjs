@@ -32,9 +32,9 @@ export class GLOG2D6Actor extends Actor {
     }
 
     initializeComponents() {
-        console.log(`🔧 [${this.name}] initializeComponents called by user ${game.user.name}`);
-        console.log(`   - Is already initialized?`, !!this._systemsInitialized);
-        console.log(`   - Has attributeSystem?`, !!this.attributeSystem);
+        console.log(`🔧 [${this.name}] initializeComponents START`);
+        console.log(`   - ActorRolls available: ${typeof ActorRolls}`);
+        console.log(`   - ActorAttributeSystem available: ${typeof ActorAttributeSystem}`);
 
         // Check if CONFIG.GLOG is available
         if (!CONFIG.GLOG) {
@@ -56,30 +56,45 @@ export class GLOG2D6Actor extends Actor {
             }
         }
 
-        // Roll system
-        this.rolls = new ActorRolls(this);
+        try {
+            // Roll system
+            this.rolls = new ActorRolls(this);
+            console.log("1/9")
 
-        // Data calculation systems
-        this.attributeSystem = new ActorAttributeSystem(this);
-        this.inventorySystem = new ActorInventorySystem(this);
-        this.bonusSystem = new ActorBonusSystem(this);
-        this.combatSystem = new ActorCombatSystem(this);
-        this.movementSystem = new ActorMovementSystem(this);
+            // Data calculation systems
+            this.attributeSystem = new ActorAttributeSystem(this);
+            console.log("2/9")
+            this.inventorySystem = new ActorInventorySystem(this);
+            console.log("3/9")
+            this.bonusSystem = new ActorBonusSystem(this);
+            console.log("4/9")
+            this.combatSystem = new ActorCombatSystem(this);
+            console.log("5/9")
+            this.movementSystem = new ActorMovementSystem(this);
+            console.log("6/9")
 
-        // Action systems
-        this.torchSystem = new ActorTorchSystem(this);
-        this.restSystem = new ActorRestSystem(this);
-        this.spellSystem = new ActorSpellSystem(this);
+            // Action systems
+            this.torchSystem = new ActorTorchSystem(this);
+            console.log("7/9")
+            this.restSystem = new ActorRestSystem(this);
+            console.log("8/9")
+            this.spellSystem = new ActorSpellSystem(this);
+            console.log("9/9")
 
-        console.log(`✅ [${this.name}] initializeComponents completed successfully`);
+            console.log(`✅ [${this.name}] initializeComponents completed successfully`);
+        } catch (error) {
+            console.error(`   ❌ Failed during system creation:`, error);
+            throw error;
+        }
     }
 
     // Data preparation lifecycle
     prepareData() {
-        console.log(`📊 [${this.name}] prepareData called by user ${game.user.name}`);
+        console.log(`📊 [${this.name}] prepareData called by user ${game.user?.name}`);
         console.log(`   - _systemsInitialized: ${this._systemsInitialized}`);
-        console.log(`   - Has attributeSystem: ${!!this.attributeSystem}`);
-        console.log(`   - CONFIG.GLOG available: ${!!CONFIG.GLOG}`);
+        console.log(`   - CONFIG.GLOG exists: ${!!CONFIG.GLOG}`);
+        console.log(`   - CONFIG.GLOG.FEATURES exists: ${!!CONFIG.GLOG?.FEATURES}`);
+        console.log(`   - game.ready: ${game.ready}`);
 
         // ATOMIC: Either all systems initialize or actor is dead
         if (!this._systemsInitialized) {
