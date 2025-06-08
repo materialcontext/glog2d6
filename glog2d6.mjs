@@ -63,33 +63,6 @@ Hooks.once('init', async function() {
         return str && str.toLowerCase().includes(substring.toLowerCase());
     });
 
-    Handlebars.registerHelper('getReputations', function() {
-        return CONFIG.GLOG?.REPUTATIONS?.reputations || [];
-    });
-
-    Handlebars.registerHelper('getReputationDescription', function(reputationType) {
-        const reputations = CONFIG.GLOG?.REPUTATIONS?.reputations || [];
-        return reputations.find(rep => rep.name === reputationType) || {};
-    });
-
-    Handlebars.registerHelper('hasFeatureTip', function(featureName) {
-        const tippedFeatures = ['Barbarian Heritage'];
-        return tippedFeatures.includes(featureName);
-    });
-
-    Handlebars.registerHelper('getFeatureTip', function(featureName) {
-        const tips = {
-            'Barbarian Heritage': 'Choose one exotic weapon and set its Attack Penalty to -1 to represent your +1 exotic weapon bonus.'
-        };
-        return tips[featureName] || '';
-    });
-
-    Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
-        if (!featureName) return false;
-        const rollableFeatures = ['Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training'];
-        return rollableFeatures.includes(featureName);
-    });
-
     // Register sheet application classes
     foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
     foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
@@ -187,6 +160,33 @@ Hooks.once("ready", async function() {
         await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
     Handlebars.registerPartial('wounds-tab',
         await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/wounds-tab.hbs'));
+
+    Handlebars.registerHelper('getReputations', function() {
+        return CONFIG.GLOG?.REPUTATIONS?.reputations || [];
+    });
+
+    Handlebars.registerHelper('getReputationDescription', function(reputationType) {
+        const reputations = CONFIG.GLOG?.REPUTATIONS?.reputations || [];
+        return reputations.find(rep => rep.name === reputationType) || {};
+    });
+
+    Handlebars.registerHelper('hasFeatureTip', function(featureName) {
+        const tippedFeatures = ['Barbarian Heritage'];
+        return tippedFeatures.includes(featureName);
+    });
+
+    Handlebars.registerHelper('getFeatureTip', function(featureName) {
+        const tips = {
+            'Barbarian Heritage': 'Choose one exotic weapon and set its Attack Penalty to -1 to represent your +1 exotic weapon bonus.'
+        };
+        return tips[featureName] || '';
+    });
+
+    Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
+        if (!featureName) return false;
+        const rollableFeatures = ['Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training'];
+        return rollableFeatures.includes(featureName);
+    });
 
     setupGlobalUtils();
 
