@@ -87,7 +87,7 @@ Hooks.once('init', async function() {
     // Register sheet application classes
     foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
     foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc", "hireling"],
+        types: ["character", "npc"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Actor"
     });
