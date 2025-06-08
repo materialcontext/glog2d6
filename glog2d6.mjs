@@ -21,9 +21,6 @@ Hooks.once('init', async function() {
 
     setupGlobalErrorHandler();
 
-    CONFIG.GLOG = {}; // Initialize immediately
-    await ensureConfigDataLoaded();
-
     // Load all JSON data files
     await loadSystemData();
     await loadSpellData();
@@ -89,16 +86,7 @@ Hooks.once('init', async function() {
 
     Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
         if (!featureName) return false;
-
-        // Define which features have rollable components
-        const rollableFeatures = [
-            'Barbarian Heritage',
-            'Tracker',
-            'Stalker',
-            'Danger Sense',
-            'Acrobat Training'
-        ];
-
+        const rollableFeatures = ['Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training'];
         return rollableFeatures.includes(featureName);
     });
 
@@ -164,40 +152,6 @@ Hooks.once('init', async function() {
 
     console.log('glog2d6 | System initialization complete');
 });
-
-async function ensureConfigDataLoaded() {
-    const maxRetries = 5;
-    let attempts = 0;
-
-    while (attempts < maxRetries) {
-        try {
-            await loadSystemData();
-            await loadSpellData();
-
-            // Verify critical data is loaded
-            if (CONFIG.GLOG.CLASSES && CONFIG.GLOG.FEATURES) {
-                console.log('glog2d6 | CONFIG.GLOG data successfully loaded');
-                return;
-            }
-
-            throw new Error('Data verification failed');
-        } catch (error) {
-            attempts++;
-            console.warn(`glog2d6 | Data loading attempt ${attempts} failed:`, error);
-
-            if (attempts >= maxRetries) {
-                // Provide absolute fallback data
-                CONFIG.GLOG.CLASSES = [];
-                CONFIG.GLOG.FEATURES = [];
-                console.error('glog2d6 | Using empty fallback data');
-                return;
-            }
-
-            // Wait before retry
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-    }
-}
 
 // Load spell data from multiple files
 Hooks.once("ready", async function() {
