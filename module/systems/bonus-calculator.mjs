@@ -104,49 +104,49 @@ const FEATURE_BONUSES = {
         const templates = getClassTemplateCount(actor.items, "Acrobat") - 1;
         const bonus = Math.floor(templates / 2);
 
-        // Only apply if not encumbered
         const isEncumbered = actor.system.inventory?.encumbrance > 0;
 
         if (!isEncumbered && bonus > 0) {
             return [
-                { target: "details.movement.bonus", value: bonus, type: "untyped" },
-                { target: "defense.melee.bonus", value: bonus, type: "untyped" }
+                { target: "details.movementBonus", value: bonus, type: "untyped" },        // ✅ FIXED
+                { target: "defense.meleeBonus", value: bonus, type: "untyped" }             // ✅ FIXED
             ];
         }
 
         return [];
     },
+
     // Fighter gets +2 to all attack rolls
     "Combat Training": (actor, feature) => [
-        { target: "combat.attack.bonus", value: 2, type: "untyped" }
+        { target: "combat.attack.bonus", value: 2, type: "untyped" }                      // ✅ CORRECT
     ],
 
     // Barbarian gets +1 HP per template
     "Barbarian Heritage": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Barbarian") - 1;
         return [
-            { target: "hp.bonus", value: templates, type: "untyped" }
+            { target: "hp.bonus", value: templates, type: "untyped" }                     // ✅ CORRECT
         ];
     },
 
-    // Thief gets stealth bonuses
+    // Thief gets stealth bonuses - HANDLED BY SPECIAL HANDLER
     "Thievery Training": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Thief") - 1;
         return [
-            { target: "skills.stealth.bonus", value: Math.floor(templates / 2), type: "untyped" }
+            { target: "skills.stealth.bonus", value: Math.floor(templates / 2), type: "untyped" }  // ✅ SPECIAL HANDLER
         ];
     },
 
-    // Assassin gets stealth bonuses
+    // Assassin gets stealth bonuses - HANDLED BY SPECIAL HANDLER
     "Assassin Training": (actor, feature) => [
-        { target: "skills.stealth.bonus", value: 2, type: "untyped" }
+        { target: "skills.stealth.bonus", value: 2, type: "untyped" }                    // ✅ SPECIAL HANDLER
     ],
 
-    // Courtier gets reaction bonuses
+    // Courtier gets reaction bonuses - HANDLED BY SPECIAL HANDLER
     "Noble Bearing": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Courtier") - 1;
         return [
-            { target: "skills.reaction.bonus", value: Math.floor(templates / 2), type: "untyped" }
+            { target: "skills.reaction.bonus", value: Math.floor(templates / 2), type: "untyped" }  // ✅ SPECIAL HANDLER
         ];
     },
 
@@ -154,24 +154,27 @@ const FEATURE_BONUSES = {
     "Archery Training": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Hunter") - 1;
         return [
-            { target: "combat.archery.bonus", value: Math.floor(templates / 2), type: "untyped" }
+            { target: "combat.archery.bonus", value: Math.floor(templates / 2), type: "untyped" }   // ✅ CORRECT
         ];
     },
+
+    // Wizard magic training - HANDLED BY SPECIAL HANDLERS
     "Magical Training": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Wizard") - 1;
         const intMod = actor.system.attributes.int.mod;
         const spellSlots = templates + Math.max(0, intMod);
         return [
-            { target: "magicDiceMax", value: templates, type: "untyped" },
-            { target: "spellSlots", value: spellSlots, type: "untyped" }
+            { target: "magicDiceMax", value: templates, type: "untyped" },               // ✅ SPECIAL HANDLER
+            { target: "spellSlots", value: spellSlots, type: "untyped" }                 // ✅ SPECIAL HANDLER
         ];
     },
-    // Intellect Fortress - already partially there, just need to fix it
+
+    // Intellect Fortress - save bonuses
     "Intellect Fortress": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Wizard") - 1;
         return [
-            { target: "saves.int.bonus", value: Math.floor(templates / 2), type: "untyped" },
-            { target: "saves.wis.bonus", value: Math.floor(templates / 2), type: "untyped" }
+            { target: "saves.int.bonus", value: Math.floor(templates / 2), type: "untyped" },       // ✅ CORRECT
+            { target: "saves.wis.bonus", value: Math.floor(templates / 2), type: "untyped" }        // ✅ CORRECT
         ];
     },
 };

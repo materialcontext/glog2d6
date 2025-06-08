@@ -42,7 +42,19 @@ export class GLOG2D6Actor extends Actor {
 
     // Data preparation lifecycle
     prepareData() {
-        this.initializeComponents();
+        // ATOMIC: Either all systems initialize or actor is dead
+        if (!this._systemsInitialized) {
+            try {
+                this.initializeComponents();
+                this._validateAllSystems();
+                this._systemsInitialized = true;
+            } catch (error) {
+                console.error(`🚨 FATAL: Actor ${this.name} (${this.id}) system initialization failed`);
+                console.error('Error details:', error);
+                throw new Error(`Actor ${this.name} is corrupted and cannot be used. Delete and recreate this actor.`);
+            }
+        }
+
         super.prepareData();
     }
 
@@ -67,6 +79,19 @@ export class GLOG2D6Actor extends Actor {
             this.combatSystem.calculateDefenseValues();
         } catch (error) {
             console.error("Error in prepareDerivedData for", this.name, ":", error);
+        }
+    }
+
+    _validateAllSystems() {
+        const requiredSystems = [
+            'attributeSystem', 'inventorySystem', 'bonusSystem',
+            'combatSystem', 'movementSystem', 'rolls'
+        ];
+
+        for (const system of requiredSystems) {
+            if (!this[system]) {
+                throw new Error(`Required system '${system}' failed to initialize`);
+            }
         }
     }
 

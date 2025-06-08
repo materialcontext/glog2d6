@@ -103,15 +103,27 @@ class BonusTargetApplier {
 
         if (specialHandler) {
             specialHandler(totalBonus, breakdown);
-        } else {
-            const targetStat = this.getTargetStatObjectFromString(this.system, target);
-            targetStat.bonus = (target.bonus || 0) + totalBonus;
-            targetStat.breakdown = breakdown;
+            return;
         }
-    }
 
-    getTargetStatObjectFromString(parent, targetPath) {
-        return targetPath.split(".").slice(0, -1).reduce((o, k) => o?.[k], parent);
+        // FIXED: Properly navigate to the target property
+        const pathParts = target.split(".");
+        const propertyName = pathParts.pop(); // Last part is the property name
+        const targetObject = pathParts.reduce((obj, key) => {
+            if (!obj || !obj[key]) {
+                throw new Error(`Invalid bonus target path: ${target}. Missing: ${key}`);
+            }
+            return obj[key];
+        }, this.system);
+
+        // CRITICAL: Verify the target object exists and is valid
+        if (!targetObject || typeof targetObject !== 'object') {
+            throw new Error(`FATAL: Bonus target ${target} resolved to non-object: ${typeof targetObject} (${targetObject})`);
+        }
+
+        // Apply the bonus safely
+        targetObject[propertyName] = (targetObject[propertyName] || 0) + totalBonus;
+        targetObject[`${propertyName}Breakdown`] = breakdown;
     }
 
     applyStealthBonus(totalBonus, breakdown) {
