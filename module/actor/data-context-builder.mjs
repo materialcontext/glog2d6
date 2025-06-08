@@ -8,6 +8,11 @@ export class DataContextBuilder {
     }
 
     buildCompleteContext(baseContext) {
+        // Single line fix - check if CONFIG.GLOG exists
+        if (!CONFIG.GLOG || !CONFIG.GLOG.CLASSES || !CONFIG.GLOG.FEATURES) {
+            return this._buildSafeContext(baseContext);
+        }
+
         const contextEnhancer = new ContextEnhancer(this.actor, baseContext);
 
         return contextEnhancer
@@ -19,6 +24,21 @@ export class DataContextBuilder {
             .addAcrobatTraining()
             .addDebugLogging()
             .getContext();
+    }
+
+    // Add this fallback method
+    _buildSafeContext(baseContext) {
+        return {
+            ...baseContext,
+            rollData: this.actor.getRollData(),
+            system: this.actor.system,
+            flags: this.actor.flags,
+            editMode: this.actor.getFlag("glog2d6", "editMode") === true,
+            weaponAnalysis: { hasWeapons: false, attackButtonType: 'generic' },
+            hasAvailableFeatures: false,
+            availableClasses: [],
+            hasAcrobatTraining: false
+        };
     }
 }
 

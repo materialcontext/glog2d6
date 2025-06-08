@@ -159,50 +159,81 @@ async function toggleFeature(sheet, event) {
 }
 
 function hasAvailableClassFeatures(actor) {
-    // Guard clause - if no actor provided, return false
+    // Enhanced guard clauses
     if (!actor) {
         console.warn('hasAvailableClassFeatures called without actor parameter');
+        return false;
+    }
+
+    if (!actor.system || !actor.system.details) {
+        console.warn('hasAvailableClassFeatures: actor missing system.details');
         return false;
     }
 
     const className = actor.system.details.class;
     const currentLevel = actor.system.details.level;
 
-    if (!className || currentLevel < 1) return false;
+    if (!className || currentLevel < 1) {
+        return false;
+    }
+
+    // Check CONFIG.GLOG availability
+    if (!CONFIG.GLOG || !CONFIG.GLOG.FEATURES) {
+        console.warn('hasAvailableClassFeatures: CONFIG.GLOG.FEATURES not available');
+        return false;
+    }
 
     const classData = CONFIG.GLOG.FEATURES.find(cls => cls.name === className);
-    if (!classData || !classData.features) return false;
-
-    // Get existing features
-    const existingFeatures = actor.items.filter(i =>
-        i.type === "feature" &&
-        i.system.classSource === className
-    );
-
-    // Check level-0 feature
-    if (classData.features["level-0"] &&
-        !existingFeatures.some(f => f.system.template === "level-0")) {
-        return true;
+    if (!classData || !classData.features) {
+        return false;
     }
 
-    // Check template features
-    const templates = ["A", "B", "C", "D"];
-    for (let i = 0; i < Math.min(currentLevel, 4); i++) {
-        const template = templates[i];
-        const templateFeatures = classData.features[template];
+    // Ensure actor.items exists
+    if (!actor.items) {
+        console.warn('hasAvailableClassFeatures: actor.items not available');
+        return false;
+    }
 
-        if (templateFeatures && Array.isArray(templateFeatures)) {
-            for (const featureData of templateFeatures) {
-                const exists = existingFeatures.some(f =>
-                    f.system.template === template &&
-                    f.name === featureData.name
-                );
-                if (!exists) return true;
+    try {
+        // Get existing features
+        const existingFeatures = actor.items.filter(i =>
+            i &&
+            i.type === "feature" &&
+            i.system &&
+            i.system.classSource === className
+        );
+
+        // Check level-0 feature
+        if (classData.features["level-0"] &&
+            !existingFeatures.some(f => f.system && f.system.template === "level-0")) {
+            return true;
+        }
+
+        // Check template features
+        const templates = ["A", "B", "C", "D"];
+        for (let i = 0; i < Math.min(currentLevel, 4); i++) {
+            const template = templates[i];
+            const templateFeatures = classData.features[template];
+
+            if (templateFeatures && Array.isArray(templateFeatures)) {
+                for (const featureData of templateFeatures) {
+                    if (!featureData || !featureData.name) continue;
+
+                    const exists = existingFeatures.some(f =>
+                        f.system &&
+                        f.system.template === template &&
+                        f.name === featureData.name
+                    );
+                    if (!exists) return true;
+                }
             }
         }
-    }
 
-    return false;
+        return false;
+    } catch (error) {
+        console.error('Error in hasAvailableClassFeatures:', error);
+        return false;
+    }
 }
 
 /**

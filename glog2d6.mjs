@@ -84,6 +84,21 @@ Hooks.once('init', async function() {
         return tips[featureName] || '';
     });
 
+    Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
+        if (!featureName) return false;
+
+        // Define which features have rollable components
+        const rollableFeatures = [
+            'Barbarian Heritage',
+            'Tracker',
+            'Stalker',
+            'Danger Sense',
+            'Acrobat Training'
+        ];
+
+        return rollableFeatures.includes(featureName);
+    });
+
     // Register sheet application classes
     foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
     foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {

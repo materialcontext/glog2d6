@@ -115,24 +115,42 @@ export function analyzeEquippedWeapons(items) {
     return analysis;
 }
 
-/**
- * Check if actor has specific features
- * @param {Collection} items - The actor's items collection
- * @param {...string} featureNames - Feature names to check for
- * @returns {boolean} True if any of the features exist and are active
- */
 export function hasFeature(items, ...featureNames) {
-    if (!items || items.size === 0) {
+    // Enhanced safety checks
+    if (!items) {
+        console.warn('hasFeature called with null/undefined items collection');
         return false;
     }
 
-    return featureNames.some(name =>
-        items.some(i =>
-            i.type === "feature" &&
-            i.system?.active &&
-            i.name === name
-        )
-    );
+    // Handle both Collection and Array types
+    const itemsArray = items.size !== undefined ? Array.from(items) : items;
+
+    if (!itemsArray || itemsArray.length === 0) {
+        return false;
+    }
+
+    if (!featureNames || featureNames.length === 0) {
+        console.warn('hasFeature called without feature names');
+        return false;
+    }
+
+    try {
+        return featureNames.some(name => {
+            if (!name) return false;
+
+            return itemsArray.some(item => {
+                if (!item || item.type !== "feature") return false;
+                if (!item.system) return false;
+                if (!item.system.active) return false;
+                if (!item.name) return false;
+
+                return item.name === name;
+            });
+        });
+    } catch (error) {
+        console.error('Error in hasFeature:', error, { items: itemsArray, featureNames });
+        return false;
+    }
 }
 
 /**
