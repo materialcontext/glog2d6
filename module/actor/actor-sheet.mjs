@@ -1,7 +1,6 @@
-// module/actor/actor-sheet.mjs - Refactored
 import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
-import { addClassFeatures, toggleFeature, displayFeature } from './handlers/feature-handlers.mjs';
+import { addClassFeatures, displayFeature } from './handlers/feature-handlers.mjs';
 
 import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
 import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
@@ -13,7 +12,7 @@ import { DataContextBuilder } from './data-context-builder.mjs';
 export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     constructor(...args) {
         super(...args);
-        this.initializeMixinsAndComponents();
+        this._componentsInitialized = false;
     }
 
     static get defaultOptions() {
@@ -23,6 +22,18 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
             height: 1050,
             tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "inventory" }]
         });
+    }
+
+    _ensureComponentsInitialized() {
+        if (this._componentsInitialized) return;
+
+        // CRITICAL: Verify actor systems exist before proceeding
+        if (!this.actor.attributeSystem) {
+            throw new Error(`FATAL: Actor ${this.actor.name} systems not initialized. Sheet cannot render safely.`);
+        }
+
+        this.initializeMixinsAndComponents();
+        this._componentsInitialized = true;
     }
 
     initializeMixinsAndComponents() {
@@ -44,6 +55,9 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     }
 
     async getData() {
+        // Ensure actor systems are ready BEFORE sheet components
+        this._ensureComponentsInitialized();
+
         const context = super.getData();
         const result = this.dataContextBuilder.buildCompleteContext(context);
 
@@ -52,7 +66,9 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     }
 
     activateListeners(html) {
-            super.activateListeners(html);
+        this._ensureComponentsInitialized();
+
+        super.activateListeners(html);
 
         this.stateManager.updateAllVisualElements(html);
 
