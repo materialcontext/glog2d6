@@ -1,7 +1,5 @@
-import { ErrorTrackingMixin } from '../systems/error-tracking.mjs';
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
-import { addClassFeatures, displayFeature } from './handlers/feature-handlers.mjs';
-import { ActorSheetDiagnostics } from './sheet-diagnostics.mjs';
+import { addClassFeatures, toggleFeature, displayFeature } from './handlers/feature-handlers.mjs';
 
 import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
 import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
@@ -12,13 +10,8 @@ import { DataContextBuilder } from './data-context-builder.mjs';
 
 export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     constructor(...args) {
-        console.log(`🏗️ [SHEET] Constructor called for actor:`, args[0]?.name, `by user:`, game.user?.name);
         super(...args);
-        this._componentsInitialized = false;
-
-        this.diagnostics = new ActorSheetDiagnostics(this);
-        this._initializationAttempts = 0;
-        this.MAX_INIT_ATTEMPTS = 3;
+        this.initializeMixinsAndComponents();
     }
 
     static get defaultOptions() {
@@ -30,77 +23,7 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         });
     }
 
-    _ensureComponentsInitialized() {
-        console.log(`🔧 [SHEET] _ensureComponentsInitialized called for ${this.actor.name} by ${game.user.name}`);
-        if (this._componentsInitialized) return;
-
-        this.diagnostics.checkpoint('component_init_start', {
-            attempt: ++this._initializationAttempts
-        });
-
-        try {
-            // CRITICAL: Verify actor systems exist before proceeding
-            if (!this.actor.attributeSystem) {
-                // Try to initialize actor systems first
-                if (!this.actor._systemsInitialized && this.actor.initializeComponents) {
-                    console.warn(`Actor ${this.actor.name} systems not initialized, attempting to fix...`);
-                    this.actor.initializeComponents();
-                    this.actor._validateAllSystems();
-                    this.actor._systemsInitialized = true;
-                }
-
-                // If still no attribute system, throw error
-                if (!this.actor.attributeSystem) {
-                    throw new Error(`FATAL: Actor ${this.actor.name} systems not initialized. Sheet cannot render safely.`);
-                }
-            }
-
-            this.initializeMixinsAndComponents();
-            this._componentsInitialized = true;
-
-            this.diagnostics.checkpoint('component_init_success');
-
-        } catch (error) {
-            this.diagnostics.recordFailure('component_initialization', error);
-
-            if (this._initializationAttempts >= this.MAX_INIT_ATTEMPTS) {
-                console.error(`🚨 COMPONENT INIT FAILED AFTER ${this.MAX_INIT_ATTEMPTS} ATTEMPTS FOR ${this.actor.name}`);
-                // Create emergency fallback components
-                this._createEmergencyComponents();
-                this._componentsInitialized = true;
-                this._emergencyMode = true;
-            } else {
-                // Retry after brief delay
-                setTimeout(() => this._ensureComponentsInitialized(), 100);
-            }
-        }
-    }
-
-    _createEmergencyComponents() {
-        console.warn(`Creating emergency components for ${this.actor.name}`);
-
-        // Create stub components that won't crash
-        this.eventRegistry = { registerAllEventHandlers: () => { } };
-        this.actionMap = {};
-        this.rollHandler = {
-            handleAttributeRoll: (event) => {
-                const attr = event.currentTarget.dataset.attribute;
-                return this.actor.rollAttribute?.(attr, 7);
-            }
-        };
-        this.stateManager = { updateAllVisualElements: () => { } };
-        this.equipmentHandler = {};
-        this.itemManager = {};
-        this.dataContextBuilder = {
-            buildCompleteContext: (context) => this._buildEmergencyContext(context)
-        };
-    }
-
     initializeMixinsAndComponents() {
-        Object.assign(this, ErrorTrackingMixin);
-        this._initializeErrorTracking();
-
-        // Component initialization
         this.eventRegistry = new EventHandlerRegistry(this);
         this.actionMap = new ActionHandlerMap(this);
         this.rollHandler = new SheetRollHandler(this);
@@ -115,145 +38,26 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     }
 
     async getData() {
-        console.log(`📊 [SHEET] getData called for ${this.actor.name} by ${game.user.name}`);
-        this.diagnostics.checkpoint('getData_start');
+        const context = super.getData();
+        const result = this.dataContextBuilder.buildCompleteContext(context);
 
-        try {
-            // Ensure actor systems are ready BEFORE sheet components
-            this._ensureComponentsInitialized();
-            this.diagnostics.checkpoint('components_ready');
-
-            const context = super.getData();
-            this.diagnostics.checkpoint('super_getData_complete');
-
-            let result;
-            if (this._emergencyMode) {
-                result = this._buildEmergencyContext(context);
-                this.diagnostics.checkpoint('emergency_context_built');
-            } else {
-                result = this.dataContextBuilder.buildCompleteContext(context);
-                this.diagnostics.checkpoint('full_context_built');
-            }
-
-            console.log('Template context:', result.system);
-            this.diagnostics.checkpoint('getData_success');
-            return result;
-
-        } catch (error) {
-            this.diagnostics.recordFailure('getData', error);
-            console.error(`getData failed for ${this.actor.name}:`, error);
-
-            // Last resort emergency context
-            return this._buildEmergencyContext(super.getData());
-        }
-    }
-
-    _buildEmergencyContext(baseContext) {
-        console.warn(`Building emergency context for ${this.actor.name}`);
-
-        return {
-            ...baseContext,
-            rollData: this.actor.getRollData?.() || {},
-            system: this.actor.system || {},
-            flags: this.actor.flags || {},
-            editMode: this.actor.getFlag?.("glog2d6", "editMode") === true,
-            emergencyMode: true,
-            emergencyMessage: 'Sheet loaded in emergency mode. Some features may be unavailable.',
-            weaponAnalysis: { hasWeapons: false, attackButtonType: 'generic' },
-            hasAvailableFeatures: false,
-            availableClasses: [],
-            hasAcrobatTraining: false
-        };
+        console.log('Template context:', result.system);
+        return result;
     }
 
     activateListeners(html) {
-        this.diagnostics.checkpoint('activateListeners_start');
+        super.activateListeners(html);
 
-        try {
-            this._ensureComponentsInitialized();
-            this.diagnostics.checkpoint('activateListeners_components_ready');
+        this.stateManager.updateAllVisualElements(html);
 
-            super.activateListeners(html);
-            this.diagnostics.checkpoint('super_activateListeners_complete');
-
-            this.stateManager.updateAllVisualElements(html);
-            this.diagnostics.checkpoint('visual_elements_updated');
-
-            if (this.isEditable) {
-                if (this._emergencyMode) {
-                    this._setupEmergencyModeHandlers(html);
-                } else {
-                    this.eventRegistry.registerAllEventHandlers(html);
-                }
-                this.diagnostics.checkpoint('event_handlers_registered');
-            }
-
-        } catch (error) {
-            this.diagnostics.recordFailure('activateListeners', error);
-            console.error(`activateListeners failed for ${this.actor.name}:`, error);
-
-            // Try to set up minimal handlers
-            this._setupMinimalHandlers(html);
+        if (this.isEditable) {
+            this.eventRegistry.registerAllEventHandlers(html);
         }
     }
 
-    // ADD: Emergency mode handlers
-    _setupEmergencyModeHandlers(html) {
-        console.warn(`Setting up emergency mode handlers for ${this.actor.name}`);
-
-        // Show emergency mode notice
-        if (!html.find('.emergency-notice').length) {
-            html.prepend(`
-                <div class="emergency-notice" style="background: #ff9800; color: white; padding: 8px; text-align: center; font-weight: bold;">
-                    ⚠️ EMERGENCY MODE: Some features disabled due to initialization errors
-                    <button type="button" onclick="game.glog2d6?.resetActor?.('${this.actor.id}')" style="margin-left: 10px; padding: 2px 6px;">
-                        Reset Actor
-                    </button>
-                </div>
-            `);
-        }
-
-        // Basic edit mode toggle
-        html.find('.edit-toggle').click(async (event) => {
-            event.preventDefault();
-            const currentEditMode = this.actor.getFlag?.("glog2d6", "editMode") || false;
-            await this.actor.setFlag?.("glog2d6", "editMode", !currentEditMode);
-            this.render();
-        });
-    }
-
-    // ADD: Minimal fallback handlers
-    _setupMinimalHandlers(html) {
-        console.warn(`Setting up minimal fallback handlers for ${this.actor.name}`);
-
-        // Basic attribute rolls only
-        html.find('.attribute-card.clickable').click(async (event) => {
-            event.preventDefault();
-            try {
-                const attr = event.currentTarget.dataset.attribute;
-                await this.actor.rollAttribute?.(attr, 7);
-            } catch (error) {
-                console.error('Minimal attribute roll failed:', error);
-                ui.notifications.error('Roll failed - sheet in emergency mode');
-            }
-        });
-    }
-
+    // Direct event handlers that delegate to roll handler
     async _onAttributeRoll(event) {
-        try {
-            this.diagnostics.checkpoint('attribute_roll_start');
-            const result = this.rollHandler.handleAttributeRoll(event);
-            this.diagnostics.checkpoint('attribute_roll_success');
-            return result;
-        } catch (error) {
-            this.diagnostics.recordFailure('_onAttributeRoll', error);
-            throw error;
-        }
-    }
-
-    // ADD: Diagnostic method for debugging
-    getSheetDiagnostics() {
-        return this.diagnostics.generateReport();
+        return this.rollHandler.handleAttributeRoll(event);
     }
 
     async _onSaveRoll(event) {
@@ -295,50 +99,6 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         return this.actionMap.executeAction(action, event);
     }
 
-    async handleEditModeToggle(event) {
-        event.preventDefault();
-        this.diagnostics.checkpoint('editModeToggle_start');
-
-        try {
-            const currentEditMode = this.actor.getFlag("glog2d6", "editMode") || false;
-            await this.actor.setFlag("glog2d6", "editMode", !currentEditMode);
-            this.render();
-            this.diagnostics.checkpoint('editModeToggle_success');
-        } catch (error) {
-            this.diagnostics.recordFailure('handleEditModeToggle', error);
-            throw error;
-        }
-    }
-
-    // ADD: Override close to cleanup diagnostics
-    async close(options = {}) {
-        if (this.diagnostics && this.diagnostics.failures.length > 0) {
-            console.log(`Sheet diagnostics for ${this.actor.name}:`, this.diagnostics.generateReport());
-        }
-        return super.close(options);
-    }
-
-    // UI state handlers
-    async handleEditModeToggle(event) {
-        event.preventDefault();
-        const currentEditMode = this.actor.getFlag("glog2d6", "editMode") || false;
-
-        await this.actor.setFlag("glog2d6", "editMode", !currentEditMode);
-        this.render();
-    }
-
-    // Feature and torch handlers - delegation to existing modules
-    async handleAddClassFeatures(event) {
-        return addClassFeatures(this, event);
-    }
-
-    async handleFeatureToggle(event) {
-        return displayFeature(this, event);
-        // return toggleFeature(this, event);
-        //  move ^ this ^ later when you want to use it
-    }
-
-    // Add this single method to your GLOG2D6ActorSheet class
     async handleEquipmentToggle(event) {
         event.preventDefault();
         const itemId = event.currentTarget.dataset.itemId;
@@ -363,6 +123,24 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
             // Your spell casting logic here
             spell.sheet.render(true); // or implement spell casting
         }
+    }
+
+    async handleEditModeToggle(event) {
+        event.preventDefault();
+        const currentEditMode = this.actor.getFlag("glog2d6", "editMode") || false;
+
+        await this.actor.setFlag("glog2d6", "editMode", !currentEditMode);
+        this.render();
+    }
+
+    async handleAddClassFeatures(event) {
+        return addClassFeatures(this, event);
+    }
+
+    async handleFeatureToggle(event) {
+        return displayFeature(this, event);
+        // return toggleFeature(this, event);
+        //  move ^ this ^ later when you want to use it
     }
 
     async handleReputationSelect(event) {
