@@ -10,31 +10,13 @@ export class GLOG2D6HirelingSheet extends GLOG2D6ActorSheet {
     }
 
     /**
-     * Override getData to ensure torch state is included
+     * Override component check since hirelings don't have full actor systems
      */
-    async getData() {
-        const context = await super.getData();
+    _ensureComponentsInitialized() {
+        if (this._componentsInitialized) return;
 
-        // Ensure torch system exists for hirelings
-        if (!context.system.torch) {
-            context.system.torch = {
-                lit: false,
-                activeTorchId: null
-            };
-        }
-
-        return context;
-    }
-
-    /**
-     * Override activateListeners to ensure torch handlers work
-     * The parent class already has the torch handling logic via the event registry
-     */
-    activateListeners(html) {
-        super.activateListeners(html);
-
-        // The parent class EventHandlerRegistry already includes:
-        // { selector: '.torch-icon[data-action="toggle-torch"]', event: 'click', handler: 'handleTorchItemToggle' }
-        // So torches should work automatically!
+        // Skip the attributeSystem check that would fail for hirelings
+        this.initializeMixinsAndComponents();
+        this._componentsInitialized = true;
     }
 }
