@@ -2,7 +2,7 @@
     "id": "glog2d6",
     "title": "GLOG 2d6",
     "description": "A minimal 2d6-based system for Foundry VTT",
-    "version": "1.0.23",
+    "version": "1.0.24",
     "compatibility": {
         "minimum": "11",
         "verified": "13"
@@ -43,7 +43,7 @@
     },
     "primaryTokenAttribute": "hp",
     "secondaryTokenAttribute": null,
-    "url": "https://github.com/yourusername/glog2d6-foundry",
+    "url": "https://github.com/materialcontext/glog2d6-foundry",
     "manifest": "https://github.com/materialcontext/glog2d6/releases/download/release/system.json",
     "download": "https://github.com/materialcontext/glog2d6/releases/download/release/glog2d6.zip"
 }

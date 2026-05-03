@@ -292,18 +292,6 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         }
     });
 
-    $html.find('[data-recon-id]').click(async e => {
-        e.preventDefault();
-        const { reconId, actorId } = e.currentTarget.dataset;
-        try {
-            await game.glog2d6.reconSystem.execute(reconId, actorId);
-            e.currentTarget.disabled = true;
-            e.currentTarget.textContent = 'Rolled';
-        } catch (error) {
-            ui.notifications.error(error.message);
-        }
-    });
-
     $html.find('.break-item-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;

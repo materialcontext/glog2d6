@@ -175,6 +175,16 @@ export function initReconSystem() {
     game.glog2d6 ??= {};
     game.glog2d6.reconSystem = new ReconSystem();
 
+    // Socket listener — only GM processes execute
+    game.socket.on("system.glog2d6", async (data) => {
+        if (data.type !== "reconExecute" || !game.user.isGM) return;
+        try {
+            await game.glog2d6.reconSystem.execute(data.reconId, data.actorId);
+        } catch (error) {
+            console.error("Recon execute failed:", error);
+        }
+    });
+
     if (game.user.isGM) {
         game.glog2d6.recon = (actors, params) => game.glog2d6.reconSystem.initiate(actors, params);
         game.glog2d6.quickRecon = () => {
@@ -190,7 +200,11 @@ export function initReconSystem() {
             e.preventDefault();
             const { reconId, actorId } = e.currentTarget.dataset;
             try {
-                await game.glog2d6.reconSystem.execute(reconId, actorId);
+                if (game.user.isGM) {
+                    await game.glog2d6.reconSystem.execute(reconId, actorId);
+                } else {
+                    game.socket.emit("system.glog2d6", { type: "reconExecute", reconId, actorId });
+                }
                 e.currentTarget.disabled = true;
                 e.currentTarget.textContent = 'Rolled';
             } catch (error) {
