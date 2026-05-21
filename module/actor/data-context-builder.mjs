@@ -62,7 +62,7 @@ class ContextEnhancer {
 
     addClassData() {
         const availableClasses = this.getAvailableClasses();
-        this.context.availableClasses = availableClasses.map(cls => cls.name);
+        this.context.availableClasses = [...availableClasses.map(cls => cls.name), 'Custom'];
         return this;
     }
 

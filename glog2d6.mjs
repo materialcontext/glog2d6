@@ -3,6 +3,7 @@ import { GLOG2D6Item } from "./module/item/item.mjs";
 import { GLOG2D6ActorSheet } from "./module/actor/actor-sheet.mjs";
 import { GLOG2D6HirelingSheet } from "./module/actor/hireling-sheet.mjs";
 import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
+import { SubtleRollReveal } from './module/dice/subtle-roll-reveal.mjs';
 import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders } from "./scripts/initialize-content.mjs";
@@ -258,6 +259,41 @@ Hooks.on("chatMessage", (log, msg) => {
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
     const $html = $(html);
+
+    $html.find('.gm-roll-btn').click(async e => {
+        e.preventDefault();
+        const { rollId, actorId } = e.currentTarget.dataset;
+        try {
+            await game.glog2d6.gmRollSystem.execute(rollId, actorId);
+            e.currentTarget.disabled = true;
+            e.currentTarget.textContent = 'Rolled';
+        } catch (error) {
+            ui.notifications.error(error.message);
+        }
+    });
+
+    if (game.user.isGM) {
+        const messageId = html.dataset?.messageId
+            ?? html.closest?.('[data-message-id]')?.dataset.messageId;
+        const msg = messageId ? game.messages.get(messageId) : null;
+        if (!msg) return;
+
+        const subtleData = msg.flags?.glog2d6?.subtleRoll;
+        if (subtleData && !subtleData.revealed) {
+            const revealBtn = $(`
+                <div class="subtle-controls mt-8 pt-8" style="border-top: 1px solid var(--color-border-light-tertiary);">
+                    <button type="button" class="btn btn-secondary p-4 text-small w-full subtle-reveal-btn">
+                        <i class="fas fa-eye"></i> Reveal to Players
+                    </button>
+                </div>
+            `);
+            $html.find('.glog2d6-roll').append(revealBtn);
+            revealBtn.find('.subtle-reveal-btn').click(async (e) => {
+                e.preventDefault();
+                await SubtleRollReveal.reveal(msg.id);
+            });
+        }
+    }
 
     $html.find('.magic-die-btn').click(async (event) => {
         event.preventDefault();

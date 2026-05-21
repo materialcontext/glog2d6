@@ -12,9 +12,15 @@ export class ActorRolls {
         const attribute = this.actor.system.attributes[attributeKey];
 
         // Determine context based on attribute
-        let context = 'attribute';
-        if (attributeKey === 'str') context = 'strength';
-        if (attributeKey === 'cha') context = 'social';
+        const contextMap = {
+            str: 'strength',
+            dex: 'dexterity',
+            con: 'constitution',
+            int: 'intellect',
+            wis: 'wisdom',
+            cha: 'social'
+        };
+        const context = contextMap[attributeKey] ?? 'attribute';
 
         const roll = this.actor.createRoll("2d6 + @mod", { mod: attribute.mod }, context);
         await roll.evaluate();
@@ -24,11 +30,7 @@ export class ActorRolls {
             extraContent = `<br><small>${attributeKey.toUpperCase()}: ${attribute.mod >= 0 ? '+' : ''}${attribute.mod}</small>`;
         }
 
-        this.actor._createRollChatMessage(
-            `${this.actor.name} - ${attributeKey.toUpperCase()} Check`,
-            roll,
-            extraContent
-        );
+        this.actor._createRollChatMessage(`${this.actor.name} - ${attributeKey.toUpperCase()} Check`, roll, extraContent, context);
 
         return roll;
     }
@@ -43,9 +45,7 @@ export class ActorRolls {
         }
 
         // Determine context based on attribute
-        let context = 'save';
-        if (attributeKey === 'str') context = 'strength';
-        if (attributeKey === 'cha') context = 'social';
+        const context = 'save';
 
         const roll = this.actor.createRoll("2d6 + @mod + @saveBonus", {
             mod: attribute.mod,
@@ -75,9 +75,9 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - ${attributeKey.toUpperCase()} Save`,
             roll,
-            extraContent
+            extraContent,
+            context
         );
-
         return roll;
     }
 
@@ -98,7 +98,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - ${attackData.description}`,
             roll,
-            extraContent
+            extraContent,
+            'attack'
         );
 
         return roll;
@@ -300,7 +301,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Melee Defense`,
             roll,
-            extraContent
+            extraContent,
+            'defense'
         );
 
         return roll;
@@ -317,7 +319,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Ranged Defense`,
             roll,
-            extraContent
+            extraContent,
+            'defense'
         );
 
         return roll;
@@ -334,7 +337,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Defense`,
             roll,
-            extraContent
+            extraContent,
+            'defense'
         );
 
         return roll;
@@ -342,14 +346,13 @@ export class ActorRolls {
 
     async rollMovement() {
         const movement = this.actor.system.details.effectiveMovement || this.actor.system.details.movement;
-        const roll = this.actor.createRoll("2d6 + @move", { move: movement }, 'movement');
+        const roll = this.actor.createRoll("1d6 + @move", { move: movement }, 'movement');
         await roll.evaluate();
 
-        this.actor._createRollChatMessage(
-            `${this.actor.name} - Movement`,
-            roll
-        );
+        const diceResult = roll.terms[0].results[0].result;
+        const rollDisplayOverride = `[${movement}, ${diceResult}]`;
 
+        this.actor._createRollChatMessage(`${this.actor.name} - Movement`, roll, '', 'movement', { rollDisplayOverride });
         return roll;
     }
 
@@ -383,7 +386,8 @@ export class ActorRolls {
             this.actor._createRollChatMessage(
                 `${this.actor.name} - ${weapon.name} Damage`,
                 displayRoll,
-                extraContent
+                extraContent,
+                'damage'
             );
 
             return baseDamage;
@@ -401,7 +405,8 @@ export class ActorRolls {
             this.actor._createRollChatMessage(
                 `${this.actor.name} - ${weapon.name} Damage`,
                 damageRoll,
-                extraContent
+                extraContent,
+                'damage'
             );
 
             return damageRoll.total;
@@ -426,7 +431,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Sneak`,
             roll,
-            extraContent
+            extraContent,
+            'stealth'
         );
 
         return roll;
@@ -449,7 +455,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Hide`,
             roll,
-            extraContent
+            extraContent,
+            'stealth'
         );
 
         return roll;
@@ -472,7 +479,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Disguise`,
             roll,
-            extraContent
+            extraContent,
+            'stealth'
         );
 
         return roll;
@@ -494,7 +502,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Reaction`,
             roll,
-            extraContent
+            extraContent,
+            'social'
         );
 
         return roll;
@@ -514,7 +523,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Diplomacy`,
             roll,
-            extraContent
+            extraContent,
+            'social'
         );
 
         return roll;
@@ -534,7 +544,8 @@ export class ActorRolls {
         this.actor._createRollChatMessage(
             `${this.actor.name} - Intimidate`,
             roll,
-            extraContent
+            extraContent,
+            'social'
         );
 
         return roll;

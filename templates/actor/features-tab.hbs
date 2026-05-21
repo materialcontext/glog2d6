@@ -14,9 +14,8 @@
                     data-type="feature" title="Create Feature">
                     <i class="fas fa-star"></i> Feature
                 </a>
-                {{#if system.details.class}}
-                <a class="btn btn-success p-6 text-small flex flex-center flex-gap-4 add-class-features"
-                    title="Add Class Features">
+                {{#if hasAvailableFeatures}}
+                <a class="btn btn-success p-6 text-small flex flex-center flex-gap-4 add-class-features">
                     <i class="fas fa-magic"></i> Add Class Features
                 </a>
                 {{/if}}

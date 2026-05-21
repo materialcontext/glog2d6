@@ -1,4 +1,6 @@
 import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
+import { SubtleRollPolicy } from '../dice/subtle-roll-policy.mjs';
+import { SubtleRollReveal } from '../dice/subtle-roll-reveal.mjs';
 import { ActorRolls } from "../dice/actor-rolls.mjs";
 import { ActorAttributeSystem } from "./systems/actor-attribute-system.mjs";
 import { ActorInventorySystem } from "./systems/actor-inventory-system.mjs";
@@ -203,9 +205,12 @@ export class GLOG2D6Actor extends Actor {
     }
 
     // Chat message helper
-    async _createRollChatMessage(title, roll, extraContent = '') {
-        const chatMessageBuilder = new RollChatMessageBuilder(this, title, roll, extraContent);
-        return await chatMessageBuilder.createAndSend();
+    async _createRollChatMessage(title, roll, extraContent = '', rollContext = null, builderOptions = {}) {
+        const resolution = rollContext
+            ? SubtleRollPolicy.resolve(this, rollContext)
+            : { subtle: false, revealOnCritical: false };
+        const builder = new RollChatMessageBuilder(this, title, roll, extraContent, rollContext);
+        return await builder.createAndSend({ subtle: resolution.subtle, revealOnCritical: resolution.revealOnCritical, ...builderOptions });
     }
 
     // Dice result extraction helper
@@ -268,28 +273,70 @@ class RollSpecialEffectsAnalyzer {
 }
 
 class RollChatMessageBuilder {
-    constructor(actor, title, roll, extraContent) {
+    constructor(actor, title, roll, extraContent, rollContext = null) {
         this.actor = actor;
         this.title = title;
         this.roll = roll;
         this.extraContent = extraContent;
+        this.rollContext = rollContext;
     }
 
-    async createAndSend() {
-        const content = this.buildContent();
+    async createAndSend(options = {}) {
+        const { subtle = false, revealOnCritical = false } = options;
+        const content = this.buildContent(options);
         this.handleSpecialRollEffects();
+        const speaker = ChatMessage.getSpeaker({ actor: this.actor });
 
-        const message = await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-            content: content,
-            roll: this.roll
-        });
+        if (subtle) {
+            // Public notification — lets the table know a roll happened
+            await ChatMessage.create({
+                speaker,
+                content: `<div class="glog2d6-subtle-notification">
+                    <em class="text-muted">${SubtleRollPolicy.getNotification(this.actor.name, this.rollContext)}</em>
+                </div>`
+            });
 
-        return message;
+            // Whispered result — GM only
+            const gmIds = ChatMessage.getWhisperRecipients('GM').map(u => u.id);
+            const message = await ChatMessage.create({
+                speaker,
+                content,
+                roll: this.roll,
+                whisper: gmIds,
+                flags: {
+                    glog2d6: {
+                        subtleRoll: {
+                            rollContent: content,
+                            speaker,
+                            rollJson: this.roll.toJSON(),
+                            revealed: false
+                        }
+                    }
+                }
+            });
+
+            // Auto-reveal on critical
+            if (revealOnCritical && this._isCriticalHit()) {
+                await SubtleRollReveal.reveal(message.id, { auto: true });
+            }
+
+            return message;
+        }
+
+        // Standard public message
+        return await ChatMessage.create({ speaker, content, roll: this.roll });
     }
 
-    buildContent() {
+    _isCriticalHit() {
+        if (this.roll.isCriticalHit !== undefined) return this.roll.isCriticalHit;
+        const results = this.roll.terms[0]?.results;
+        if (results?.length === 2) return results[0].result === 6 && results[1].result === 6;
+        return false;
+    }
+
+    buildContent(options = {}) {
         const rollDisplay = this.parseRollDisplay();
+        const displayString = options.rollDisplayOverride ?? rollDisplay
         const specialEffectsHtml = this.buildSpecialEffectsHtml();
         const breakageButtonHtml = this.buildBreakageButtonHtml();
         const safeExtraContent = this.extraContent || "";
@@ -298,7 +345,7 @@ class RollChatMessageBuilder {
         <div class="glog2d6-roll">
             <h3>${this.title}</h3>
             <div class="roll-result">
-                <strong>Roll:</strong> ${rollDisplay}<br>
+                <strong>Roll:</strong> ${displayString}<br>
                 <strong>Total:</strong> ${this.roll.total}
                 ${safeExtraContent}
                 ${specialEffectsHtml}
