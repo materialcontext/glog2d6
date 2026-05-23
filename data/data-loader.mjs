@@ -50,6 +50,22 @@ async function loadSystemData() {
         glog.FEATURES = getDefaultClasses();
     }
 
+    // Load custom (free-floating) features
+    try {
+        const customFeaturesResponse = await fetch('systems/glog2d6/data/custom-features.json');
+        if (customFeaturesResponse.ok) {
+            const customFeatureData = await customFeaturesResponse.json();
+            glog.CUSTOM_FEATURES = customFeatureData.features;
+            console.log('glog2d6 | Loaded', glog.CUSTOM_FEATURES.length, 'custom features');
+        } else {
+            console.warn('glog2d6 | Could not load custom-features.json');
+            glog.CUSTOM_FEATURES = [];
+        }
+    } catch (error) {
+        console.error('glog2d6 | Error loading custom-features.json:', error);
+        glog.CUSTOM_FEATURES = [];
+    }
+
     // Load weapons
     try {
         const weaponsResponse = await fetch('systems/glog2d6/data/weapons.json');

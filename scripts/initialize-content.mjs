@@ -1,4 +1,5 @@
 const GLOG = CONFIG.GLOG
+const CONTENT_VERSION = "1.1.0"
 
 // create the system folder structure
 export async function createDefaultFolders() {
@@ -30,11 +31,10 @@ export async function createDefaultFolders() {
         const rangedFolder = await createFolderIfNotExists("Ranged Weapons", "Item", "#8B4513", weaponFolder.id);
         const ammunitionFolder = await createFolderIfNotExists("Ammunition", "Item", "#654321", weaponFolder.id);
 
-        // FIXED: Create class subfolders for features using the loaded data
+        // Create class subfolders for features using the loaded data
         const classFolders = {};
         const featureData = GLOG.FEATURES; // Get the loaded feature data
 
-        console.log('glog2d6 | Creating class folders for', featureData ? featureData.length : 0, 'classes');
 
         if (featureData && Array.isArray(featureData)) {
             for (const classData of featureData) {
@@ -66,7 +66,7 @@ export async function createDefaultFolders() {
 
 
         // Create items from data files
-        await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id, classFolders);
+        await createItemsFromData(meleeFolder.id, rangedFolder.id, ammunitionFolder.id, armorFolder.id, gearFolder.id, classFolders, featureFolder.id);
 
         // Mark as completed - use safe setting method
         try {
@@ -157,13 +157,15 @@ async function createFolderIfNotExists(name, type, color = "#000000", parentId =
 /**
  * Creates items from the loaded JSON data and organizes them into folders
  */
-async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId, classFolders) {
+async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFolderId, armorFolderId, gearFolderId, classFolders, featureFolderId) {
     const weaponData = GLOG.WEAPONS;
     const armorData = GLOG.ARMOR;
     const torchData = GLOG.TORCHES;
     const spellData = GLOG.SPELLS;
     const featureData = GLOG.FEATURES;
+    const customFeatureData = GLOG.CUSTOM_FEATURES;
     const itemsToCreate = [];
+
 
     // Process weapons
     if (weaponData.weapons) {
@@ -223,7 +225,7 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
         }
     }
 
-    // FIXED: Process torches properly
+    // Process torches
     if (torchData.torches) {
         // Create torch folder
         const torchFolder = await createFolderIfNotExists("Torches & Light", "Item", "#ff8800");
@@ -241,7 +243,7 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
         console.log(`glog2d6 | Added ${torchData.torches.length} torches to creation queue`);
     }
 
-    // FIXED: Process spells properly
+    // Process spells properly
     if (spellData.spells && spellData.spells.length > 0) {
         // Create spell folders
         const spellFolder = await createFolderIfNotExists("Spells", "Item", "#9966cc");
@@ -270,7 +272,7 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
         console.log(`glog2d6 | Added ${spellData.spells.length} spells to creation queue`);
     }
 
-    // Process class features (existing code)
+    // Process class features
     if (featureData && Array.isArray(featureData)) {
         console.log('glog2d6 | Processing', featureData.length, 'classes for features');
 
@@ -331,6 +333,28 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
                     }
                 }
             }
+        }
+    }
+
+    // Process custom (free-floating) features
+    if (customFeatureData && Array.isArray(customFeatureData)) {
+        console.log('glog2d6 | Processing', customFeatureData.length, 'custom features');
+        for (const feature of customFeatureData) {
+            itemsToCreate.push({
+                name: feature.name,
+                type: "feature",
+                img: "icons/sundries/scrolls/scroll-bound-brown.webp",
+                system: {
+                    classSource: "Custom",
+                    template: "custom",
+                    level: 1,
+                    description: feature.description,
+                    active: true,
+                    prerequisites: "None"
+                },
+                folder: featureFolderId,
+                sort: itemsToCreate.length * 100
+            });
         }
     }
 
@@ -400,4 +424,120 @@ async function createWoundsTable() {
     const woundsTable = await RollTable.create(tableData);
     console.log('glog2d6 | Created wounds roll table with', results.length, 'entries');
     return woundsTable;
+}
+
+export async function migrateContent() {
+    if (!game.user.isGM) return;
+
+    let storedVersion;
+    try {
+        storedVersion = game.settings.get("glog2d6", "contentVersion");
+    } catch {
+        storedVersion = null;
+    }
+
+    if (storedVersion === CONTENT_VERSION) {
+        console.log("glog2d6 | Content up to date, no migration needed");
+        return;
+    }
+
+    console.log(`glog2d6 | Migrating content from ${storedVersion ?? "none"} to ${CONTENT_VERSION}`);
+
+    try {
+        await createMissingContent();
+        await game.settings.set("glog2d6", "contentVersion", CONTENT_VERSION);
+        console.log(`glog2d6 | Content migration complete`);
+        ui.notifications.info("glog2d6: New content added. Check Class Features for updates.");
+    } catch (error) {
+        console.error("glog2d6 | Content migration failed:", error);
+        ui.notifications.error("glog2d6: Content migration failed. Check the console.");
+    }
+}
+
+async function createMissingContent() {
+    const existingItemNames = new Set(game.items.map(i => i.name));
+
+    const featureFolder = game.folders.find(f => f.name === "Class Features" && f.type === "Item");
+    if (!featureFolder) {
+        console.warn("glog2d6 | Class Features folder not found, skipping migration");
+        return;
+    }
+
+    const itemsToCreate = [];
+
+    // Check custom features
+    const customFeatureData = GLOG.CUSTOM_FEATURES;
+    if (customFeatureData && Array.isArray(customFeatureData)) {
+        for (const feature of customFeatureData) {
+            if (!existingItemNames.has(feature.name)) {
+                console.log(`glog2d6 | Queuing missing custom feature: ${feature.name}`);
+                itemsToCreate.push({
+                    name: feature.name,
+                    type: "feature",
+                    img: "icons/sundries/scrolls/scroll-bound-brown.webp",
+                    system: {
+                        classSource: "Custom",
+                        template: "custom",
+                        level: 1,
+                        description: feature.description,
+                        active: true,
+                        prerequisites: "None"
+                    },
+                    folder: featureFolder.id,
+                    sort: 0
+                });
+            }
+        }
+    }
+
+    // Check class features
+    const featureData = GLOG.FEATURES;
+    if (featureData && Array.isArray(featureData)) {
+        for (const classData of featureData) {
+            const classFolderId = game.folders.find(
+                f => f.name === classData.name && f.type === "Item" && f.folder === featureFolder.id
+            )?.id;
+
+            if (!classFolderId) continue;
+
+            if (classData.features?.["level-0"]) {
+                const f = classData.features["level-0"];
+                const name = `${classData.name}: ${f.name}`;
+                if (!existingItemNames.has(name)) {
+                    itemsToCreate.push({
+                        name,
+                        type: "feature",
+                        img: getFeatureIcon(classData.name, "level-0"),
+                        system: { classSource: classData.name, template: "level-0", level: 1, description: f.description, active: true, prerequisites: "None" },
+                        folder: classFolderId,
+                        sort: 0
+                    });
+                }
+            }
+
+            for (let i = 0; i < 4; i++) {
+                const template = ["A", "B", "C", "D"][i];
+                for (const f of classData.features?.[template] ?? []) {
+                    const name = `${classData.name}: ${f.name}`;
+                    if (!existingItemNames.has(name)) {
+                        itemsToCreate.push({
+                            name,
+                            type: "feature",
+                            img: getFeatureIcon(classData.name, template),
+                            system: { classSource: classData.name, template, level: i + 1, description: f.description, active: true, prerequisites: `${classData.name} Template ${template}` },
+                            folder: classFolderId,
+                            sort: 0
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    if (itemsToCreate.length > 0) {
+        console.log(`glog2d6 | Creating ${itemsToCreate.length} missing items`);
+        await Item.createDocuments(itemsToCreate);
+    } else {
+        console.log("glog2d6 | No missing items found");
+    }
 }

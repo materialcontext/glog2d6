@@ -68,6 +68,43 @@ export class FeatureRollHandler {
             'Ancient Tongues': {
                 formula: '1d6',
                 description: 'Decipher ancient text'
+            },
+            'Unassuming': {
+                formula: '2d6 + @attr + @bonus',
+                attribute: 'wis',
+                description: 'Hide (Unassuming)',
+                localBonus: 2
+            },
+            'Academic Debater': {
+                dialog: true,
+                description: 'Academic Debater (INT check)',
+                localBonus: 1
+            },
+            'Academic Debater (Social)': {
+                formula: '2d6 + @attr + @bonus',
+                attribute: 'int',
+                description: 'Diplomacy/Deception (INT)'
+            },
+            'Adjutant': {
+                dialog: true,
+                description: 'Adjutant',
+                localBonus: 1
+            },
+            'Field Promoted': {
+                formula: '2d6 + @attr',
+                attribute: 'cha',
+                description: 'Field Promoted (Reaction)',
+                localBonus: 2
+            },
+            'Rakish Lieutenant': {
+                dialog: true,
+                description: 'Rakish Lieutenant',
+                localBonus: 1
+            },
+            'Deconstructor': {
+                dialog: true,
+                description: 'Deconstruct structure or object',
+                localBonus: 2
             }
         };
     }
@@ -174,6 +211,7 @@ export class FeatureRollHandler {
             data.attr = 0;
         }
 
+        data.bonus = config.localBonus || 0;
         data.reputation = config.reputationMod || 0;
 
         return data;

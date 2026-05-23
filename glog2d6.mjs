@@ -6,7 +6,7 @@ import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
 import { SubtleRollReveal } from './module/dice/subtle-roll-reveal.mjs';
 import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
-import { createDefaultFolders } from "./scripts/initialize-content.mjs";
+import { createDefaultFolders, migrateContent } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
 import { initReconSystem } from "./module/systems/recon-system.mjs";
@@ -95,6 +95,14 @@ Hooks.once('init', async function() {
         }
     });
 
+    game.settings.register("glog2d6", "contentVersion", {
+        name: "Content Version",
+        scope: "world",
+        config: false,
+        type: String,
+        default: ""
+    });
+
     initGMRolls();
     initReconSystem();
 
@@ -159,7 +167,13 @@ Hooks.once("ready", async function() {
 
     Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
         if (!featureName) return false;
-        const rollableFeatures = ['Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training'];
+        const rollableFeatures = [
+            'Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training',
+            'Nimble', 'Escape Artist', 'Poisoner', 'At the Gates', 'Tough', 'Courtly Education',
+            'Welcome Guest', 'Never Forget a Face', 'Trapper', 'Thievery Training',
+            'Well-Planned Heist', 'Black Market Gossip', 'Ancient Tongues', 'Unassuming',
+            'Academic Debater', 'Adjutant', 'Field Promoted', 'Rakish Lieutenant', 'Deconstructor'
+        ];
         return rollableFeatures.includes(featureName);
     });
 
@@ -188,6 +202,7 @@ Hooks.once("ready", async function() {
 
     if (game.user.isGM) {
         await createDefaultFolders();
+        await migrateContent();
     }
 
     setupSystemHooks();
@@ -350,10 +365,11 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
     Handlebars.registerHelper('hasFeatureRoll', function(featureName) {
         const rollableFeatures = [
-            'Nimble', 'Escape Artist', 'Poisoner', 'At the Gates',
-            'Tough', 'Courtly Education', 'Welcome Guest', 'Never Forget a Face',
-            'Trapper', 'Thievery Training', 'Well-Planned Heist', 'Black Market Gossip',
-            'Ancient Tongues'
+            'Barbarian Heritage', 'Tracker', 'Stalker', 'Danger Sense', 'Acrobat Training',
+            'Nimble', 'Escape Artist', 'Poisoner', 'At the Gates', 'Tough', 'Courtly Education',
+            'Welcome Guest', 'Never Forget a Face', 'Trapper', 'Thievery Training',
+            'Well-Planned Heist', 'Black Market Gossip', 'Ancient Tongues', 'Unassuming',
+            'Academic Debater', 'Adjutant', 'Field Promoted', 'Rakish Lieutenant', 'Deconstructor'
         ];
 
         // check for any version of "Reputation for..."

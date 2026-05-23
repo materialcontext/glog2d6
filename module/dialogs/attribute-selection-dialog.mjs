@@ -3,6 +3,7 @@ export class AttributeSelectionDialog extends FormApplication {
         super();
         this.actor = actor;
         this.featureName = featureName;
+        this.featureDescription = actor.items.find(i => i.name === featureName)?.system.description || '';
         this.callback = callback;
     }
 
@@ -20,6 +21,7 @@ export class AttributeSelectionDialog extends FormApplication {
     getData() {
         return {
             featureName: this.featureName,
+            featureDescription: this.featureDescription,
             attributes: [
                 { key: 'str', name: 'Strength', mod: this.actor.system.attributes.str.effectiveMod },
                 { key: 'dex', name: 'Dexterity', mod: this.actor.system.attributes.dex.effectiveMod },

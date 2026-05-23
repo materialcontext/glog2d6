@@ -1,0 +1,52 @@
+{
+    "features": [
+        {
+            "name": "Adjutant",
+            "description": "You get a +1 bonus to all checks to gather information, find records, or request resources."
+        },
+        {
+            "name": "Unassuming",
+            "description": "People are always mistaking you for someone unimportant. You gain +2 to Hide checks when blending into a crowd or institutional environment (offices, barracks, mess halls, etc.). You may move freely through such spaces without challenge as long as you don't draw attention to yourself or run into someone you know."
+        },
+        {
+            "name": "Just a Few Questions",
+            "description": "You have a knack for getting people talking. The first time you make a Charisma check in any conversation and roll doubles, your interlocutor incidentally reveals something important. It might be a secret they didn't mean to divulge, or something they don't know is relevant; whatever it is, it's useful to you and they don't realize they've let it slip."
+        },
+        {
+            "name": "Academic Debater",
+            "description": "You get a +1 bonus to all Intelligence checks no matter how esoteric, technical or foreign to you, and may substitute your Intelligence for Charisma on Diplomacy and Deception checks."
+        },
+        {
+            "name": "One Small Matter",
+            "description": "It's never small. Whenever you interrupt a social interaction with a procedural question or request for clarification, the interrupted party will hear you out — suspending whatever they were about to do until the matter is resolved to your satisfaction or you voluntarily let it drop. This does not work on people actively trying to kill you, though it works distressingly late into tense situations."
+        },
+        {
+            "name": "Applied Fluid Dynamics",
+            "description": "You understand how things flow through confined spaces. Trenches, tunnels, corridors, roads, pipes, etc. So long as you can somehow visualize or measure the flow and have the time to do so, you accurately predict how it will behave: where gas will pool, where a crowd will bottleneck, the path a fire will take."
+        },
+        {
+            "name": "Rakish Lieutenant",
+            "description": "You get a +1 bonus to all leadership, deception, and sleight of hand checks."
+        },
+        {
+            "name": "Field Promoted",
+            "description": "Your leadership skills are rough but authentic, and that gets you a certain amount of respect from some people. You get a +2 bonus on all reaction and morale rolls for enlisted men, hirelings, and desperate people. Increase your hireling limit by 1 per Lieutenant or Fighter template you possess."
+        },
+        {
+            "name": "Calculated Casualties",
+            "description": "You've made peace with a degree of acceptable losses. You may designate a number of allies as Expendable in each scene, up to the number of Reckless Lieutenant templates you possess. Each Expendable ally takes a -1 penalty on all Saving Throws for the duration. You and all other allies receive a +1 bonus to all Saving Throws for each Expendable not incapacitated, dead, or otherwise a non-factor."
+        },
+        {
+            "name": "Deconstructor",
+            "description": "You get a +1 damage bonus on all attempts to destroy or dismantle structures or objects for each Deconstructor template you possess."
+        },
+        {
+            "name": "Paper Tiger",
+            "description": "It's easy to tell when someone is performing power they don't possess — posturing, bluffing, and clinging to their waning authority. Whenever you witness an NPC attempting to deceive or intimidate, the DM rolls checks for them as if they were players and reveals failed results to you."
+        },
+        {
+            "name": "Cracks in the Walls",
+            "description": "You can always tell when things are falling apart — even if no one else has noticed yet. Whenever you first encounter a structure, organization, plan, or relationship you may ask the question, \"What's falling apart here?\" Someone at the table will tell you and the DM will continue to reveal problems to you the more you interact. This works even if the DM had no such plan and anyone at the table can offer the initial observation."
+        }
+    ]
+}

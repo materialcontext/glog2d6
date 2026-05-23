@@ -517,7 +517,7 @@ export class ActorRolls {
 
         let extraContent = '';
         if (diplomacyBonus > 0) {
-            extraContent = `<br><small>Diplomacy bonus: +${reactionBonus}</small>`;
+            extraContent = `<br><small>Diplomacy bonus: +${diplomacyBonus}</small>`;
         }
 
         this.actor._createRollChatMessage(

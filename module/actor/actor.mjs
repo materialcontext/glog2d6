@@ -264,7 +264,8 @@ class RollSpecialEffectsAnalyzer {
             "Tricky": () => this.rollContext === 'attack' ? ["You may attempt a free Combat Maneuver"] : [],
             "Superior Combatant": () => this.rollContext === 'attack' ? ["Critical Hit! (rolled doubles)"] : [],
             "Fast Talker": () => this.rollContext === 'social' ? ["You may re-roll this social check"] : [],
-            "Feats of Strength": () => this.rollContext === 'strength' ? ["Double your Strength bonus for this roll"] : []
+            "Feats of Strength": () => this.rollContext === 'strength' ? ["Double your Strength bonus for this roll"] : [],
+            "Just a Few Questions": () => this.rollContext === 'social' ? ["Your interlocutor reveals something important without realizing it."] : []
         };
 
         const effectFunction = featureEffectMap[feature.name];
