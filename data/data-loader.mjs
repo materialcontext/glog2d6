@@ -10,7 +10,9 @@ glog.CONSTANTS = {
     WEAPON_TYPES: {
         MELEE: 'melee',
         RANGED: 'ranged',
-        THROWN: 'thrown'
+        FIREARM: 'firearm',
+        THROWN: 'thrown',
+        EXPLOSIVE: 'explosive'
     },
 
     // UI Labels

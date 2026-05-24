@@ -108,8 +108,8 @@ const FEATURE_BONUSES = {
 
         if (!isEncumbered && bonus > 0) {
             return [
-                { target: "details.movementBonus", value: bonus, type: "untyped" },        // ✅ FIXED
-                { target: "defense.meleeBonus", value: bonus, type: "untyped" }             // ✅ FIXED
+                { target: "details.movementBonus", value: bonus, type: "untyped" },
+                { target: "defense.meleeBonus", value: bonus, type: "untyped" }
             ];
         }
 
@@ -118,14 +118,14 @@ const FEATURE_BONUSES = {
 
     // Fighter gets +2 to all attack rolls
     "Combat Training": (actor, feature) => [
-        { target: "combat.attack.bonus", value: 2, type: "untyped" }                      // ✅ CORRECT
+        { target: "combat.attack.bonus", value: 2, type: "untyped" }
     ],
 
     // Barbarian gets +1 HP per template
     "Barbarian Heritage": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Barbarian") - 1;
         return [
-            { target: "hp.bonus", value: templates, type: "untyped" }                     // ✅ CORRECT
+            { target: "hp.bonus", value: templates, type: "untyped" }
         ];
     },
 
@@ -133,20 +133,20 @@ const FEATURE_BONUSES = {
     "Thievery Training": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Thief") - 1;
         return [
-            { target: "skills.stealth.bonus", value: Math.floor(templates / 2), type: "untyped" }  // ✅ SPECIAL HANDLER
+            { target: "skills.stealth.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
     },
 
     // Assassin gets stealth bonuses - HANDLED BY SPECIAL HANDLER
     "Assassin Training": (actor, feature) => [
-        { target: "skills.stealth.bonus", value: 2, type: "untyped" }                    // ✅ SPECIAL HANDLER
+        { target: "skills.stealth.bonus", value: 2, type: "untyped" }
     ],
 
     // Courtier gets reaction bonuses - HANDLED BY SPECIAL HANDLER
     "Noble Bearing": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Courtier") - 1;
         return [
-            { target: "skills.reaction.bonus", value: Math.floor(templates / 2), type: "untyped" }  // ✅ SPECIAL HANDLER
+            { target: "skills.reaction.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
     },
 
@@ -154,7 +154,7 @@ const FEATURE_BONUSES = {
     "Archery Training": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Hunter") - 1;
         return [
-            { target: "combat.archery.bonus", value: Math.floor(templates / 2), type: "untyped" }   // ✅ CORRECT
+            { target: "combat.archery.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
     },
 
@@ -164,17 +164,23 @@ const FEATURE_BONUSES = {
         const intMod = actor.system.attributes.int.mod;
         const spellSlots = templates + Math.max(0, intMod);
         return [
-            { target: "magicDiceMax", value: templates, type: "untyped" },               // ✅ SPECIAL HANDLER
-            { target: "spellSlots", value: spellSlots, type: "untyped" }                 // ✅ SPECIAL HANDLER
+            { target: "magicDiceMax", value: templates, type: "untyped" },
+            { target: "spellSlots", value: spellSlots, type: "untyped" }
         ];
     },
+
+    // Soldier - +1 to all attacks, +1 more to firearms (totaling +2 for firearms)
+    "Soldier": (actor, feature) => [
+        { target: "combat.attack.bonus", value: 1, type: "untyped" },
+        { target: "combat.firearm.bonus", value: 1, type: "untyped" }
+    ],
 
     // Intellect Fortress - save bonuses
     "Intellect Fortress": (actor, feature) => {
         const templates = getClassTemplateCount(actor.items, "Wizard") - 1;
         return [
-            { target: "saves.int.bonus", value: Math.floor(templates / 2), type: "untyped" },       // ✅ CORRECT
-            { target: "saves.wis.bonus", value: Math.floor(templates / 2), type: "untyped" }        // ✅ CORRECT
+            { target: "saves.int.bonus", value: Math.floor(templates / 2), type: "untyped" },
+            { target: "saves.wis.bonus", value: Math.floor(templates / 2), type: "untyped" }
         ];
     },
 };

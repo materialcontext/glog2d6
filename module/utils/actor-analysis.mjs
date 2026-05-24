@@ -1,4 +1,5 @@
 // module/utils/actor-analysis.mjs
+import { hasWeaponType } from './weapon-utils.mjs';
 
 /**
  * Analyze equipped weapons from an items collection
@@ -70,7 +71,9 @@ export function analyzeEquippedWeapons(items) {
         attackButtonType: 'generic',
         throwableWeapon: null,
         meleeWeapons: [],
-        rangedWeapons: []
+        rangedWeapons: [],
+        explosiveWeapons: [],
+        firearmWeapons: []
     };
 
     if (equippedWeapons.length === 0) {
@@ -84,16 +87,27 @@ export function analyzeEquippedWeapons(items) {
             continue;
         }
 
-        const type = weapon.system?.weaponType || 'melee';
-        analysis.weaponTypes.add(type);
+        const types = Array.isArray(weapon.system?.weaponType)
+            ? weapon.system.weaponType
+            : [weapon.system?.weaponType || 'melee'];
 
-        if (type === 'thrown') {
+        for (const t of types) analysis.weaponTypes.add(t);
+
+        if (hasWeaponType(weapon, 'thrown')) {
             analysis.hasThrowable = true;
             analysis.throwableWeapon = weapon;
-            analysis.meleeWeapons.push(weapon);
-        } else if (type === 'ranged') {
+        }
+        if (hasWeaponType(weapon, 'firearm')) {
+            analysis.firearmWeapons.push(weapon);
+        }
+        if (hasWeaponType(weapon, 'explosive')) {
+            analysis.explosiveWeapons.push(weapon);
+        }
+        if (hasWeaponType(weapon, 'ranged')) {
             analysis.rangedWeapons.push(weapon);
-        } else {
+        }
+        if (!hasWeaponType(weapon, 'thrown') && !hasWeaponType(weapon, 'firearm') &&
+            !hasWeaponType(weapon, 'explosive') && !hasWeaponType(weapon, 'ranged')) {
             analysis.meleeWeapons.push(weapon);
         }
     }
@@ -104,6 +118,8 @@ export function analyzeEquippedWeapons(items) {
     // Determine attack button type
     if (analysis.hasThrowable && analysis.meleeWeapons.length > 1) {
         analysis.attackButtonType = 'split';
+    } else if (analysis.firearmWeapons.length > 0) {
+        analysis.attackButtonType = 'firearm';
     } else if (analysis.rangedWeapons.length > 0 && analysis.meleeWeapons.length === 0) {
         analysis.attackButtonType = 'ranged';
     } else if (analysis.meleeWeapons.length > 0 && analysis.rangedWeapons.length === 0) {

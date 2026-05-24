@@ -1,5 +1,5 @@
 const GLOG = CONFIG.GLOG
-const CONTENT_VERSION = "1.1.0"
+const CONTENT_VERSION = "1.2.0"
 
 // create the system folder structure
 export async function createDefaultFolders() {

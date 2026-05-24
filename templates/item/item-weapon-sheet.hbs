@@ -16,15 +16,16 @@
             <h3>Properties</h3>
             <div class="grid-3 flex-gap-8 mt-8">
                 <div class="form-group flex flex-col flex-gap-2">
-                    <label for="system.weaponType" class="text-small text-bold text-upper text-muted">Weapon
-                        Type</label>
-                    <select name="system.weaponType" class="input">
-                        {{#select system.weaponType}}
-                        <option value="melee">Melee</option>
-                        <option value="ranged">Ranged</option>
-                        <option value="thrown">Thrown</option>
-                        {{/select}}
-                    </select>
+                    <label class="text-small text-bold text-upper text-muted">Weapon Type</label>
+                    <div class="flex flex-col flex-gap-2 mt-4">
+                        {{#each (weaponTypeOptions system.weaponType) as |opt|}}
+                        <label class="flex flex-gap-4 clickable">
+                            <input type="checkbox" name="system.weaponType" value="{{opt.value}}" {{#if
+                                opt.checked}}checked{{/if}}>
+                            <span class="text-small">{{opt.label}}</span>
+                        </label>
+                        {{/each}}
+                    </div>
                 </div>
 
                 <div class="form-group flex flex-col flex-gap-2">
@@ -39,7 +40,8 @@
                 </div>
 
                 <div class="form-group flex flex-col flex-gap-2">
-                    <label for="system.breakage.level" class="text-small text-bold text-upper text-muted">Condition</label>
+                    <label for="system.breakage.level"
+                        class="text-small text-bold text-upper text-muted">Condition</label>
                     <select name="system.breakage.level" class="input">
                         {{#select system.breakage.level}}
                         <option value="0">Fine</option>

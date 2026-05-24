@@ -59,6 +59,16 @@ Hooks.once('init', async function() {
         return str && str.toLowerCase().includes(substring.toLowerCase());
     });
 
+    Handlebars.registerHelper('weaponTypeOptions', function(current) {
+        const types = Array.isArray(current) ? current : (current ? [current] : []);
+        return [
+            { value: 'melee', label: 'Melee', checked: types.includes('melee') },
+            { value: 'ranged', label: 'Ranged', checked: types.includes('ranged') },
+            { value: 'thrown', label: 'Thrown', checked: types.includes('thrown') },
+            { value: 'firearm', label: 'Firearm', checked: types.includes('firearm') }
+        ];
+    });
+
     // Register game settinngs
     game.settings.register("glog2d6", "hasSetupDefaultFolders", {
         name: "Default Folders Created",
@@ -197,6 +207,13 @@ Hooks.once("ready", async function() {
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Hireling"
     });
+
+    document.addEventListener('error', (event) => {
+        if (event.target.tagName === 'IMG' && !event.target.dataset.fallbackApplied) {
+            event.target.dataset.fallbackApplied = 'true';
+            event.target.src = 'icons/svg/item-bag.svg';
+        }
+    }, true);
 
     setupGlobalUtils();
 

@@ -83,6 +83,14 @@
                 "archery": {
                     "bonus": 0,
                     "breakdown": []
+                },
+                "firearm": {
+                    "bonus": 0,
+                    "breakdown": []
+                },
+                "explosive": {
+                    "bonus": 0,
+                    "breakdown": []
                 }
             },
             "defense": {

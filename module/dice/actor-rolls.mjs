@@ -2,6 +2,7 @@
  * Roll functionality for GLOG 2d6 actors
  */
 import { findBestWeapon } from "../utils/actor-analysis.mjs"
+import { hasWeaponType, getWeaponTypes } from '../utils/weapon-utils.mjs';
 export class ActorRolls {
     constructor(actor) {
         this.actor = actor;
@@ -93,7 +94,7 @@ export class ActorRolls {
         const roll = this.actor.createRoll(attackData.formula, attackData.data, 'attack');
         await roll.evaluate();
 
-        const extraContent = this._buildAttackChatContent(attackData);
+        const extraContent = this._buildAttackChatContent(attackData, roll);
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - ${attackData.description}`,
@@ -140,6 +141,8 @@ export class ActorRolls {
             atkValue: this.actor.system.combat.attack.value,
             atkBonus: this.actor.system.combat.attack.bonus || 0,
             archeryBonus: this.actor.system.combat.archery?.bonus || 0,
+            firearmBonus: this.actor.system.combat.firearm?.bonus || 0,
+            explosiveBonus: this.actor.system.combat.explosive?.bonus || 0,
             dualWieldBonus: this._getDualWieldBonus()
         };
     }
@@ -178,18 +181,25 @@ export class ActorRolls {
     // Private helper: Get weapon-specific attack context
     _getWeaponContext(weapon) {
         console.log(weapon);
-        const weaponType = weapon.system.weaponType || "melee";
         const penalty = weapon.system.attackPenalty || 0;
+        const isThrown = hasWeaponType(weapon, "thrown");
+        const isMelee = hasWeaponType(weapon, "melee");
+        const isRanged = hasWeaponType(weapon, "ranged");
+        const isFirearm = hasWeaponType(weapon, "firearm");
+        const isExplosive = hasWeaponType(weapon, "explosive");
+        const primaryType = getWeaponTypes(weapon)[0];
 
         return {
             weapon: weapon,
-            weaponType: weaponType,
-            description: `${weapon.name} Attack (${weaponType})`,
+            weaponType: primaryType,
+            description: `${weapon.name} Attack (${primaryType})`,
             damageFormula: weapon.system.damage || "0",
             bonuses: {
                 penalty: penalty,
-                useStr: weaponType === "melee" || weaponType === "thrown",
-                useArchery: weaponType === "ranged"
+                useStr: isMelee || (isThrown && !isExplosive),
+                useArchery: isRanged,
+                useFirearm: isFirearm,
+                useExplosive: isExplosive
             }
         };
     }
@@ -223,6 +233,14 @@ export class ActorRolls {
             formula += " + @archery";
         }
 
+        if (context.bonuses.useFirearm) {
+            formula += " + @firearm";
+        }
+
+        if (context.bonuses.useExplosive) {
+            formula += " + @explosive";
+        }
+
         if (context.bonuses.penalty > 0) {
             formula += " - @penalty";
         }
@@ -237,6 +255,8 @@ export class ActorRolls {
             bonus: baseStats.atkBonus,
             dual: baseStats.dualWieldBonus,
             archery: context.bonuses.useArchery ? baseStats.archeryBonus : 0,
+            firearm: context.bonuses.useFirearm ? baseStats.firearmBonus : 0,
+            explosive: context.bonuses.useExplosive ? baseStats.explosiveBonus : 0,
             penalty: context.bonuses.penalty || 0
         };
 
@@ -244,12 +264,13 @@ export class ActorRolls {
     }
 
     // Private helper: Build chat message content
-    _buildAttackChatContent(attackData) {
+    _buildAttackChatContent(attackData, roll) {
         const bonuses = [
             { key: 'atk', label: 'Base attack', value: attackData.data.atk },
             { key: 'bonus', label: 'Attack bonus', value: attackData.data.bonus },
             { key: 'dual', label: 'Dual wielding', value: attackData.data.dual },
-            { key: 'archery', label: 'Archery bonus', value: attackData.data.archery }
+            { key: 'archery', label: 'Archery bonus', value: attackData.data.archery },
+            { key: 'firearm', label: 'Firearm bonus', value: attackData.data.firearm }
         ].filter(b => b.value > 0)
             .map(b => `${b.label}: +${b.value}`)
             .join(', ');
@@ -270,11 +291,10 @@ export class ActorRolls {
 
         // reload
         if (attackData.weapon?.system.reload) {
-            const diceResults = this.roll.terms[0]?.results?.map(r => r.result) || [];
-            const hasReload = diceResults.some(die => die <= attackData.weapon.system.reload);
+            const hasReload = roll.total <= attackData.weapon.system.reload;
 
             if (hasReload) {
-                parts.push(`<br><div class="reload-notice text-danger"><strong>🔄 RELOAD REQUIRED!</strong> Rolled ${attackData.weapon.system.reload} or lower</div>`);
+                parts.push(`<br><div class="reload-notice text-danger"><strong>OUT OF AMMO!</strong> Rolled ${attackData.weapon.system.reload} or lower</div>`);
             }
         }
 

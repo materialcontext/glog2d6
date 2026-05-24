@@ -47,6 +47,10 @@
         {
             "name": "Cracks in the Walls",
             "description": "You can always tell when things are falling apart — even if no one else has noticed yet. Whenever you first encounter a structure, organization, plan, or relationship you may ask the question, \"What's falling apart here?\" Someone at the table will tell you and the DM will continue to reveal problems to you the more you interact. This works even if the DM had no such plan and anyone at the table can offer the initial observation."
+        },
+        {
+            "name": "Soldier",
+            "description": "You get a +2 bonus to all attacks with firearms, and a +1 otherwise."
         }
     ]
 }

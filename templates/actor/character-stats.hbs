@@ -101,6 +101,14 @@
                     </div>
                 </div>
                 {{/if}}
+            {{else if (eq weaponAnalysis.attackButtonType 'firearm')}}
+                {{!-- Single firearm button --}}
+                <div class="combat-card clickable" data-action="attack">
+                    <div class="combat-main">
+                        <div class="text-md text-bold text-primary mb-4">Firearm Attack</div>
+                        <div class="text-bold">{{add (add system.combat.attack.value system.combat.attack.bonus) system.combat.firearm.bonus}}</div>
+                    </div>
+                </div>
             {{else if (eq weaponAnalysis.attackButtonType 'ranged')}}
                 {{!-- Single ranged button --}}
                 <div class="combat-card clickable" data-action="attack">

@@ -132,7 +132,7 @@
             "img": "icons/weapons/guns/gun-pistol-flintlock.webp",
             "system": {
                 "damage": "1d6",
-                "weaponType": "ranged",
+                "weaponType": ["ranged", "firearm"],
                 "size": "medium",
                 "attackPenalty": 0,
                 "encumbrancePenalty": 0,
@@ -148,7 +148,7 @@
             "img": "icons/weapons/guns/gun-pistol-automatic.webp",
             "system": {
                 "damage": "2d4",
-                "weaponType": "ranged",
+                "weaponType": ["ranged", "firearm"],
                 "size": "medium",
                 "attackPenalty": 0,
                 "encumbrancePenalty": 0,
@@ -164,7 +164,7 @@
             "img": "icons/weapons/guns/gun-rifle-brown.webp",
             "system": {
                 "damage": "3d4",
-                "weaponType": "ranged",
+                "weaponType": ["ranged", "firearm"],
                 "size": "heavy",
                 "attackPenalty": 1,
                 "encumbrancePenalty": 1,
@@ -180,7 +180,7 @@
             "img": "icons/weapons/guns/gun-rifle-scope.webp",
             "system": {
                 "damage": "2d6",
-                "weaponType": "ranged",
+                "weaponType": ["ranged", "firearm"],
                 "size": "heavy",
                 "attackPenalty": 1,
                 "encumbrancePenalty": 1,
