@@ -72,7 +72,8 @@
             "details": {
                 "class": "",
                 "level": 1,
-                "movement": 4
+                "movement": 4,
+                "description": ""
             },
             "combat": {
                 "attack": {

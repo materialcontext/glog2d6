@@ -134,6 +134,7 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/item/item-spell-sheet.hbs",
         "systems/glog2d6/templates/item/item-feature-sheet.hbs",
         "systems/glog2d6/templates/item/item-torch-sheet.hbs",
+        "systems/glog2d6/templates/actor/notes-tab.hbs",
         "systems/glog2d6/templates/dialogs/gm-roll.hbs",
         "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
     ]);
@@ -153,6 +154,8 @@ Hooks.once("ready", async function() {
         await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
     Handlebars.registerPartial('wounds-tab',
         await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/wounds-tab.hbs'));
+    Handlebars.registerPartial('notes-tab',
+        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/notes-tab.hbs'));
 
     Handlebars.registerHelper('getReputations', function() {
         return CONFIG.GLOG?.REPUTATIONS?.reputations || [];
