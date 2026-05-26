@@ -1,13 +1,40 @@
 {{!-- Notes Tab --}}
 <div class="tab" data-group="primary" data-tab="notes">
-    <div class="notes-tab-content section p-10 mt-10">
-        <label class="text-small text-bold text-upper text-primary mb-4 flex">
-            <i class="fas fa-scroll mr-4"></i> Notes & Description
-        </label>
-        <textarea
-            name="system.details.description"
-            rows="16"
-            class="input w-full"
-            placeholder="Character background, notes, personality...">{{system.details.description}}</textarea>
+    <div class="notes-section">
+        <div class="notes-header flex flex-between mb-10 p-10 section">
+            <div class="text-bold text-primary">Journal & Notes</div>
+            {{#if editMode}}
+            <a class="btn btn-secondary p-6 text-small flex flex-center flex-gap-4 item-control item-create"
+                data-type="note" title="New Note">
+                <i class="fas fa-plus"></i> Note
+            </a>
+            {{/if}}
+        </div>
+
+        <div class="notes-list flex flex-col flex-gap-8">
+            {{#each actor.items as |item|}}
+            {{#if (eq item.type "note")}}
+            <div class="note-card section p-10 flex flex-between flex-center clickable" data-item-id="{{item.id}}">
+                <div class="note-info flex flex-center flex-gap-8">
+                    <i class="fas fa-scroll text-muted"></i>
+                    <span class="text-small text-bold">{{item.name}}</span>
+                </div>
+                <div class="note-controls flex flex-gap-4">
+                    {{#if editMode}}
+                    <a class="btn btn-danger p-4 text-small item-control item-delete" data-item-id="{{item.id}}"
+                        title="Delete Note">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    {{else}}
+                    <a class="btn btn-secondary p-4 text-small note-reveal" data-item-id="{{item.id}}"
+                        title="Reveal to players">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    {{/if}}
+                </div>
+            </div>
+            {{/if}}
+            {{/each}}
+        </div>
     </div>
 </div>

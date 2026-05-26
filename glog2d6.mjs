@@ -65,6 +65,7 @@ Hooks.once('init', async function() {
             { value: 'melee', label: 'Melee', checked: types.includes('melee') },
             { value: 'ranged', label: 'Ranged', checked: types.includes('ranged') },
             { value: 'thrown', label: 'Thrown', checked: types.includes('thrown') },
+            { value: 'thrown', label: 'Explosive', checked: types.includes('explosive') },
             { value: 'firearm', label: 'Firearm', checked: types.includes('firearm') }
         ];
     });
@@ -134,7 +135,7 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/item/item-spell-sheet.hbs",
         "systems/glog2d6/templates/item/item-feature-sheet.hbs",
         "systems/glog2d6/templates/item/item-torch-sheet.hbs",
-        "systems/glog2d6/templates/actor/notes-tab.hbs",
+        "systems/glog2d6/templates/item/item-note-sheet.hbs",
         "systems/glog2d6/templates/dialogs/gm-roll.hbs",
         "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
     ]);
@@ -209,6 +210,11 @@ Hooks.once("ready", async function() {
         types: ["hireling"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Hireling"
+    });
+
+    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+        types: ["note"],
+        makeDefault: true
     });
 
     document.addEventListener('error', (event) => {

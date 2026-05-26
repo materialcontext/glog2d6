@@ -29,6 +29,10 @@ export class EventHandlerRegistry {
             { selector: '.item-edit', event: 'click', handler: 'handleItemEdit' },
             { selector: '.item-delete', event: 'click', handler: 'handleItemDelete' },
 
+            // Note Management
+            { selector: '.note-card', event: 'click', handler: 'handleNoteOpen' },
+            { selector: '.note-reveal', event: 'click', handler: 'handleNoteReveal' },
+
             // Feature and torch controls
             { selector: '.torch-btn', event: 'click', handler: 'handleTorchToggle' },
             { selector: '.torch-icon[data-action="toggle-torch"]', event: 'click', handler: 'handleTorchItemToggle' },

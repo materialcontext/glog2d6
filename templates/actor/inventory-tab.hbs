@@ -49,7 +49,7 @@
     </div>
     <div class="gear-list section">
         {{#each actor.items as |item id|}}
-        {{#unless (or (eq item.type "feature") (eq item.type "spell"))}}
+        {{#unless (or (eq item.type "feature") (eq item.type "spell") (eq item.type "note"))}}
         <div class="gear-item" data-item-id="{{item.id}}">
 
             {{!-- Special handling for torch items --}}

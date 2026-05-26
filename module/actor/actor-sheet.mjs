@@ -1,7 +1,8 @@
 import { toggleTorch, toggleTorchItem } from './handlers/torch-handlers.mjs';
-import { addClassFeatures, toggleFeature, displayFeature } from './handlers/feature-handlers.mjs';
+import { addClassFeatures, displayFeature } from './handlers/feature-handlers.mjs';
 
 import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
+import { revealNote, openNote } from './handlers/note-handlers.mjs';
 import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
 import { SheetStateManager } from './sheet-state-manager.mjs';
 import { EquipmentHandler } from './handlers/equipment-handler.mjs';
@@ -19,7 +20,7 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
             classes: ["glog2d6", "sheet", "actor"],
             width: 600,
             height: 850,
-            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "inventory" }]
+            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".tabbed-content", initial: "inventory" }]
         });
     }
 
@@ -31,6 +32,10 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         this.equipmentHandler = new EquipmentHandler(this.actor);
         this.itemManager = new ItemManagementHandler(this);
         this.dataContextBuilder = new DataContextBuilder(this.actor);
+        this.noteHandler = {
+            openNote: (e) => openNote(this.actor, e),
+            revealNote: (e) => revealNote(this.actor, e)
+        };
     }
 
     get template() {
@@ -72,7 +77,7 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         return this.rollHandler.handleWeaponAttack(event);
     }
 
-    // Action handlers - now just delegation
+    // Action delegation
     async handleCombatAction(event) {
         event.preventDefault();
         const action = event.currentTarget.dataset.action;
@@ -223,6 +228,14 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
             await this.actor.removeWound(woundId);
             this.render();
         }
+    }
+
+    // note delegation
+    async handleNoteOpen(event) {
+        return this.noteHandler.openNote(event);
+    }
+    async handleNoteReveal(event) {
+        return this.noteHandler.revealNote(event);
     }
 
     notifyRestResult(restResult) {

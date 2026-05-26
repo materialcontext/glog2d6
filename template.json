@@ -72,8 +72,7 @@
             "details": {
                 "class": "",
                 "level": 1,
-                "movement": 4,
-                "description": ""
+                "movement": 4
             },
             "combat": {
                 "attack": {
@@ -202,13 +201,18 @@
             "shield",
             "feature",
             "spell",
-            "torch"
+            "torch",
+            "note"
         ],
         "templates": {
             "base": {
                 "description": "",
                 "slots": 1
             }
+        },
+        "note": {
+            "description": "",
+            "revealed": false
         },
         "weapon": {
             "templates": [
