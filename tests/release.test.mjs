@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
     RELEASE_PATHS,
     VERSION_FILES,
+    applyVersionToLockfile,
     applyVersionToManifest,
     bumpLevelFromLabels,
     downloadUrl,
@@ -156,6 +157,23 @@ describe("version files", () => {
     it("agree with each other today", () => {
         const version = readJson("system.json").version;
         expect(readJson("package.json").version).toBe(version);
+        expect(readJson("package-lock.json").version).toBe(version);
+        expect(readJson("package-lock.json").packages[""].version).toBe(version);
+    });
+
+    it("moves both version fields in the lockfile", () => {
+        const before = readJson("package-lock.json");
+        const after = applyVersionToLockfile(before, "9.9.9");
+
+        expect(after.version).toBe("9.9.9");
+        expect(after.packages[""].version).toBe("9.9.9");
+        expect(after.packages[""].dependencies).toEqual(before.packages[""].dependencies);
+        expect(before.version).not.toBe("9.9.9");
+    });
+
+    it("tolerates a lockfile with no root package entry", () => {
+        expect(applyVersionToLockfile({ version: "1.0.0" }, "2.0.0"))
+            .toEqual({ version: "2.0.0" });
     });
 
     it("leaves the content migration version out of the bump", () => {

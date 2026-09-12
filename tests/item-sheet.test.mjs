@@ -65,6 +65,12 @@ function sheetFor(type, itemOptions) {
     return new GLOG2D6ItemSheet({ document: fakeItem(type, itemOptions) });
 }
 
+/** The single root element a part template must render. */
+function rootElement(type) {
+    const doc = new JSDOM(`<div id="w">${templateSource(type)}</div>`).window.document;
+    return doc.querySelector("#w").firstElementChild;
+}
+
 function templateSource(type) {
     const path = itemSheetTemplate(type).replace("systems/glog2d6/", "");
     return readFileSync(resolve(ROOT, path), "utf8");
@@ -101,6 +107,47 @@ describe("v14 template regressions", () => {
 
     it.each(ITEM_SHEET_TYPES)("%s sheet renders without a missing helper", async type => {
         await expect(renderSheet(type)).resolves.toBeTruthy();
+    });
+});
+
+describe("ApplicationV2 part structure", () => {
+    // A Handlebars part is replaced as a single element on re-render, so a
+    // template with sibling roots loses everything after the first. Two roots
+    // is exactly how the item sheets lost their whole <section> body.
+    it.each(ITEM_SHEET_TYPES)("%s template has exactly one root element", type => {
+        const doc = new JSDOM(`<div id="w">${templateSource(type)}</div>`).window.document;
+        const roots = [...doc.querySelector("#w").children];
+        expect(roots.map(el => el.tagName)).toHaveLength(1);
+    });
+
+    it.each(ITEM_SHEET_TYPES)("%s template root carries a class to style", type => {
+        const root = rootElement(type);
+        expect(root.className.trim(), `${type}: root has no class to hang CSS on`).not.toBe("");
+        expect(root.classList.contains("sheet-content")).toBe(true);
+    });
+
+    it.each(ITEM_SHEET_TYPES)("%s template part id matches the sheet's part", type => {
+        const declared = rootElement(type).dataset.applicationPart;
+        const configured = Object.keys(sheetFor(type)._configureRenderParts({}))[0];
+        expect(declared, `${type}: template says "${declared}", sheet configures "${configured}"`)
+            .toBe(configured);
+    });
+});
+
+describe("actor sheets are still ApplicationV1", () => {
+    // GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet, and
+    // FormApplication#_renderInner takes `this.form` from the rendered root or
+    // a <form> inside it. No form element means no submit data, so the sheet
+    // silently stops saving.
+    it.each(["actor-character-sheet", "actor-npc-sheet"])("%s renders a <form>", name => {
+        const source = readFileSync(resolve(ROOT, `templates/actor/${name}.hbs`), "utf8");
+        expect(source).toMatch(/<form[\s>]/);
+        expect(source).toMatch(/<\/form>/);
+    });
+
+    it("still extends the v1 sheet, which is why the form is required", () => {
+        const sheet = readFileSync(resolve(ROOT, "module/actor/actor-sheet.mjs"), "utf8");
+        expect(sheet).toMatch(/extends foundry\.appv1\.sheets\.ActorSheet/);
     });
 });
 
@@ -217,6 +264,59 @@ describe("rendered markup", () => {
     it("preselects the stored light animation", async () => {
         const form = await renderSheet("torch", { system: { lightAnimation: { type: "pulse" } } });
         expect(form.querySelector('select[name="system.lightAnimation.type"]').value).toBe("pulse");
+    });
+});
+
+describe("item sheet stylesheet", () => {
+    const CSS = readFileSync(resolve(ROOT, "glog2d6.css"), "utf8");
+
+    /** Selectors the stylesheet aims at item sheets, pseudo-classes stripped. */
+    function itemSelectors() {
+        const withoutComments = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+        const selectors = new Set();
+        for (const [, group] of withoutComments.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
+            for (const selector of group.split(",")) {
+                const clean = selector.trim().replace(/:(hover|focus|disabled|active)\b/g, "");
+                if (clean.startsWith(".glog2d6.item")) selectors.add(clean);
+            }
+        }
+        return [...selectors];
+    }
+
+    /** A rendered item sheet inside the element the application actually builds. */
+    async function styledSheet(type) {
+        const sheet = sheetFor(type);
+        const context = await sheet._prepareContext({});
+        const path = sheet._configureRenderParts({}).body.template.replace("systems/glog2d6/", "");
+        const html = Handlebars.compile(readFileSync(resolve(ROOT, path), "utf8"))(context);
+        const classes = sheet.options.classes.join(" ");
+        return new JSDOM(
+            `<form class="application ${classes}"><section class="window-content">${html}</section></form>`
+        ).window.document;
+    }
+
+    it("aims at least one rule at item sheets", () => {
+        expect(itemSelectors().length).toBeGreaterThan(10);
+    });
+
+    it("has no rule that cannot match any item sheet", async () => {
+        const documents = await Promise.all(ITEM_SHEET_TYPES.map(styledSheet));
+        const dead = itemSelectors().filter(selector =>
+            !documents.some(doc => doc.querySelector(selector))
+        );
+        expect(dead, `stylesheet rules that match nothing: ${dead.join(", ")}`).toEqual([]);
+    });
+
+    it("styles the structural classes the templates rely on", async () => {
+        const selectors = itemSelectors().join(" ");
+        for (const cls of ["sheet-content", "sheet-body", "item-img", "charname", "form-group"]) {
+            expect(selectors, `nothing styles .${cls}`).toContain(cls);
+        }
+    });
+
+    it("keeps chat message buttons out of the sheet scope", () => {
+        // `.btn` is used inside chat cards, which are not under `.glog2d6`.
+        expect(CSS).toMatch(/^\.btn \{/m);
     });
 });
 
