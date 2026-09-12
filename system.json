@@ -4,8 +4,8 @@
     "description": "A minimal 2d6-based system for Foundry VTT",
     "version": "1.0.330",
     "compatibility": {
-        "minimum": "11",
-        "verified": "13"
+        "minimum": "13",
+        "verified": "14"
     },
     "authors": [
         {
@@ -38,7 +38,8 @@
             "shield": {},
             "torch": {},
             "feature": {},
-            "spell": {}
+            "spell": {},
+            "note": {}
         }
     },
     "primaryTokenAttribute": "hp",

@@ -5,7 +5,9 @@
 export function getWeaponTypes(weapon) {
     const raw = weapon?.system?.weaponType;
     if (!raw) return ["melee"];
-    return Array.isArray(raw) ? raw : [raw];
+    if (!Array.isArray(raw)) return [raw];
+    // The sheet writes an array, which is empty when every tag is unchecked.
+    return raw.length ? raw : ["melee"];
 }
 
 /**

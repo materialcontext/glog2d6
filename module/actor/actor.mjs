@@ -49,7 +49,10 @@ export class GLOG2D6Actor extends Actor {
     }
 
     prepareBaseData() {
-        console.log("calculating base data");
+        // The base lifecycle prepares the type data model and resets Foundry's
+        // ActiveEffect application phases; skipping it makes every preparation
+        // after the first throw on v14.
+        super.prepareBaseData();
 
         this.attributeSystem.calculateAttributeModifiers();
         this.inventorySystem.calculateInventoryData();
@@ -58,10 +61,9 @@ export class GLOG2D6Actor extends Actor {
     }
 
     prepareDerivedData() {
+        super.prepareDerivedData();
 
         try {
-            console.log("calculating derived data");
-
             this.attributeSystem.initializeEffectiveModifiers();
             this.bonusSystem.calculateAndApplyAllBonuses();
             this.attributeSystem.applyEncumbranceToAttributes();

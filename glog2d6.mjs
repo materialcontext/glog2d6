@@ -3,6 +3,7 @@ import { GLOG2D6Item } from "./module/item/item.mjs";
 import { GLOG2D6ActorSheet } from "./module/actor/actor-sheet.mjs";
 import { GLOG2D6HirelingSheet } from "./module/actor/hireling-sheet.mjs";
 import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
+import { ITEM_SHEET_TYPES, itemSheetTemplates } from "./module/item/item-sheet-config.mjs";
 import { SubtleRollReveal } from './module/dice/subtle-roll-reveal.mjs';
 import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
@@ -11,6 +12,21 @@ import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
 import { initReconSystem } from "./module/systems/recon-system.mjs";
 import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
+
+/**
+ * Unregister core's default sheets for a document collection, tolerating classes
+ * that no longer exist on the running core version.
+ */
+function unregisterCoreSheets(collection, classes) {
+    for (const cls of classes) {
+        if (!cls) continue;
+        try {
+            collection.unregisterSheet("core", cls);
+        } catch (error) {
+            console.debug(`glog2d6 | Core sheet ${cls.name} was not registered:`, error);
+        }
+    }
+}
 
 // Define custom Document classes
 CONFIG.Actor.documentClass = GLOG2D6Actor;
@@ -57,17 +73,6 @@ Hooks.once('init', async function() {
 
     Handlebars.registerHelper('contains', function(str, substring) {
         return str && str.toLowerCase().includes(substring.toLowerCase());
-    });
-
-    Handlebars.registerHelper('weaponTypeOptions', function(current) {
-        const types = Array.isArray(current) ? current : (current ? [current] : []);
-        return [
-            { value: 'melee', label: 'Melee', checked: types.includes('melee') },
-            { value: 'ranged', label: 'Ranged', checked: types.includes('ranged') },
-            { value: 'thrown', label: 'Thrown', checked: types.includes('thrown') },
-            { value: 'thrown', label: 'Explosive', checked: types.includes('explosive') },
-            { value: 'firearm', label: 'Firearm', checked: types.includes('firearm') }
-        ];
     });
 
     // Register game settinngs
@@ -128,14 +133,7 @@ Hooks.once("ready", async function() {
         // sheets
         "systems/glog2d6/templates/actor/actor-character-sheet.hbs",
         "systems/glog2d6/templates/actor/actor-npc-sheet.hbs",
-        "systems/glog2d6/templates/item/item-weapon-sheet.hbs",
-        "systems/glog2d6/templates/item/item-armor-sheet.hbs",
-        "systems/glog2d6/templates/item/item-gear-sheet.hbs",
-        "systems/glog2d6/templates/item/item-shield-sheet.hbs",
-        "systems/glog2d6/templates/item/item-spell-sheet.hbs",
-        "systems/glog2d6/templates/item/item-feature-sheet.hbs",
-        "systems/glog2d6/templates/item/item-torch-sheet.hbs",
-        "systems/glog2d6/templates/item/item-note-sheet.hbs",
+        ...itemSheetTemplates(),
         "systems/glog2d6/templates/dialogs/gm-roll.hbs",
         "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
     ]);
@@ -191,19 +189,17 @@ Hooks.once("ready", async function() {
         return rollableFeatures.includes(featureName);
     });
 
-    // Register sheet application classes
-    foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
+    // Register sheet application classes.
+    // Core's default sheet class differs between the AppV1 and AppV2 eras, so try
+    // both and ignore the one that isn't registered on this core version.
+    unregisterCoreSheets(foundry.documents.collections.Actors, [
+        foundry.applications?.sheets?.ActorSheetV2,
+        foundry.appv1?.sheets?.ActorSheet
+    ]);
     foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
         types: ["character", "npc"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Actor"
-    });
-
-    foundry.documents.collections.Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
-    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["weapon", "armor", "gear", "shield", "spell", "feature", "torch"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Item"
     });
 
     foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
@@ -212,9 +208,14 @@ Hooks.once("ready", async function() {
         label: "GLOG2D6.SheetLabels.Hireling"
     });
 
+    unregisterCoreSheets(foundry.documents.collections.Items, [
+        foundry.applications?.sheets?.ItemSheetV2,
+        foundry.appv1?.sheets?.ItemSheet
+    ]);
     foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: ["note"],
-        makeDefault: true
+        types: [...ITEM_SHEET_TYPES],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Item"
     });
 
     document.addEventListener('error', (event) => {
