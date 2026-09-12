@@ -76,6 +76,13 @@ Hooks.once('init', async function() {
         return str && str.toLowerCase().includes(substring.toLowerCase());
     });
 
+    // wounds-tab.hbs stamps every wound with the date it was taken.
+    Handlebars.registerHelper('formatDate', function(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        return Number.isNaN(date.valueOf()) ? '' : date.toLocaleDateString();
+    });
+
     // Condition helpers -- every template reads the breakage track through
     // these so weapons, armor and shields can never drift apart again.
     Handlebars.registerHelper('isBroken', level => BreakageCalculator.isBroken(level));
