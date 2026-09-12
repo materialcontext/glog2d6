@@ -219,8 +219,8 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         const woundId = event.currentTarget.dataset.woundId;
 
         const confirm = await Dialog.confirm({
-            title: "Remove Wound",
-            content: "<p>Are you sure you want to remove this wound?</p>",
+            title: "Clear Wound",
+            content: "<p>Clear this wound? It will reroll max HP and leave a scar.</p>",
             defaultYes: false
         });
 
@@ -228,6 +228,49 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
             await this.actor.removeWound(woundId);
             this.render();
         }
+    }
+
+    async handleAdvanceWound(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        await this.actor.advanceWound(event.currentTarget.dataset.woundId);
+        this.render();
+    }
+
+    async handleAddWound(event) {
+        event.preventDefault();
+        const damage = await this._promptWoundDamage();
+        if (damage === null) return;
+
+        await this.actor.applyWound(damage);
+        this.render();
+    }
+
+    async _promptWoundDamage() {
+        const content = `
+            <div class="form-group flex flex-col flex-gap-4 p-6">
+                <label class="text-small text-bold text-upper text-muted">Excess damage</label>
+                <input type="number" name="damage" value="1" min="1" class="input text-center" />
+            </div>`;
+
+        return new Promise(resolve => {
+            new Dialog({
+                title: "Roll a Wound",
+                content,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: html => {
+                            const value = parseInt(html.find('input[name="damage"]').val(), 10);
+                            resolve(Number.isFinite(value) && value > 0 ? value : 1);
+                        }
+                    },
+                    cancel: { label: "Cancel", callback: () => resolve(null) }
+                },
+                default: "roll",
+                close: () => resolve(null)
+            }).render(true);
+        });
     }
 
     // note delegation

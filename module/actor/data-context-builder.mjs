@@ -1,3 +1,4 @@
+import { decorateWounds } from "../systems/wounds.mjs";
 // module/actor/data-context-builder.mjs
 import { hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
 import { analyzeEquippedWeapons, hasFeature } from '../utils/actor-analysis.mjs';
@@ -22,6 +23,7 @@ export class DataContextBuilder {
             .addFeatureData()
             .addWeaponAnalysis()
             .addAcrobatTraining()
+            .addWoundData()
             .addDebugLogging()
             .getContext();
     }
@@ -37,7 +39,8 @@ export class DataContextBuilder {
             weaponAnalysis: { hasWeapons: false, attackButtonType: 'generic' },
             hasAvailableFeatures: false,
             availableClasses: [],
-            hasAcrobatTraining: false
+            hasAcrobatTraining: false,
+            wounds: decorateWounds(this.actor.system.wounds?.list || [])
         };
     }
 }
@@ -78,6 +81,11 @@ class ContextEnhancer {
 
     addAcrobatTraining() {
         this.context.hasAcrobatTraining = hasFeature(this.actor.items, "Acrobat Training");
+        return this;
+    }
+
+    addWoundData() {
+        this.context.wounds = decorateWounds(this.actor.system.wounds?.list || []);
         return this;
     }
 

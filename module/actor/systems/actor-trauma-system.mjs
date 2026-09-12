@@ -1,4 +1,19 @@
 // module/actor/systems/actor-trauma-system.mjs
+import {
+    SEVERITY_DIE,
+    WOUND_STATES,
+    aggregateWoundEffects,
+    bodyPartFor,
+    hpRerollFormula,
+    nextWoundState,
+    normalizeWound,
+    scarFromWound,
+    woundCount,
+    woundRemoval,
+    woundSeverity
+} from "../../systems/wounds.mjs";
+
+export const WOUND_TABLE_NAME = "GLOG Wounds Table";
 class ActorTraumaSystem {
     constructor(actor) {
         this.actor = actor;
@@ -38,67 +53,114 @@ class ActorTraumaSystem {
         return woundApplier.apply();
     }
 
-    async removeWound(woundId) {
-        const wounds = this.actor.system.wounds.list || [];
-        const updatedWounds = wounds.filter(w => w.id !== woundId);
+    /** Wounds as stored, with recovery fields filled in for older entries. */
+    get woundList() {
+        return (this.actor.system.wounds?.list || []).map(normalizeWound);
+    }
 
+    /**
+     * Move a wound one step along untreated -> treated -> healing.
+     */
+    async advanceWound(woundId) {
+        const wounds = this.woundList;
+        const wound = wounds.find(w => w.id === woundId);
+        if (!wound) return null;
+
+        const state = nextWoundState(wound.state);
+        if (!state) {
+            ui.notifications.info(`${wound.name} is already healing.`);
+            return null;
+        }
+
+        const updated = wounds.map(w => (w.id === woundId ? { ...w, state } : w));
+        await this.actor.update({ "system.wounds.list": updated });
+        ui.notifications.info(`${wound.name} is now ${state}.`);
+        return state;
+    }
+
+    /**
+     * Clear a wound, which is gated on its recovery state, rerolls max HP and
+     * leaves a scar behind.
+     */
+    async removeWound(woundId, { force = false } = {}) {
+        const wounds = this.woundList;
+        const wound = wounds.find(w => w.id === woundId);
+        if (!wound) return null;
+
+        const removal = woundRemoval(wound, wounds);
+        if (!removal.allowed && !force) {
+            ui.notifications.warn(`${wound.name}: ${removal.reason}`);
+            return null;
+        }
+
+        const remaining = wounds.filter(w => w.id !== woundId);
         await this.actor.update({
-            "system.wounds.list": updatedWounds,
-            "system.wounds.count": updatedWounds.length
+            "system.wounds.list": remaining,
+            "system.wounds.count": remaining.length
         });
 
-        ui.notifications.info(`Wound removed from ${this.actor.name}`);
+        const reroll = await this._rerollMaxHp(wound);
+        const scar = await this._leaveScar(wound);
+        await this._sendRecoveryMessage(wound, reroll, scar);
+
+        return { wound, reroll, scar };
+    }
+
+    /**
+     * Every wound promises a max-HP reroll on removal, which nothing used to
+     * honour. The roll is always reported; it is only written when it strictly
+     * beats the current maximum, so it can never cost a character hit points.
+     */
+    async _rerollMaxHp(wound) {
+        const formula = hpRerollFormula(wound);
+        if (!formula) return null;
+
+        const roll = new Roll(formula);
+        await roll.evaluate();
+
+        const current = Number(this.actor.system.hp?.max) || 0;
+        const applied = roll.total > current;
+        if (applied) await this.actor.update({ "system.hp.max": roll.total });
+
+        return { formula, total: roll.total, previous: current, applied };
+    }
+
+    /** A healed wound leaves an inactive feature rather than nothing. */
+    async _leaveScar(wound) {
+        try {
+            const [scar] = await this.actor.createEmbeddedDocuments("Item", [scarFromWound(wound)]);
+            return scar ?? null;
+        } catch (error) {
+            console.error("glog2d6 | Could not create scar for", wound?.name, error);
+            return null;
+        }
+    }
+
+    async _sendRecoveryMessage(wound, reroll, scar) {
+        const parts = [`<div class="text-small mb-4"><strong>Recovered:</strong> ${wound.name}</div>`];
+
+        if (reroll) {
+            const verdict = reroll.applied
+                ? `max HP raised to <strong>${reroll.total}</strong>`
+                : `rolled ${reroll.total}, keeping ${reroll.previous}`;
+            parts.push(`<div class="text-small mb-4"><strong>Max HP ${reroll.formula}:</strong> ${verdict}</div>`);
+        }
+
+        if (scar) parts.push(`<div class="text-small"><strong>Left behind:</strong> ${scar.name}</div>`);
+
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: `
+                <div class="glog2d6-roll section p-10 wound-recovery">
+                    <h3 class="mb-8">${this.actor.name} recovers</h3>
+                    <div class="p-8 section">${parts.join("")}</div>
+                </div>
+            `
+        });
     }
 
     getWoundPenalties() {
-        const wounds = this.wounds?.list || [];
-        const penalties = {
-            stats: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
-            movement: 0,
-            healing: false,
-            attackPenalty: 0,
-            defensePenalty: 0,
-            reactionPenalty: 0
-        };
-
-        for (const wound of wounds) {
-            this._applyWoundPenalty(wound, penalties);
-        }
-
-        return penalties;
-    }
-
-    _applyWoundPenalty(wound, penalties) {
-        const woundsData = CONFIG.GLOG.WOUNDS?.wounds || [];
-        const woundData = woundsData.find(w => w.id === wound.typeId);
-        if (!woundData) return;
-
-        // Apply penalties based on wound type
-        if (woundData.effects.statReduction) {
-            for (const [stat, value] of Object.entries(woundData.effects.statReduction)) {
-                penalties.stats[stat] += value;
-            }
-        }
-
-        if (woundData.effects.movementReduction) {
-            penalties.movement = Math.max(penalties.movement, woundData.effects.movementReduction);
-        }
-
-        if (woundData.effects.noHealing) {
-            penalties.healing = true;
-        }
-
-        if (woundData.effects.attackPenalty) {
-            penalties.attackPenalty += woundData.effects.attackPenalty;
-        }
-
-        if (woundData.effects.defensePenalty) {
-            penalties.defensePenalty += woundData.effects.defensePenalty;
-        }
-
-        if (woundData.effects.reactionPenalty) {
-            penalties.reactionPenalty += woundData.effects.reactionPenalty;
-        }
+        return aggregateWoundEffects(this.woundList, CONFIG.GLOG.WOUNDS?.wounds || []);
     }
 }
 
@@ -297,97 +359,150 @@ class TraumaSaveRoller {
 }
 
 class WoundApplier {
-    constructor(actor, damage) {
+    constructor(actor, damage, options = {}) {
         this.actor = actor;
         this.damage = damage;
+        this.weaponTags = options.weaponTags ?? this._equippedWeaponTags();
     }
 
     async apply() {
-        const woundEntry = this._selectWoundFromTable();
-        const wound = this._createWoundInstance(woundEntry);
+        const table = CONFIG.GLOG.WOUNDS?.wounds || [];
+        if (!table.length) {
+            ui.notifications.error("No wound table is loaded.");
+            return [];
+        }
 
-        await this._addWoundToActor(wound);
-        await this._sendWoundChatMessage(wound);
+        const rolled = [await this._rollWound(table)];
 
-        return wound;
+        // The worst entries declare `multipleWounds`, which nothing read before.
+        const extra = woundCount(rolled[0].entry) - 1;
+        for (let i = 0; i < extra; i++) rolled.push(await this._rollWound(table));
+
+        const wounds = rolled.map(r => r.wound);
+        await this._addWoundsToActor(wounds);
+        await this._sendWoundChatMessage(rolled);
+
+        return wounds;
     }
 
-    _selectWoundFromTable() {
-        const woundsData = CONFIG.GLOG.WOUNDS?.wounds || [];
-        const clampedDamage = Math.min(this.damage, woundsData.length);
-        return woundsData[clampedDamage - 1];
+    /** Weapon tags of whatever the character has equipped, to bias anatomy. */
+    _equippedWeaponTags() {
+        const weapon = this.actor.items.find(i => i.type === "weapon" && i.system.equipped);
+        if (!weapon) return ["unarmed"];
+        const raw = weapon.system.weaponType;
+        return Array.isArray(raw) ? raw : (raw ? [raw] : ["melee"]);
     }
 
-    _createWoundInstance(woundEntry) {
+    /**
+     * Roll one wound. Damage sets the band and the die sets the position in it,
+     * so the same damage no longer always produces the same wound.
+     */
+    async _rollWound(table) {
+        const roll = new Roll(`1d${SEVERITY_DIE}`);
+        await roll.evaluate();
+
+        const severity = woundSeverity(roll.total, this.damage, table.length);
+        const entry = this._entryFor(severity, table);
+
+        return { entry, severity, roll, wound: await this._createWoundInstance(entry, severity) };
+    }
+
+    /**
+     * Prefer the world's roll table so a GM editing it actually changes play.
+     * Falls back to the shipped data when the table is missing or unrecognised.
+     */
+    _entryFor(severity, table) {
+        const worldTable = game.tables?.find(t => t.name === WOUND_TABLE_NAME);
+        const result = worldTable?.results?.find(r => {
+            const [low, high] = r.range ?? [];
+            return Number.isFinite(low) && severity >= low && severity <= high;
+        });
+
+        if (result) {
+            const tagged = result.getFlag?.("glog2d6", "woundId");
+            const byFlag = tagged && table.find(entry => entry.id === tagged);
+            if (byFlag) return byFlag;
+
+            const label = String(result.text ?? result.name ?? result.description ?? "").split(":")[0].trim();
+            const byName = label && table.find(entry => entry.name.toLowerCase() === label.toLowerCase());
+            if (byName) return byName;
+        }
+
+        return table[severity - 1];
+    }
+
+    async _createWoundInstance(woundEntry, severity) {
         const wound = {
             id: foundry.utils.randomID(),
             typeId: woundEntry.id,
             name: woundEntry.name,
             description: woundEntry.description,
             damage: this.damage,
+            severity,
+            state: WOUND_STATES.UNTREATED,
+            bodyPart: await this._rollBodyPart(),
             dateAcquired: new Date().toISOString(),
             effects: { ...woundEntry.effects }
         };
 
-        // Handle special wounds that need additional rolls
         if (woundEntry.effects.specialRoll === 'bodyPart') {
-            wound.bodyPart = this._rollBodyPart();
             wound.description = wound.description.replace("Roll 1d6", `Rolled ${wound.bodyPart}`);
         } else if (woundEntry.effects.specialRoll === 'maimed') {
-            wound.maimedResult = this._rollMaimedResult();
+            wound.maimedResult = await this._rollMaimedResult();
         }
 
         return wound;
     }
 
-    _rollBodyPart() {
+    /** Anatomy is now rolled for every wound, biased by what struck you. */
+    async _rollBodyPart() {
         const roll = new Roll("1d6");
-        roll.evaluate({ async: false });
-        const bodyParts = CONFIG.GLOG.WOUNDS?.bodyParts || ["Leg", "Chest", "Arm", "Shoulder", "Abdomen", "Hand"];
-        return bodyParts[roll.total - 1];
+        await roll.evaluate();
+        return bodyPartFor(roll.total, this.weaponTags);
     }
 
-    _rollMaimedResult() {
+    async _rollMaimedResult() {
         const roll = new Roll("1d6");
-        roll.evaluate({ async: false });
-        const results = CONFIG.GLOG.WOUNDS?.maimedResults || [
-            "Roll twice more and keep both results",
-            "Sword Arm damaged",
-            "Face damaged",
-            "Shield Arm damaged",
-            "Leg damaged",
-            "Leg damaged"
-        ];
-        return results[roll.total - 1];
+        await roll.evaluate();
+        const results = CONFIG.GLOG.WOUNDS?.maimedResults || [];
+        return results[roll.total - 1] ?? "Roll on the maimed table";
     }
 
-    async _addWoundToActor(wound) {
-        const currentWounds = this.actor.system.wounds?.list || [];
-        const newWounds = [...currentWounds, wound];
+    async _addWoundsToActor(wounds) {
+        const current = this.actor.system.wounds?.list || [];
+        const updated = [...current, ...wounds];
 
         await this.actor.update({
-            "system.wounds.list": newWounds,
-            "system.wounds.count": newWounds.length
+            "system.wounds.list": updated,
+            "system.wounds.count": updated.length
         });
     }
 
-    async _sendWoundChatMessage(wound) {
-        const content = `
-            <div class="glog2d6-roll section p-10" style="border-left: 4px solid #ff9800;">
-                <h3 class="text-primary mb-8">${this.actor.name} - Wound Applied</h3>
-                <div class="p-8 section mb-8">
-                    <div class="text-small mb-4"><strong>Wound:</strong> ${wound.name}</div>
-                    <div class="text-small mb-8"><strong>Damage:</strong> ${this.damage}</div>
-                    <div class="text-small p-8 section" style="background: rgba(255, 152, 0, 0.1);">
-                        ${wound.description}
-                    </div>
+    async _sendWoundChatMessage(rolled) {
+        const cards = rolled.map(({ wound, severity, roll }) => `
+            <div class="p-8 section mb-8">
+                <div class="text-small mb-4">
+                    <strong>${wound.name}</strong>
+                    <span class="text-muted">&mdash; ${wound.bodyPart}</span>
                 </div>
+                <div class="text-small text-muted mb-4">
+                    Severity ${severity} (d${SEVERITY_DIE} ${roll.total} + ${this.damage} damage)
+                </div>
+                <div class="text-small">${wound.description}</div>
+                ${wound.effects.rerollStat
+                    ? `<div class="text-small text-danger mt-4">Reroll your ${wound.effects.rerollStat.toUpperCase()}.</div>`
+                    : ""}
             </div>
-        `;
+        `).join("");
 
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-            content: content
+            content: `
+                <div class="glog2d6-roll section p-10 wound-applied">
+                    <h3 class="mb-8">${this.actor.name} &mdash; ${rolled.length > 1 ? "Wounds" : "Wound"} Applied</h3>
+                    ${cards}
+                </div>
+            `
         });
     }
 }

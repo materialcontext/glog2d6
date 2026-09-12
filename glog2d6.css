@@ -1424,3 +1424,196 @@ button > i {
 .glog2d6.item-note textarea.input {
     min-height: 280px;
 }
+
+/* ==========================================================================
+   WOUNDS TAB
+   --------------------------------------------------------------------------
+   Previously every row here carried its own inline style attribute, which is
+   why the tab never matched the rest of the sheet.
+   ========================================================================== */
+
+.wounds-tab-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.wounds-header {
+    min-height: 34px;
+}
+
+.wounds-info {
+    font-size: 12px;
+}
+
+/* Spacing here is owned by the stylesheet rather than margin utilities on
+   each card, so adding a card cannot drift the rhythm. */
+.wounds-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wound-effects {
+    overflow: hidden;
+}
+
+.wound-effects-title {
+    margin: 0;
+    padding: 6px 10px;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border);
+    color: var(--danger);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.wound-effect {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: var(--danger);
+    background: rgba(211, 47, 47, 0.06);
+    border-bottom: 1px solid rgba(211, 47, 47, 0.12);
+}
+
+.wound-effect:last-child {
+    border-bottom: none;
+}
+
+.wound-effect i {
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.wound-effect-grave {
+    background: rgba(211, 47, 47, 0.14);
+    font-weight: 700;
+}
+
+/* --- One wound ----------------------------------------------------------- */
+
+.wound-card {
+    padding: 8px 10px;
+    border-left: 3px solid var(--danger);
+}
+
+/* The border reads the recovery track at a glance. */
+.wound-card.wound-state-treated {
+    border-left-color: #e0a030;
+}
+
+.wound-card.wound-state-healing {
+    border-left-color: var(--success);
+}
+
+.wound-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.wound-title {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+}
+
+.wound-name {
+    font-weight: 700;
+    color: var(--danger);
+}
+
+.wound-part {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.wound-state {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.wound-state-treated .wound-state {
+    background: rgba(224, 160, 48, 0.2);
+    color: #8a5e10;
+}
+
+.wound-state-healing .wound-state {
+    background: rgba(76, 175, 80, 0.18);
+    color: #2c6e2f;
+}
+
+.wound-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.wound-description {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.wound-note {
+    margin-top: 6px;
+    padding: 4px 6px;
+    border-radius: var(--radius);
+    background: var(--bg-dark);
+    font-size: 10px;
+}
+
+.wound-note-danger {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--danger);
+}
+
+.wound-recovery-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+}
+
+.wound-requirement {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-style: italic;
+}
+
+.wound-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 4px;
+}
+
+.wound-recovery h3,
+.wound-applied h3 {
+    margin-top: 0;
+}

@@ -42,6 +42,8 @@ export class EventHandlerRegistry {
             // trauma and wounds
             { selector: '.trauma-save-btn', event: 'click', handler: 'handleTraumaSave' },
             { selector: '.remove-wound-btn', event: 'click', handler: 'handleRemoveWound' },
+            { selector: '.advance-wound-btn', event: 'click', handler: 'handleAdvanceWound' },
+            { selector: '.add-wound-btn', event: 'click', handler: 'handleAddWound' },
 
             // rollable featues
             { selector: '.feature-roll-btn', event: 'click', handler: 'handleFeatureRoll' },
