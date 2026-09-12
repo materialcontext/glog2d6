@@ -122,31 +122,82 @@ AppV1 is removed:
   `actor-trauma-system.mjs`
 - `Dialog` / `Dialog.confirm` in `actor-sheet.mjs` and `sheet-roll-handler.mjs`
   → `foundry.applications.api.DialogV2`
-- `Hooks.on('renderSidebarTab', ...)` in `glog2d6.mjs` — the sidebar moved to
-  ApplicationV2 in v13 and this hook no longer fires, so the `/recon` chat button
-  is missing. The chat-log render hook is the replacement.
 
-## Known domain inconsistency (needs a ruling, not a code fix)
+## The Recon button
 
-Breakage levels disagree across the codebase:
+`Hooks.on('renderSidebarTab', ...)` stopped firing when the sidebar moved to
+ApplicationV2 in v13, so the Recon icon vanished from the chat controls. The
+chat input and its controls are now rendered outside the normal render pass and
+re-parented afterwards ([foundryvtt#12719](https://github.com/foundryvtt/foundryvtt/issues/12719)),
+so there is no stable seam left to splice an icon into.
 
-- `actor.mjs#breakEquippedItem` and `BreakageCalculator` treat `level >= maxLevel`
-  as broken. For armor (`maxLevel: 1`) that means level 1 is already broken.
-- `inventory-tab.hbs` shows `BROKEN` only when `level > maxLevel`, i.e. at 2.
-- The armor sheet offers Fine (0) / Damaged 1 / Broken (2).
+The check now lives as a one-shot tool under the **Token scene controls**, using
+the documented `getSceneControlButtons` hook. Note the v13 shape change: both
+`controls` and each control's `tools` are records keyed by name, not arrays, and
+a tool without `onChange`/`onClick` throws inside core
+([foundryvtt#12761](https://github.com/foundryvtt/foundryvtt/issues/12761)).
 
-The sheets preserve their existing option lists so nothing changes underfoot, but
-armor's `maxLevel` should probably become `2` (matching weapons) or the display
-rules should move to `level >= maxLevel`.
+```js
+Hooks.on("getSceneControlButtons", controls => {
+    controls.tokens.tools.glog2d6Recon = {
+        name: "glog2d6Recon", title: "Recon Check", icon: "fas fa-binoculars",
+        button: true, order: Object.keys(controls.tokens.tools).length,
+        onChange: () => new ReconDialog().render(true)
+    };
+});
+```
+
+The `/recon` chat command is unaffected and still works.
+
+## One condition track
+
+Breakage used to disagree with itself in three places: `breakEquippedItem` and
+`BreakageCalculator` treated `level >= maxLevel` as broken (so armor at
+`maxLevel: 1` was broken at level 1), `inventory-tab.hbs` only showed `BROKEN`
+above `maxLevel`, and the armor sheet offered Fine / Damaged 1 / Broken.
+
+`module/systems/breakage-calculator.mjs` is now the single source of truth:
+
+```
+level 0  Fine
+level 1  Damaged      weapon die steps down; armor/shield lose 1 protection
+level 2  Broken       weapon deals "0"; armor/shield give 0
+```
+
+`maxLevel` is **2** for weapons, armor and shields alike, and "broken" is always
+`level >= BREAKAGE_MAX_LEVEL`. Everything reads through that module:
+
+- `item-sheet-config.mjs` builds one condition dropdown for all three types.
+- `actor.mjs#breakEquippedItem` steps the track with `nextLevel()` / `isBroken()`.
+- `actor-combat-system.mjs` runs *shields* through `calculateArmorBonus` too;
+  previously shield breakage was ignored entirely.
+- `inventory-tab.hbs` uses `{{isBroken}}` / `{{isDamaged}}` helpers, replacing
+  two divergent per-type branches with one.
+- The item sheet coerces the submitted level to a number and pins `maxLevel`;
+  `<select>` submits strings and template.json types do no coercion.
+
+Shields gained a condition block (they were rendered in the armor branch of the
+inventory list but had no breakage data) and a Condition field on their sheet.
+
+### Migration
+
+`migrateContent()` (content version `1.3.0`) normalises every breakable item in
+the world and on actors. Levels carry over unchanged — the old armor sheet
+already meant 2 by "Broken" — so only `maxLevel` and out-of-range levels move.
+`breakageMigration()` is pure and idempotent, and is covered by tests.
+
+Unlinked token actors and compendium packs are not walked.
 
 ## Tests
 
-`npm run test:run` — 120 tests across:
+`npm run test:run` — 155 tests across:
 
 - `tests/item-sheet-config.test.mjs` — the pure domain layer.
 - `tests/item-sheet.test.mjs` — renders every item template through the real
   sheet's `_prepareContext` / `_configureRenderParts` and asserts the markup,
   plus the submit pipeline and the manifest.
+- `tests/breakage.test.mjs` — the condition track, its effects, the world
+  migration, and the inventory badge compiled out of the real template.
 
 `tests/setup.js` provides `foundry.utils` and ApplicationV2/DocumentSheetV2
 doubles. Only `selectOptions` is registered as a core Handlebars helper, so a

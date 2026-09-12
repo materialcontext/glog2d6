@@ -12,6 +12,7 @@ import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
 import { initReconSystem } from "./module/systems/recon-system.mjs";
 import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
+import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 
 /**
  * Unregister core's default sheets for a document collection, tolerating classes
@@ -74,6 +75,12 @@ Hooks.once('init', async function() {
     Handlebars.registerHelper('contains', function(str, substring) {
         return str && str.toLowerCase().includes(substring.toLowerCase());
     });
+
+    // Condition helpers -- every template reads the breakage track through
+    // these so weapons, armor and shields can never drift apart again.
+    Handlebars.registerHelper('isBroken', level => BreakageCalculator.isBroken(level));
+    Handlebars.registerHelper('isDamaged', level => BreakageCalculator.isDamaged(level));
+    Handlebars.registerHelper('breakageLabel', level => BreakageCalculator.label(level));
 
     // Register game settinngs
     game.settings.register("glog2d6", "hasSetupDefaultFolders", {
@@ -263,30 +270,32 @@ Hooks.once("ready", async function() {
     }
 });
 
-Hooks.on('renderSidebarTab', (app, html) => {
-    if (app.tabName !== 'chat' || !game.user.isGM) return;
+// GM Recon check, as a one-shot tool under the Token scene controls.
+//
+// This used to inject an icon into the chat controls on `renderSidebarTab`.
+// That hook stopped firing when the sidebar moved to ApplicationV2 in v13, and
+// the chat input and its controls are now re-parented outside the normal render
+// pass, so there is no stable place to splice into. Scene controls are a
+// documented, supported extension point.
+Hooks.on("getSceneControlButtons", controls => {
+    if (!game.user?.isGM) return;
 
-    // Convert to jQuery if needed
-    const $html = html instanceof jQuery ? html : $(html);
+    // v13+ passes a record of controls, each with a record of tools.
+    const tokenControls = controls?.tokens;
+    if (!tokenControls?.tools) {
+        console.warn("glog2d6 | Token scene controls unavailable; skipping Recon tool");
+        return;
+    }
 
-    // Make sure we don't add multiple buttons
-    if ($html.find('#recon-chat-btn').length) return;
-
-    const reconBtn = $(`
-       <a id="recon-chat-btn" class="chat-control-icon" title="Recon Check" style="margin-left: 4px;">
-           <i class="fas fa-search"></i>
-       </a>
-   `);
-
-    reconBtn.click(() => {
-        import("./module/dialogs/recon-dialog.mjs").then(({ ReconDialog }) => {
-            new ReconDialog().render(true);
-        });
-    });
-
-    // Add some spacing and prevent overlap
-    $html.find('#chat-controls').css('gap', '2px');
-    $html.find('#chat-controls .chat-control-icon').last().after(reconBtn);
+    tokenControls.tools.glog2d6Recon = {
+        name: "glog2d6Recon",
+        title: "Recon Check",
+        icon: "fas fa-binoculars",
+        button: true,
+        visible: true,
+        order: Object.keys(tokenControls.tools).length,
+        onChange: () => new ReconDialog().render(true)
+    };
 });
 
 // GM Chat Commands

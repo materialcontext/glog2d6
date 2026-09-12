@@ -122,24 +122,11 @@
 
             {{!-- Breakage Status and Slots --}}
             <div class="gear-slots text-small text-muted">
-                {{!-- Show breakage status for weapons and armor --}}
-                {{#if (or (eq item.type "weapon") (eq item.type "armor") (eq item.type "shield"))}}
-                {{#if (gt item.system.breakage.level 0)}}
-                {{#if (eq item.type "weapon")}}
-                {{#if (eq item.system.breakage.level 1)}}
+                {{!-- Condition badge; one track for weapons, armor and shields --}}
+                {{#if (isBroken item.system.breakage.level)}}
+                <span class="gear-detail breakage-broken">BROKEN</span>
+                {{else if (isDamaged item.system.breakage.level)}}
                 <span class="gear-detail breakage-damaged">DMG</span>
-                {{else if (eq item.system.breakage.level 2)}}
-                <span class="gear-detail breakage-broken">BROKEN</span>
-                {{/if}}
-                {{else}}
-                {{!-- Armor/Shield breakage --}}
-                {{#if (gt item.system.breakage.level item.system.breakage.maxLevel)}}
-                <span class="gear-detail breakage-broken">BROKEN</span>
-                {{else}}
-                <span class="gear-detail breakage-damaged">DMG {{item.system.breakage.level}}</span>
-                {{/if}}
-                {{/if}}
-                {{/if}}
                 {{/if}}
 
                 {{!-- Slots display --}}

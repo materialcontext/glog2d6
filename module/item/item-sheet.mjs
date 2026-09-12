@@ -5,6 +5,7 @@ import {
     itemSheetChoices,
     itemSheetTemplate
 } from "./item-sheet-config.mjs";
+import { BREAKAGE_MAX_LEVEL, BreakageCalculator } from "../systems/breakage-calculator.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ItemSheetV2 } = foundry.applications.sheets;
@@ -128,6 +129,13 @@ export class GLOG2D6ItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         if (type === "weapon") {
             const tags = readWeaponTypeTags(form);
             if (tags) foundry.utils.setProperty(submitData, "system.weaponType", tags);
+        }
+
+        // <select> submits strings; the condition track is numeric everywhere else.
+        if (submitData.system?.breakage?.level !== undefined) {
+            submitData.system.breakage.level =
+                BreakageCalculator.normalizeLevel(submitData.system.breakage.level);
+            submitData.system.breakage.maxLevel = BREAKAGE_MAX_LEVEL;
         }
 
         // Work off the source object: it is always plain data, whether or not

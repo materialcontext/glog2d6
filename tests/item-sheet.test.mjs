@@ -171,11 +171,16 @@ describe("rendered markup", () => {
         expect(form.querySelector('select[name="system.breakage.level"]').value).toBe("1");
     });
 
-    it("derives the armor condition list from maxLevel", async () => {
-        const form = await renderSheet("armor", { system: { breakage: { level: 0, maxLevel: 1 } } });
+    it.each(["weapon", "armor", "shield"])("%s sheet shows the shared condition list", async type => {
+        const form = await renderSheet(type);
         const labels = [...form.querySelectorAll('select[name="system.breakage.level"] option')]
             .map(o => o.textContent);
-        expect(labels).toEqual(["Fine", "Damaged 1", "Broken"]);
+        expect(labels).toEqual(["Fine", "Damaged", "Broken"]);
+    });
+
+    it("preselects a legacy armor level stored against maxLevel 1", async () => {
+        const form = await renderSheet("armor", { system: { breakage: { level: 2, maxLevel: 1 } } });
+        expect(form.querySelector('select[name="system.breakage.level"]').value).toBe("2");
     });
 
     it("renders one checkbox per weapon type with distinct values", async () => {
@@ -272,6 +277,24 @@ describe("submission", () => {
         const sheet = sheetFor("armor", { system: { type: "medium" } });
         const data = sheetSubmit(sheet, { "system.type": "medium", "system.armorBonus": 5 });
         expect(data.system.armorBonus).toBe(5);
+    });
+
+    it("stores the submitted condition as a number on the shared track", () => {
+        for (const type of ["weapon", "armor", "shield"]) {
+            const sheet = sheetFor(type);
+            const data = sheetSubmit(sheet, { "system.breakage.level": "2" });
+            expect(data.system.breakage, type).toEqual({ level: 2, maxLevel: 2 });
+        }
+    });
+
+    it("clamps an out-of-range condition on submit", () => {
+        const data = sheetSubmit(sheetFor("armor"), { "system.breakage.level": "7" });
+        expect(data.system.breakage.level).toBe(2);
+    });
+
+    it("leaves the condition alone when the form did not submit one", () => {
+        const data = sheetSubmit(sheetFor("weapon"), { "system.damage": "1d8" });
+        expect(data.system.breakage).toBeUndefined();
     });
 
     it("does not touch types without derived stats", () => {

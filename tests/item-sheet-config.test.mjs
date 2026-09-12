@@ -5,7 +5,6 @@ import {
     ITEM_SHEET_CONFIG,
     ITEM_SHEET_TYPES,
     WEAPON_TYPES,
-    armorBreakageChoices,
     armorDefaults,
     autoFieldsChanged,
     autoFieldsFor,
@@ -152,28 +151,30 @@ describe("derived update pipeline", () => {
 });
 
 describe("breakage tracks", () => {
-    it("derives armor conditions from maxLevel", () => {
-        expect(armorBreakageChoices(1)).toEqual({ 0: "Fine", 1: "Damaged 1", 2: "Broken" });
-        expect(armorBreakageChoices(2)).toEqual({ 0: "Fine", 1: "Damaged 1", 2: "Damaged 2", 3: "Broken" });
+    const BREAKABLE = ["weapon", "armor", "shield"];
+
+    it("offers the same condition list to every breakable type", () => {
+        const lists = BREAKABLE.map(type => itemSheetChoices(type, { system: {} }).breakageLevels);
+        for (const list of lists) expect(list).toEqual({ 0: "Fine", 1: "Damaged", 2: "Broken" });
+        expect(new Set(lists).size).toBe(1); // literally the same object
     });
 
-    it("tolerates missing or nonsense maxLevel", () => {
-        expect(armorBreakageChoices(undefined)).toEqual(armorBreakageChoices(1));
-        expect(armorBreakageChoices(0)).toEqual(armorBreakageChoices(1));
-        expect(armorBreakageChoices("2")).toEqual(armorBreakageChoices(2));
+    it("does not offer a condition list to types that cannot break", () => {
+        for (const type of ["gear", "spell", "feature", "torch", "note"]) {
+            expect(itemSheetChoices(type, { system: {} }).breakageLevels, type).toBeUndefined();
+        }
+    });
+
+    it("normalises the selected level for every breakable type", () => {
+        for (const type of BREAKABLE) {
+            expect(itemSheetChoices(type, { system: { breakage: { level: "1" } } }).breakageLevel).toBe("1");
+            expect(itemSheetChoices(type, { system: { breakage: { level: 9 } } }).breakageLevel).toBe("2");
+            expect(itemSheetChoices(type, { system: {} }).breakageLevel).toBe("0");
+        }
     });
 });
 
 describe("render context slices", () => {
-    it("stringifies the selected breakage level so selectOptions can match it", () => {
-        const context = itemSheetChoices("weapon", { system: { breakage: { level: 2 } } });
-        expect(context.breakageLevel).toBe("2");
-    });
-
-    it("defaults breakage level to Fine when absent", () => {
-        expect(itemSheetChoices("armor", { system: {} }).breakageLevel).toBe("0");
-    });
-
     it("offers the armor type list", () => {
         expect(itemSheetChoices("armor", { system: { type: "medium" } }).armorTypes).toEqual(ARMOR_TYPES);
     });
@@ -186,7 +187,7 @@ describe("render context slices", () => {
     });
 
     it("returns an empty slice for types without choices", () => {
-        expect(itemSheetChoices("shield", { system: {} })).toEqual({});
+        expect(itemSheetChoices("spell", { system: {} })).toEqual({});
         expect(itemSheetChoices("nonexistent", { system: {} })).toEqual({});
     });
 

@@ -9,6 +9,8 @@
  * matching `templates/item/item-<type>-sheet.hbs` next to the others.
  */
 
+import { BREAKAGE_LABELS, BreakageCalculator } from "../systems/breakage-calculator.mjs";
+
 const TEMPLATE_ROOT = "systems/glog2d6/templates/item";
 
 /* -------------------------------------------- */
@@ -82,32 +84,23 @@ export const LIGHT_ANIMATIONS = Object.freeze({
 });
 
 /**
- * Weapon condition track. `BreakageCalculator.calculateWeaponDamage` treats
- * level >= 2 as broken, so the list is fixed rather than derived.
+ * Condition dropdown, shared by every breakable type. See
+ * `module/systems/breakage-calculator.mjs` for the track itself.
  */
-export const WEAPON_BREAKAGE_LEVELS = Object.freeze({
-    0: "Fine",
-    1: "Damaged",
-    2: "Broken"
-});
+export const BREAKAGE_LEVELS = BREAKAGE_LABELS;
 
 /**
- * Armor condition track, derived from the item's own `breakage.maxLevel`.
- * Mirrors the pre-v14 template: Fine, then one entry per damaged level, then
- * Broken one step past `maxLevel`.
+ * The render context slice every breakable item needs: the condition list plus
+ * the current level as a string, so `selectOptions` can match it.
  *
- * @param {number} maxLevel  Highest *damaged* level for this armor.
- * @returns {Record<string, string>}
+ * @param {object} system
+ * @returns {{breakageLevels: Record<string, string>, breakageLevel: string}}
  */
-export function armorBreakageChoices(maxLevel = 1) {
-    const max = Number.isFinite(Number(maxLevel)) && Number(maxLevel) > 0
-        ? Math.floor(Number(maxLevel))
-        : 1;
-
-    const choices = { 0: "Fine" };
-    for (let level = 1; level <= max; level++) choices[level] = `Damaged ${level}`;
-    choices[max + 1] = "Broken";
-    return choices;
+export function breakageChoices(system = {}) {
+    return {
+        breakageLevels: BREAKAGE_LABELS,
+        breakageLevel: String(BreakageCalculator.normalizeLevel(system.breakage?.level))
+    };
 }
 
 /* -------------------------------------------- */
@@ -219,8 +212,7 @@ export const ITEM_SHEET_CONFIG = Object.freeze({
         choices: ({ system }) => ({
             weaponSizes: WEAPON_SIZES,
             weaponTypes: weaponTypeOptions(system.weaponType),
-            breakageLevels: WEAPON_BREAKAGE_LEVELS,
-            breakageLevel: String(system.breakage?.level ?? 0)
+            ...breakageChoices(system)
         }),
         autoFields: ["system.weaponType", "system.size"],
         derive: system => weaponDefaults(system.weaponType, system.size)
@@ -229,8 +221,7 @@ export const ITEM_SHEET_CONFIG = Object.freeze({
     armor: {
         choices: ({ system }) => ({
             armorTypes: ARMOR_TYPES,
-            breakageLevels: armorBreakageChoices(system.breakage?.maxLevel),
-            breakageLevel: String(system.breakage?.level ?? 0)
+            ...breakageChoices(system)
         }),
         autoFields: ["system.type"],
         derive: system => armorDefaults(system.type)
@@ -240,7 +231,9 @@ export const ITEM_SHEET_CONFIG = Object.freeze({
         choices: () => ({ gearSizes: GEAR_SIZES })
     },
 
-    shield: {},
+    shield: {
+        choices: ({ system }) => breakageChoices(system)
+    },
 
     spell: {},
 
