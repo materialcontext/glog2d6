@@ -65,7 +65,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add system.json package.json
+          git add system.json package.json package-lock.json
           git commit -m "Release v${VERSION} [skip ci]"
           git tag -a "v${VERSION}" -m "v${VERSION}"
           git push origin main

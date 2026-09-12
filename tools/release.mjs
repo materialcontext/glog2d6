@@ -48,7 +48,7 @@ export const RELEASE_PATHS = Object.freeze([
  * migration is actually added. Bumping it on every release would re-run
  * migrations against every world, every time.
  */
-export const VERSION_FILES = Object.freeze(["system.json", "package.json"]);
+export const VERSION_FILES = Object.freeze(["system.json", "package.json", "package-lock.json"]);
 
 const BUMP_LEVELS = Object.freeze(["major", "minor", "patch"]);
 const SKIP_LABELS = Object.freeze(["skip-release", "no-release"]);
@@ -151,6 +151,22 @@ export function applyVersionToManifest(manifest, version) {
     return { ...manifest, version, download: downloadUrl(repo, version) };
 }
 
+/**
+ * Apply a version to an npm lockfile, which records it in two places.
+ *
+ * @param {object} lockfile  Parsed package-lock.json
+ * @param {string} version
+ * @returns {object} A new lockfile object
+ */
+export function applyVersionToLockfile(lockfile, version) {
+    const root = lockfile.packages?.[""];
+    return {
+        ...lockfile,
+        version,
+        ...(root ? { packages: { ...lockfile.packages, "": { ...root, version } } } : {})
+    };
+}
+
 /* -------------------------------------------- */
 /*  CLI                                         */
 /* -------------------------------------------- */
@@ -172,10 +188,14 @@ function bump({ level, dryRun }) {
 
     const manifest = applyVersionToManifest(readJson("system.json"), version);
     const pkg = { ...readJson("package.json"), version };
+    // npm tolerates a stale lockfile version, but leaving it behind means every
+    // `npm install` a contributor runs shows up as a spurious diff.
+    const lock = applyVersionToLockfile(readJson("package-lock.json"), version);
 
     if (!dryRun) {
         writeJson("system.json", manifest);
         writeJson("package.json", pkg);
+        writeJson("package-lock.json", lock);
     }
 
     return version;
