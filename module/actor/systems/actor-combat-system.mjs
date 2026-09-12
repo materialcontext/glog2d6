@@ -1,4 +1,4 @@
-import { BreakageCalculator } from "../systems/breakage-calculator.mjs";
+import { BreakageCalculator } from "../../systems/breakage-calculator.mjs";
 
 export class ActorCombatSystem {
     constructor(actor) {
@@ -95,7 +95,11 @@ class DefenseCalculator {
 
     getEquippedShieldBonus() {
         const shield = this.items.find(item => item.type === "shield" && item.system.equipped);
-        return shield?.system.armorBonus || 0;
+        if (!shield) return 0;
+
+        const originalBonus = shield.system.armorBonus || 0;
+        const breakageLevel = shield.system.breakage?.level;
+        return BreakageCalculator.calculateArmorBonus(originalBonus, breakageLevel);
     }
 
     getArmorEncumbrance() {

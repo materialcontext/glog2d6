@@ -1,5 +1,7 @@
+import { breakageMigration } from "../module/systems/breakage-calculator.mjs";
+
 const GLOG = CONFIG.GLOG
-const CONTENT_VERSION = "1.2.0"
+const CONTENT_VERSION = "1.3.0"
 
 // create the system folder structure
 export async function createDefaultFolders() {
@@ -445,6 +447,7 @@ export async function migrateContent() {
 
     try {
         await createMissingContent();
+        await migrateBreakage();
         await game.settings.set("glog2d6", "contentVersion", CONTENT_VERSION);
         console.log(`glog2d6 | Content migration complete`);
         ui.notifications.info("glog2d6: New content added. Check Class Features for updates.");
@@ -452,6 +455,42 @@ export async function migrateContent() {
         console.error("glog2d6 | Content migration failed:", error);
         ui.notifications.error("glog2d6: Content migration failed. Check the console.");
     }
+}
+
+/**
+ * Put every breakable item on the uniform condition track (maxLevel 2).
+ *
+ * Armor used to ship `maxLevel: 1`, which made "broken" mean level 1 to
+ * `breakEquippedItem` but level 2 to the sheet and the inventory list. Levels
+ * themselves carry over unchanged; only `maxLevel` and out-of-range levels move.
+ */
+async function migrateBreakage() {
+    let migrated = 0;
+
+    const worldUpdates = [];
+    for (const item of game.items) {
+        const update = breakageMigration(item);
+        if (update) worldUpdates.push({ _id: item.id, ...update });
+    }
+    if (worldUpdates.length) {
+        await Item.updateDocuments(worldUpdates);
+        migrated += worldUpdates.length;
+    }
+
+    for (const actor of game.actors) {
+        const ownedUpdates = [];
+        for (const item of actor.items) {
+            const update = breakageMigration(item);
+            if (update) ownedUpdates.push({ _id: item.id, ...update });
+        }
+        if (ownedUpdates.length) {
+            await actor.updateEmbeddedDocuments("Item", ownedUpdates);
+            migrated += ownedUpdates.length;
+        }
+    }
+
+    if (migrated) console.log(`glog2d6 | Normalised breakage on ${migrated} items`);
+    return migrated;
 }
 
 async function createMissingContent() {

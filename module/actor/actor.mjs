@@ -1,3 +1,4 @@
+import { BREAKAGE_MAX_LEVEL, BreakageCalculator } from "../systems/breakage-calculator.mjs";
 import { GLOG2D6Roll } from "../dice/glog-roll.mjs";
 import { SubtleRollPolicy } from '../dice/subtle-roll-policy.mjs';
 import { SubtleRollReveal } from '../dice/subtle-roll-reveal.mjs';
@@ -49,7 +50,10 @@ export class GLOG2D6Actor extends Actor {
     }
 
     prepareBaseData() {
-        console.log("calculating base data");
+        // The base lifecycle prepares the type data model and resets Foundry's
+        // ActiveEffect application phases; skipping it makes every preparation
+        // after the first throw on v14.
+        super.prepareBaseData();
 
         this.attributeSystem.calculateAttributeModifiers();
         this.inventorySystem.calculateInventoryData();
@@ -58,10 +62,9 @@ export class GLOG2D6Actor extends Actor {
     }
 
     prepareDerivedData() {
+        super.prepareDerivedData();
 
         try {
-            console.log("calculating derived data");
-
             this.attributeSystem.initializeEffectiveModifiers();
             this.bonusSystem.calculateAndApplyAllBonuses();
             this.attributeSystem.applyEncumbranceToAttributes();
@@ -112,19 +115,22 @@ export class GLOG2D6Actor extends Actor {
             return;
         }
 
-        const currentLevel = equippedItem.system.breakage?.level || 0;
-        const maxLevel = equippedItem.system.breakage?.maxLevel || 2;
+        const currentLevel = equippedItem.system.breakage?.level;
 
-        if (currentLevel >= maxLevel) {
+        if (BreakageCalculator.isBroken(currentLevel)) {
             ui.notifications.warn(`${equippedItem.name} is already broken!`);
             return;
         }
 
-        const newLevel = currentLevel + 1;
-        await equippedItem.update({ "system.breakage.level": newLevel });
+        const newLevel = BreakageCalculator.nextLevel(currentLevel);
+        await equippedItem.update({
+            "system.breakage.level": newLevel,
+            "system.breakage.maxLevel": BREAKAGE_MAX_LEVEL
+        });
 
-        const statusText = newLevel >= maxLevel ? "broken" : "damaged";
-        ui.notifications.info(`${equippedItem.name} is now ${statusText}!`);
+        ui.notifications.info(
+            `${equippedItem.name} is now ${BreakageCalculator.label(newLevel).toLowerCase()}!`
+        );
     }
 
 

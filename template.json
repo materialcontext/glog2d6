@@ -239,7 +239,7 @@
             "encumbrancePenalty": 0,
             "breakage": {
                 "level": 0,
-                "maxLevel": 1
+                "maxLevel": 2
             }
         },
         "gear": {
@@ -253,7 +253,11 @@
         "shield": {
             "description": "",
             "armorBonus": 1,
-            "slots": 1
+            "slots": 1,
+            "breakage": {
+                "level": 0,
+                "maxLevel": 2
+            }
         },
         "feature": {
             "description": "",

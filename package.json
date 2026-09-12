@@ -1,4 +1,7 @@
 {
+    "name": "glog2d6",
+    "version": "1.0.330",
+    "private": true,
     "scripts": {
         "test": "vitest",
         "test:run": "vitest run",
@@ -12,6 +15,7 @@
     },
     "devDependencies": {
         "@vitest/ui": "^3.1.4",
+        "handlebars": "^4.7.9",
         "jsdom": "^26.1.0",
         "vitest": "^3.1.4"
     }

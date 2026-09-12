@@ -1,0 +1,132 @@
+name: Release
+
+# Cuts a release when a pull request merges into main:
+#   bump the version -> commit it back -> tag v<version> -> zip -> publish.
+#
+# Bump level comes from the PR's labels (see tools/release.mjs):
+#   release:major / release:minor / release:patch   -- default is patch
+#   skip-release / no-release                       -- merge without releasing
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      level:
+        description: Version bump level
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # Nothing ships unless the suite is green.
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Decide bump level
+        id: level
+        env:
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels) }}
+          INPUT_LEVEL: ${{ inputs.level }}
+        run: node tools/release.mjs level >> "$GITHUB_OUTPUT"
+
+      - name: Bump version
+        if: steps.level.outputs.release == 'true'
+        id: bump
+        run: echo "version=$(node tools/release.mjs bump --level '${{ steps.level.outputs.level }}')" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and tag
+        if: steps.level.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add system.json package.json
+          git commit -m "Release v${VERSION} [skip ci]"
+          git tag -a "v${VERSION}" -m "v${VERSION}"
+          git push origin main
+          git push origin "v${VERSION}"
+
+      - name: Build zip
+        if: steps.level.outputs.release == 'true'
+        run: |
+          mkdir -p build
+          # Foundry extracts the archive straight into Data/systems/<id>, so
+          # system.json has to sit at the root of the zip.
+          node tools/release.mjs files | while read -r path; do
+            cp -r "$path" build/
+          done
+          (cd build && zip -rq ../glog2d6.zip .)
+          unzip -l glog2d6.zip | tail -1
+
+      - name: Publish release
+        if: steps.level.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          NOTES: ${{ github.event.pull_request.title }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "$PR" ]; then
+            BODY="${NOTES} (#${PR})"
+          else
+            BODY="Manual release of v${VERSION}"
+          fi
+
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --notes "${BODY}" \
+            glog2d6.zip system.json
+
+      # The rolling `release` tag is the manifest URL every existing install
+      # polls for updates, so it has to keep pointing at the newest build.
+      # The system.json published here carries a download URL pinned to the
+      # versioned tag above, which is what Foundry actually installs.
+      - name: Update rolling release tag
+        if: steps.level.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git tag -f release
+          git push -f origin release
+
+          if gh release view release >/dev/null 2>&1; then
+            gh release edit release --title "Latest (v${VERSION})"
+          else
+            gh release create release --title "Latest (v${VERSION})" --notes "Rolling manifest for Foundry update checks."
+          fi
+
+          gh release upload release glog2d6.zip system.json --clobber
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.level.outputs.release }}" = "true" ]; then
+            echo "Released v${{ steps.bump.outputs.version }} (${{ steps.level.outputs.level }})" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Skipped release: PR carried a skip-release label." >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -1,168 +1,157 @@
-export class GLOG2D6ItemSheet extends foundry.appv1.sheets.ItemSheet {
+import {
+    ITEM_SHEET_CONFIG,
+    autoFieldsChanged,
+    deriveSystemUpdate,
+    itemSheetChoices,
+    itemSheetTemplate
+} from "./item-sheet-config.mjs";
+import { BREAKAGE_MAX_LEVEL, BreakageCalculator } from "../systems/breakage-calculator.mjs";
 
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            classes: ["glog2d6", "sheet", "item"],
-            width: 520,
-            height: 480
+const { HandlebarsApplicationMixin } = foundry.applications.api;
+const { ItemSheetV2 } = foundry.applications.sheets;
+
+/**
+ * Render context that has to be read off Foundry globals rather than the item
+ * itself. Keyed by item type so new types stay a one-line addition.
+ * @type {Record<string, () => object>}
+ */
+const RUNTIME_CHOICES = {
+    feature: () => ({ reputationTypes: reputationChoices() })
+};
+
+/** Reputation picker options, sourced from the loaded JSON content. */
+function reputationChoices() {
+    const reputations = CONFIG.GLOG?.REPUTATIONS?.reputations ?? [];
+    return Object.fromEntries(reputations.map(rep => [
+        rep.name,
+        rep.description ? `${rep.name} - ${rep.description}` : rep.name
+    ]));
+}
+
+/** The checked weapon type tags currently present in the form. */
+function readWeaponTypeTags(form) {
+    const inputs = form?.querySelectorAll?.('input[name="system.weaponType"]');
+    if (!inputs?.length) return null;
+    return [...inputs].filter(el => el.checked).map(el => el.value);
+}
+
+/**
+ * Item sheet for every GLOG2D6 item type.
+ *
+ * Built on ApplicationV2 / ItemSheetV2. The per-type differences (template,
+ * window size, choice lists, derived stats) live in `item-sheet-config.mjs`;
+ * this class is only the Foundry adapter around them.
+ */
+export class GLOG2D6ItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
+
+    /** @override */
+    static DEFAULT_OPTIONS = {
+        classes: ["glog2d6", "sheet", "item"],
+        position: { width: 520, height: 480 },
+        window: { resizable: true },
+        form: { submitOnChange: true, closeOnSubmit: false }
+    };
+
+    /**
+     * Placeholder part; the real template is chosen per item type in
+     * `_configureRenderParts`.
+     * @override
+     */
+    static PARTS = {
+        body: { template: itemSheetTemplate("gear") }
+    };
+
+    /* -------------------------------------------- */
+    /*  Configuration                               */
+    /* -------------------------------------------- */
+
+    /** @override */
+    _initializeApplicationOptions(options) {
+        const type = options.document?.type;
+        const initialized = super._initializeApplicationOptions(options);
+
+        if (type) {
+            const config = ITEM_SHEET_CONFIG[type];
+            if (config?.position) Object.assign(initialized.position ??= {}, config.position);
+            initialized.classes ??= [];
+            if (!initialized.classes.includes(`item-${type}`)) initialized.classes.push(`item-${type}`);
+        }
+
+        return initialized;
+    }
+
+    /** @override */
+    _configureRenderParts(options) {
+        return { body: { template: itemSheetTemplate(this.document.type) } };
+    }
+
+    /* -------------------------------------------- */
+    /*  Rendering                                   */
+    /* -------------------------------------------- */
+
+    /** @override */
+    async _prepareContext(options) {
+        const context = await super._prepareContext(options);
+        const item = this.document;
+
+        return Object.assign(context, {
+            item,
+            name: item.name,
+            system: item.system,
+            source: item.toObject().system,
+            flags: item.flags,
+            editable: this.isEditable,
+            rollData: item.getRollData?.() ?? {},
+            ...itemSheetChoices(item.type, item),
+            ...(RUNTIME_CHOICES[item.type]?.() ?? {})
         });
     }
 
-    get template() {
-        const path = "systems/glog2d6/templates/item";
-        return `${path}/item-${this.item.type}-sheet.hbs`;
-    }
+    /* -------------------------------------------- */
+    /*  Submission                                  */
+    /* -------------------------------------------- */
 
-    getData() {
-        const context = super.getData();
+    /**
+     * Normalise the submitted data before it is validated and written.
+     *
+     * Two things happen here that the plain form pipeline cannot do on its own:
+     *   1. Weapon type is a set of same-named checkboxes, which has to collapse
+     *      into a single array field.
+     *   2. Changing a governing field (armor type, weapon size/type) re-applies
+     *      that profile's baseline stats, as part of the same atomic update.
+     *
+     * @override
+     */
+    _processFormData(event, form, formData) {
+        const submitData = super._processFormData(event, form, formData);
+        const type = this.document.type;
 
-        // Add roll data for formulas
-        context.rollData = {};
-        context.system = context.item.system;
-        context.flags = context.item.flags;
-
-        // Add type-specific data
-        if (this.item.type === "armor") {
-            context.armorTypes = {
-                "light": "Light",
-                "medium": "Medium",
-                "heavy": "Heavy"
-            };
+        if (type === "weapon") {
+            const tags = readWeaponTypeTags(form);
+            if (tags) foundry.utils.setProperty(submitData, "system.weaponType", tags);
         }
 
-        if (this.item.type === "weapon") {
-            context.weaponSizes = CONFIG.GLOG.CONSTANTS.WEAPON_SIZES;
+        // <select> submits strings; the condition track is numeric everywhere else.
+        if (submitData.system?.breakage?.level !== undefined) {
+            submitData.system.breakage.level =
+                BreakageCalculator.normalizeLevel(submitData.system.breakage.level);
+            submitData.system.breakage.maxLevel = BREAKAGE_MAX_LEVEL;
         }
 
-        if (this.item.type === "gear") {
-            context.gearSizes = {
-                "tiny": "Tiny",
-                "small": "Small",
-                "medium": "Medium",
-                "large": "Large"
-            };
+        // Work off the source object: it is always plain data, whether or not
+        // the item type is backed by a DataModel.
+        const currentSystem = this.document.toObject().system ?? {};
+        const pendingSystem = foundry.utils.mergeObject(
+            currentSystem,
+            submitData.system ?? {},
+            { inplace: false }
+        );
+
+        if (autoFieldsChanged(type, currentSystem, pendingSystem)) {
+            const derived = deriveSystemUpdate(type, pendingSystem);
+            if (derived) foundry.utils.mergeObject(submitData, foundry.utils.expandObject(derived));
         }
 
-        return context;
-    }
-
-    activateListeners(html) {
-        super.activateListeners(html);
-
-        // Everything below here is only needed if the sheet is editable
-        if (!this.isEditable) return;
-
-        // Update armor values when type changes
-        html.find('select[name="system.type"]').change(this._onArmorTypeChange.bind(this));
-
-        // Update weapon values when type/size changes
-        html.find('select[name="system.weaponType"]').change(this._onWeaponTypeChange.bind(this));
-        html.find('select[name="system.size"]').change(this._onWeaponSizeChange.bind(this));
-    }
-
-    _onWeaponTypeChange(event) {
-        const weaponType = event.target.value;
-        const form = event.target.closest('form');
-        const sizeSelect = form.querySelector('select[name="system.size"]');
-
-        // Set default damage based on weapon type and current size
-        this._updateWeaponDefaults(form, weaponType, sizeSelect.value);
-    }
-
-    _onWeaponSizeChange(event) {
-        const size = event.target.value;
-        const form = event.target.closest('form');
-        const typeSelect = form.querySelector('select[name="system.weaponType"]');
-
-        // Set default values based on size
-        this._updateWeaponDefaults(form, typeSelect.value, size);
-    }
-
-    _updateWeaponDefaults(form, weaponType, size) {
-        let damage, slots, attackPenalty, encumbrancePenalty;
-
-        // Set defaults based on weapon type and size
-        if (weaponType === "ranged") {
-            damage = "1d6";
-            slots = 1;
-            attackPenalty = 0;
-            encumbrancePenalty = 0;
-        } else {
-            // Melee weapons
-            switch (size) {
-                case 'light':
-                    damage = "1";
-                    slots = 1;
-                    attackPenalty = 0;
-                    encumbrancePenalty = 0;
-                    break;
-                case 'medium':
-                    damage = "1d6";
-                    slots = 1;
-                    attackPenalty = 0;
-                    encumbrancePenalty = 0;
-                    break;
-                case 'heavy':
-                    damage = "1d10";
-                    slots = 2;
-                    attackPenalty = 1;
-                    encumbrancePenalty = 1;
-                    break;
-                default:
-                    damage = "1d6";
-                    slots = 1;
-                    attackPenalty = 0;
-                    encumbrancePenalty = 0;
-            }
-        }
-
-        // Update form fields
-        form.querySelector('input[name="system.damage"]').value = damage;
-        form.querySelector('input[name="system.slots"]').value = slots;
-        form.querySelector('input[name="system.attackPenalty"]').value = attackPenalty;
-        form.querySelector('input[name="system.encumbrancePenalty"]').value = encumbrancePenalty;
-    }
-
-    _onArmorTypeChange(event) {
-        const armorType = event.target.value;
-        const form = event.target.closest('form');
-
-        // Set default values based on armor type
-        let armorBonus, encumbrancePenalty;
-        switch (armorType) {
-            case 'light':
-                armorBonus = 1;
-                encumbrancePenalty = 0;
-                break;
-            case 'medium':
-                armorBonus = 2;
-                encumbrancePenalty = 1;
-                break;
-            case 'heavy':
-                armorBonus = 3;
-                encumbrancePenalty = 2;
-                break;
-            default:
-                armorBonus = 1;
-                encumbrancePenalty = 0;
-        }
-
-        form.querySelector('input[name="system.armorBonus"]').value = armorBonus;
-        form.querySelector('input[name="system.encumbrancePenalty"]').value = encumbrancePenalty;
-    }
-    async _updateObject(event, formData) {
-        const form = event.target;
-        if (form) {
-            const checkedTypes = [...form.querySelectorAll('input[name="system.weaponType"]:checked')]
-                .map(el => el.value);
-
-            if (checkedTypes.length > 0) {
-                formData['system.weaponType'] = checkedTypes.length === 1
-                    ? checkedTypes[0]
-                    : checkedTypes;
-            }
-        }
-
-        return super._updateObject(event, formData);
+        return submitData;
     }
 }
