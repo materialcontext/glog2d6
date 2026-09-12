@@ -21,7 +21,17 @@
 
 /* === BASE COMPONENT CLASSES === */
 .glog2d6 {
-    font-family: "Roboto", sans-serif;
+    font-family: "Roboto", "Signika", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Form controls do not inherit font-family, so without this every input,
+   select and textarea in a sheet renders in the browser's default form font
+   instead of the sheet's -- most visibly on the item sheet name field. */
+.glog2d6 input,
+.glog2d6 select,
+.glog2d6 textarea,
+.glog2d6 button {
+    font-family: inherit;
 }
 
 /* Input base styles */
@@ -1242,7 +1252,7 @@ button > i {
     background: #fff;
     color: #191813;
     padding: 3px 5px;
-    font-size: 12px;
+    font-size: inherit;
     line-height: 1.4;
     height: auto;
     min-height: 0;
@@ -1280,7 +1290,8 @@ button > i {
     padding: 8px;
     background: var(--bg-light);
     color: #191813;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.45;
 }
 
 .glog2d6.item .sheet-content > *,
@@ -1332,9 +1343,10 @@ button > i {
 
 .glog2d6.item .charname input.input {
     width: 100%;
-    padding: 4px 6px;
-    font-size: 15px;
+    padding: 5px 7px;
+    font-size: 18px;
     font-weight: 600;
+    line-height: 1.3;
 }
 
 /* --- Property blocks ----------------------------------------------------- */
@@ -1344,9 +1356,9 @@ button > i {
     padding: 0 0 4px;
     border-bottom: 1px solid var(--border);
     color: var(--primary);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.4px;
     text-transform: uppercase;
 }
 
@@ -1363,12 +1375,18 @@ button > i {
 }
 
 .glog2d6.item .form-group > label {
-    color: var(--text-muted);
-    font-size: 10px;
+    color: #4a4a45;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.2px;
     line-height: 1.3;
     text-transform: uppercase;
+}
+
+/* 10px is too small to read comfortably in a form; the utility stays as-is
+   elsewhere, where it labels dense inventory rows rather than fields. */
+.glog2d6.item .text-small {
+    font-size: 11px;
 }
 
 /* A checkbox and its caption read as one line, not as a stacked field label. */
