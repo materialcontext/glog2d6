@@ -17,12 +17,16 @@ export class EventHandlerRegistry {
 
             // Item interactions
             { selector: '.weapon-attack-btn', event: 'click', handler: '_onWeaponAttack' },
-            { selector: '.spell-cast-btn', event: 'click', handler: 'handleSpellCast' },
             { selector: '.equipped-toggle', event: 'change', handler: 'handleEquipmentToggle' },
 
+            // Spells: the dice buttons commit, the name only describes
+            { selector: '.spell-md-btn', event: 'click', handler: 'handleSpellCastDice' },
+            { selector: '.spell-detail-btn', event: 'click', handler: 'handleSpellDetails' },
+
             // UI controls
-            { selector: '.edit-toggle', event: 'click', handler: 'handleEditModeToggle' },
             { selector: '.rest-btn', event: 'click', handler: 'handleRest' },
+            { selector: '.hp-step', event: 'click', handler: 'handleHpStep' },
+            { selector: '.class-select', event: 'change', handler: 'handleClassSelect' },
 
             // Item management
             { selector: '.item-create', event: 'click', handler: 'handleItemCreate' },
@@ -49,7 +53,7 @@ export class EventHandlerRegistry {
             { selector: '.feature-roll-btn', event: 'click', handler: 'handleFeatureRoll' },
 
             // reputation
-            { selector: '.reputation-select', event: 'change', handler: 'handleReputationSelect' },
+            { selector: '.reputation-select', event: 'change', handler: 'handleReputationSelect' }
         ];
     }
 

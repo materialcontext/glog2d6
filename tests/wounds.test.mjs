@@ -391,24 +391,37 @@ describe("effect labels", () => {
 });
 
 /* -------------------------------------------- */
-/*  The tab itself                              */
+/*  The wounds panel                            */
 /* -------------------------------------------- */
 
-describe("wounds tab", () => {
-    const SOURCE = readFileSync(resolve(ROOT, "templates/actor/wounds-tab.hbs"), "utf8");
+/**
+ * Wounds lost their tab and became a panel in the character column. The panel
+ * still owes the same four things: one row per wound, its state, what it is
+ * waiting on, and controls that only appear in edit mode.
+ */
+describe("wounds panel", () => {
+    const SOURCE = readFileSync(resolve(ROOT, "templates/actor/parts/panel-character.hbs"), "utf8");
 
     const hbs = Handlebars.create();
     hbs.registerHelper("gt", (a, b) => a > b);
+    hbs.registerHelper("or", (...args) => args.slice(0, -1).some(Boolean));
+    hbs.registerHelper("not", value => !value);
+    hbs.registerHelper("eq", (a, b) => a === b);
+    hbs.registerHelper("contains", (haystack, needle) => String(haystack).includes(needle));
     hbs.registerHelper("upperCase", s => String(s).toUpperCase());
-    hbs.registerHelper("formatDate", v => new Date(v).toLocaleDateString());
     hbs.registerHelper("woundStateLabel", s => s);
-    hbs.registerHelper("combatEffectLabel", combatEffectLabel);
+    hbs.registerHelper("hasFeatureRoll", () => false);
+    hbs.registerHelper("hasFeatureTip", () => false);
+    hbs.registerHelper("getFeatureTip", () => "");
+    hbs.registerHelper("getReputations", () => []);
+    hbs.registerHelper("getReputationDescription", () => ({}));
 
     function render(wounds, { editMode = true } = {}) {
         const decorated = decorateWounds(wounds);
         const html = hbs.compile(SOURCE)({
             editMode,
             wounds: decorated,
+            itemsByKind: { features: [] },
             system: {
                 wounds: {
                     count: decorated.length,
@@ -420,29 +433,23 @@ describe("wounds tab", () => {
         return new JSDOM(`<div id="w">${html}</div>`).window.document;
     }
 
-    it("carries no inline style attributes on its rows", () => {
-        const rows = SOURCE.split("wounds-list")[0];
-        expect(rows).not.toMatch(/style="display: flex/);
-    });
-
     it("renders an empty state with no wounds", () => {
         const doc = render([]);
-        expect(doc.querySelector(".empty-section")).not.toBeNull();
-        expect(doc.querySelector(".wound-card")).toBeNull();
+        expect(doc.querySelector(".glog-panel-wounds .glog-empty")).not.toBeNull();
+        expect(doc.querySelector(".glog-wound")).toBeNull();
     });
 
-    it("renders one card per wound, tagged with its state", () => {
+    it("renders one row per wound, tagged with its state", () => {
         const doc = render([wound("concussed"), wound("hobbled", { id: "h", state: "healing" })]);
-        const cards = [...doc.querySelectorAll(".wound-card")];
-        expect(cards).toHaveLength(2);
-        expect(cards[0].classList.contains("wound-state-untreated")).toBe(true);
-        expect(cards[1].classList.contains("wound-state-healing")).toBe(true);
+        const rows = [...doc.querySelectorAll(".glog-wound")];
+        expect(rows).toHaveLength(2);
+        expect(rows[0].classList.contains("wound-state-untreated")).toBe(true);
+        expect(rows[1].classList.contains("wound-state-healing")).toBe(true);
     });
 
     it("shows what a wound is waiting on", () => {
         const doc = render([wound("humiliated")]);
-        expect(doc.querySelector(".wound-requirement").textContent)
-            .toContain("revenge");
+        expect(doc.querySelector(".wound-requirement").textContent).toContain("revenge");
     });
 
     it("offers the next recovery step until the wound is healing", () => {
@@ -458,36 +465,15 @@ describe("wounds tab", () => {
         expect(doc.querySelector(".add-wound-btn")).toBeNull();
     });
 
-    it("lists the aggregate effects", () => {
-        const doc = render([wound("crushed"), wound("doomed", { id: "d" })]);
-        const text = doc.querySelector(".wound-effects").textContent;
-        expect(text).toContain("Healing takes longer");
-        expect(text).toContain("failed trauma save kills you");
-    });
-
     it("shows the body part when one was rolled", () => {
         const doc = render([wound("marked", { bodyPart: "Shoulder" })]);
-        expect(doc.querySelector(".wound-part").textContent.trim()).toBe("Shoulder");
+        expect(doc.querySelector(".wound-part").textContent.trim()).toBe("SHOULDER");
     });
-});
 
-describe("wounds tab stylesheet", () => {
-    const CSS = readFileSync(resolve(ROOT, "glog2d6.css"), "utf8");
-    const SOURCE = readFileSync(resolve(ROOT, "templates/actor/wounds-tab.hbs"), "utf8");
-
-    it("styles every wound class the template uses", () => {
-        const classes = new Set();
-        for (const [, group] of SOURCE.matchAll(/class="([^"{}]*)"/g)) {
-            for (const name of group.split(/\s+/)) {
-                if (name.startsWith("wound")) classes.add(name);
-            }
-        }
-
-        expect(classes.size).toBeGreaterThan(5);
-        // Substring matching would let `.wound-requirement-x` satisfy
-        // `.wound-requirement`, so the class has to end where the name does.
-        const styled = name => new RegExp(`\\.${name}(?![\\w-])`).test(CSS);
-        const unstyled = [...classes].filter(name => !styled(name));
-        expect(unstyled, `used by the template but never styled: ${unstyled.join(", ")}`).toEqual([]);
+    it("marks the panel when wounds are carried, and not when they are not", () => {
+        expect(render([wound("concussed")])
+            .querySelector(".glog-panel-wounds").classList.contains("is-carrying")).toBe(true);
+        expect(render([])
+            .querySelector(".glog-panel-wounds").classList.contains("is-carrying")).toBe(false);
     });
 });

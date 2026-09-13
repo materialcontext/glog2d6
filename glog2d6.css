@@ -286,8 +286,9 @@
     cursor: not-allowed;
 }
 
-/* Attribute Cards */
-.attribute-card {
+/* Attribute cards, as the NPC and hireling sheets still draw them. The
+   character sheet has its own tiles and must not inherit any of this. */
+.attributes-section .attribute-card {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -295,12 +296,12 @@
     transition: var(--transition);
 }
 
-.attribute-card.clickable:hover {
+.attributes-section .attribute-card.clickable:hover {
     border-color: var(--primary);
     background: var(--bg-light);
 }
 
-.attribute-main {
+.attributes-section .attribute-main {
     padding: 8px 6px;
     text-align: center;
     min-height: 60px;
@@ -310,22 +311,22 @@
     align-items: center;
 }
 
-.attribute-value {
+.attributes-section .attribute-value {
     font-size: 18px;
     font-weight: 700;
     margin-bottom: 2px;
     color: #2c3e50;
 }
 
-.attribute-value.negatively-impacted {
+.attributes-section .attribute-value.negatively-impacted {
     color: var(--danger);
 }
 
-.attribute-value.positively-impacted {
+.attributes-section .attribute-value.positively-impacted {
     color: var(--success);
 }
 
-.attribute-save {
+.attributes-section .attribute-save {
     background: var(--secondary);
     padding: 3px 4px;
     text-align: center;
@@ -333,37 +334,15 @@
     transition: var(--transition);
 }
 
-.attribute-save:hover {
+.attributes-section .attribute-save:hover {
     background: var(--secondary-hover);
 }
 
-.save-label {
+.attributes-section .save-label {
     color: white;
     font-size: 8px;
     font-weight: bold;
     text-transform: uppercase;
-}
-
-/* Combat Cards */
-.action-card,
-.combat-card {
-    border: 1px solid var(--primary);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: white;
-    transition: var(--transition);
-    flex: 1;
-}
-
-.combat-card.clickable:hover {
-    border-color: var(--primary-hover);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.combat-main {
-    padding: 6px;
-    text-align: center;
-    background: var(--bg-light);
 }
 
 /* Inventory - Gear Items */
@@ -425,12 +404,6 @@
     margin-right: 3px;
 }
 
-.spell-cast-btn {
-    width: 60px;
-    height: 24px;
-    flex-shrink: 0;
-}
-
 .gear-slots {
     min-width: 80px;
     flex: 0 0 auto;
@@ -469,36 +442,6 @@
     gap: 8px;
 }
 
-/* Torch Effects */
-.torch-lit {
-    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%) !important;
-    color: white !important;
-    border-color: #d64933 !important;
-    box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
-    animation: torchFlicker 3s ease-in-out infinite alternate;
-}
-
-.heal-btn {
-    background: var(--success);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    font-size: 8px;
-    margin-left: 4px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-}
-
-.heal-btn:hover {
-    background: var(--success-hover);
-    transform: scale(1.1);
-}
-
 @keyframes torchFlicker {
     0% {
         box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
@@ -509,95 +452,12 @@
     }
 }
 
-/* Tabs */
-.sheet-tabs {
-    border-bottom: 2px solid var(--primary);
-    margin-bottom: 10px;
-    display: flex;
-    background: var(--bg-section);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-
-.sheet-tabs .item {
-    flex: 1;
-    text-align: center;
-    padding: 7px 12px;
-    cursor: pointer;
-    background: var(--bg-section);
-    color: var(--secondary);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 12px;
-    border-right: 1px solid var(--border);
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.sheet-tabs .item:hover {
-    background: var(--bg-dark);
-    color: #333;
-}
-
-.sheet-tabs .item.active {
-    background: var(--primary);
-    color: white;
-}
-
 .glog2d6 .tab {
     display: none;
 }
 
 .glog2d6 .tab.active {
     display: block;
-}
-
-/* Encumbrance Warning */
-.encumbrance-warning {
-    color: var(--danger);
-    font-weight: bold;
-    font-size: 12px;
-    margin-left: 8px;
-    padding: 2px 6px;
-    background: rgba(211, 47, 47, 0.1);
-    border-radius: var(--radius);
-    border: 1px solid rgba(211, 47, 47, 0.3);
-}
-
-/* Feature Cards */
-.feature-card {
-    background: var(--bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 8px 10px;
-    transition: var(--transition);
-}
-
-.feature-card:hover {
-    border-color: var(--primary);
-    background: var(--bg-light);
-}
-
-/* Edit Toggle */
-.edit-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(--bg-dark);
-    color: var(--text-muted);
-    padding: 4px;
-    border-radius: var(--radius);
-    font-size: 10px;
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
 }
 
 /* Chat Messages */
@@ -625,512 +485,6 @@
 
 .glog2d6 .tab h3 {
     display: none;
-}
-
-/* Original Sheet Header CSS - Extracted from glog2d6.css */
-
-/* Sheet Header Grid - Fixed Layout */
-.glog2d6 .sheet-header {
-    background: var(--bg-dark);
-    border-bottom: 2px solid var(--primary);
-    padding: 10px;
-    display: grid !important;
-    flex-direction: unset !important;
-    grid-template-columns: 90px 1fr 2fr;
-    grid-template-rows: repeat(5, 22px);
-    gap: 6px;
-    height: 150px;
-    margin-bottom: 10px;
-    position: relative;
-}
-
-/* Name Bar - spans full width on first row */
-.glog2d6 .name-bar {
-    grid-column: 1 / 5;
-    /* Span all 4 columns */
-    grid-row: 1;
-    padding: 4px 8px;
-    background: var(--bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-}
-
-.glog2d6 .character-portrait {
-    grid-column: 1;
-    grid-row: 2 / 6;
-    width: 90px;
-    height: 100%;
-    border: 2px solid var(--primary);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: #f0f0f0;
-    cursor: pointer;
-    padding: 0;
-    /* Remove any padding */
-}
-
-/* Class Section - row 2, column 2 */
-.glog2d6 .class-section {
-    background: var(bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 4px;
-    display: flex;
-    flex-direction: row;
-    gap: 2px;
-    justify-content: center;
-}
-
-/* Level Section - row 2, column 3 */
-.glog2d6 .level-section {
-    background: var(bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 4px;
-    display: flex;
-    flex-direction: row;
-    gap: 2px;
-    text-align: center;
-    justify-content: center;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.glog2d6 .class-level-section {
-    grid-column: 2;
-    grid-row: 2;
-    background: var(bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 4px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-}
-
-.glog2d6 .class-part,
-.glog2d6 .level-part {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    justify-content: center;
-    text-align: center;
-    align-items: center;
-    height: 100%;
-}
-
-/* HP Section - spans rows 3-5, column 2 */
-.glog2d6 .hp-section {
-    grid-column: 2;
-    grid-row: 3 / 5;
-    /* Changed from 3 / 6 */
-    background: var(bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    /* Changed from space-between */
-    height: 100%;
-}
-
-.glog2d6 .rest-section {
-    grid-column: 2;
-    grid-row: 5;
-    background: var(--secondary);
-    border: 1px solid var(--secondry-color);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 2px;
-}
-
-/* Wounds Section - row 3, column 4 */
-.glog2d6 .wounds-section {
-    grid-column: 3;
-    grid-row: 2;
-    background: var(bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 4px 8px;
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
-.wound-description {
-    font-size: 12px !important;
-    line-height: 1.4;
-}
-
-.feature-roll-btn {
-    width: 20px;
-    height: 20px;
-    font-size: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.feature-roll-btn:hover {
-    transform: scale(1.1);
-}
-
-.glog2d6 .wounds-input {
-    font-size: 12px;
-    text-align: center;
-    width: 40px;
-    border: 1px solid transparent;
-    background: transparent;
-    padding: 2px 4px;
-    border-radius: var(--radius);
-    height: 16px;
-    line-height: 1;
-}
-
-.glog2d6 .wounds-input:hover,
-.glog2d6 .wounds-input:focus {
-    border: 1px solid var(--border);
-    background: white;
-    outline: none;
-}
-
-/* Trauma Section - row 4, column 4 */
-.glog2d6 .trauma-section {
-    grid-column: 3;
-    grid-row: 3 / 5;
-    gap: 4px;
-    background: var(--primary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-    height: 100%;
-}
-
-/* Torch & Move Section - row 5, column 4 */
-.glog2d6 .torch-move-section {
-    grid-column: 3;
-    grid-row: 5;
-    grid-template-columns: 1fr 1fr;
-    background: var(bg-section);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
-    justify-content: space-around;
-    height: 22px;
-}
-
-/* Character Portrait Image */
-.glog2d6 .character-portrait img {
-    width: 100%;
-    height: 100% !important;
-    object-fit: cover;
-    border: none;
-    border-radius: 0;
-    display: block;
-}
-
-/* Name Display and Input */
-.glog2d6 .name-display {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--primary);
-    margin: 0;
-}
-
-.glog2d6 .name-input {
-    font-size: 12px;
-    font-weight: bold;
-    width: 100%;
-    padding: 2px 4px;
-}
-
-/* Class and Level Display */
-.glog2d6 .class-display,
-.glog2d6 .level-display {
-    font-size: 12px;
-    font-weight: 500;
-    color: #333;
-}
-
-.glog2d6 .class-display {
-    font-style: italic;
-}
-
-.glog2d6 .class-input,
-.glog2d6 .level-input {
-    font-size: 11px;
-    text-align: center;
-}
-
-/* HP Styling */
-.glog2d6 .hp-container,
-.glog2d6 .max-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    gap: 4px;
-}
-
-.glog2d6 .hp-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 6px;
-}
-
-/* Redesigned HP Current Input */
-.glog2d6 .hp-current {
-    font-size: 20px;
-    font-weight: 900;
-    text-align: center;
-    border: 2px solid var(--primary);
-    border-radius: var(--radius-lg);
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    color: var(--primary);
-}
-
-.glog2d6 .hp-current:focus {
-    outline: none;
-    border-color: var(--primary-hover);
-    box-shadow: 0 0 8px rgba(120, 46, 34, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    background: white;
-}
-
-.glog2d6 .hp-separator {
-    font-size: 20px;
-    font-weight: 900;
-    color: var(--primary);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* HP Max styling */
-.glog2d6 .hp-max {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--secondary);
-    min-width: 30px;
-    text-align: center;
-}
-
-.glog2d6 .hp-max-input {
-    font-size: 16px;
-    font-weight: 700;
-    width: 50px;
-    height: 32px;
-    text-align: center;
-    padding: 4px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: white;
-    color: var(--secondary);
-}
-
-/* HP Label */
-.glog2d6 .hp-label {
-    gap: 8px;
-    color: var(--primary);
-    text-align: center;
-    font-size: 10px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.glog2d6 .max-label {
-    color: var(--primary);
-    text-align: center;
-}
-
-/* Trauma Button */
-.glog2d6 .trauma-btn {
-    font-size: 10px;
-    color: white;
-    text-transform: uppercase;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    box-sizing: border-box;
-    border: none !important;
-}
-
-.glog2d6 .trauma-btn:hover {
-    background: var(--primary-hover);
-    /* Same hover color as save button */
-}
-
-button > i {
-    margin-right: 1px !important;
-}
-
-/* Torch Button */
-.glog2d6 .torch-btn {
-    width: 100%;
-    min-height: 0;
-    max-height: 100%;
-    padding: 0;
-    border: 1px solid var(--border);
-    box-sizing: border-box;
-    border-radius: var(--radius);
-    background: #ddd;
-    color: #666;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    transition: var(--transition);
-    gap: 4px;
-}
-
-.glog2d6 .torch-btn:hover {
-    background: #ccc;
-}
-
-.glog2d6 .torch-btn.torch-lit {
-    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
-    color: white;
-    border-color: #d64933;
-    box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
-    animation: torchFlicker 3s ease-in-out infinite alternate;
-}
-
-.glog2d6 .torch-btn.torch-lit:hover {
-    background: linear-gradient(135deg, #e55a2b 0%, #d64933 100%);
-    box-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
-}
-
-/* Movement Display */
-.glog2d6 .movement-display {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    padding: 0;
-    font-weight: bold;
-    background: #fff !important;
-    color: var(--primary);
-    border: 1px solid var(--primary);
-    border-radius: var(--radius);
-    text-align: center;
-    gap: 4px;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
-    box-sizing: border-box;
-}
-
-.glog2d6 .movement-display:hover {
-    background: var(bg-section) !important;
-}
-
-.glog2d6 .movement-input {
-    font-size: 12px;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    padding: 3px;
-}
-
-.attribute-card:hover .hover-modifiers {
-    display: block !important;
-    position: absolute;
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    white-space: nowrap;
-    font-size: 10px;
-}
-
-.attribute-card:hover .current-modifier {
-    display: none;
-}
-
-.original-value {
-    text-decoration: line-through;
-}
-
-/* Rest Button */
-.glog2d6 .rest-btn {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-hover) 100%);
-    color: white;
-    font-size: 11px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.glog2d6 .rest-btn > i {
-    margin-right: 3px !important;
-}
-
-.glog2d6 .rest-btn:hover {
-    background: var(--secondary-hover);
-    transform: translateY(-1px);
-}
-
-.glog2d6 .rest-btn:active {
-    transform: translateY(0);
-}
-
-/* Edit Toggle Button */
-.glog2d6 .edit-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(bg-darker);
-    color: var(--text-muted);
-    padding: 4px;
-    border-radius: var(--radius);
-    font-size: 10px;
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-}
-
-.glog2d6 .edit-toggle:hover {
-    background: rgba(0, 0, 0, 0.2);
-    color: #333;
 }
 
 /* Inactive torch - no background */
@@ -1425,195 +779,1266 @@ button > i {
     min-height: 280px;
 }
 
+.wound-recovery h3,
+.wound-applied h3 {
+    margin-top: 0;
+}
+
 /* ==========================================================================
-   WOUNDS TAB
+   CHARACTER SHEET
    --------------------------------------------------------------------------
-   Previously every row here carried its own inline style attribute, which is
-   why the tab never matched the rest of the sheet.
+   Two layouts, one document. Full is the whole character on one page; compact
+   is a palette of the things you click in a fight. They share every component
+   below -- only the sizes differ, and `.is-compact` owns those differences.
+
+   Sizing rule of the house: every flex and grid child that holds text carries
+   `min-width: 0`, so a long item name shrinks its row instead of widening the
+   sheet. Nothing here may produce a horizontal scrollbar.
    ========================================================================== */
 
-.wounds-tab-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.wounds-header {
-    min-height: 34px;
-}
-
-.wounds-info {
-    font-size: 12px;
-}
-
-/* Spacing here is owned by the stylesheet rather than margin utilities on
-   each card, so adding a card cannot drift the rhythm. */
-.wounds-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.wound-effects {
+.window-app.glog-character .window-content {
+    padding: 6px;
     overflow: hidden;
-}
-
-.wound-effects-title {
-    margin: 0;
-    padding: 6px 10px;
-    background: var(--bg-dark);
-    border-bottom: 1px solid var(--border);
-    color: var(--danger);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-}
-
-.wound-effect {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 10px;
-    font-size: 11px;
-    color: var(--danger);
-    background: rgba(211, 47, 47, 0.06);
-    border-bottom: 1px solid rgba(211, 47, 47, 0.12);
+    flex-direction: column;
 }
 
-.wound-effect:last-child {
-    border-bottom: none;
+.glog-sheet {
+    --atk: #782e22;
+    --def: #2a4a63;
+    --quiet: #6b675e;
+    --harm: #d32f2f;
+    --ink: #191813;
+    --hair: #f0eee9;
+    --sunk: rgba(0, 0, 0, 0.045);
+
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: var(--ink);
 }
 
-.wound-effect i {
-    width: 14px;
-    text-align: center;
+.glog-sheet * {
+    box-sizing: border-box;
+}
+
+/* Core gives form controls a 2rem height and a margin, which is three times the
+   room there is at these densities.
+   This block must NOT set `height`: `.glog-sheet button` (0,1,1) outranks the
+   single-class component rules below, so a height here silently flattens every
+   sized button on the sheet. Components that want core's height gone say
+   `height: auto` themselves. */
+.glog-sheet input,
+.glog-sheet select,
+.glog-sheet button {
+    margin: 0;
+    line-height: 1.2;
+    font-family: inherit;
+}
+
+.glog-sheet button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+}
+
+/* --- The full grid ------------------------------------------------------- */
+
+/* 376 / 244 / 244 as ratios rather than pixels, so the column edges stay true
+   whatever width the window is dragged to. */
+.glog-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.541fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 52px auto minmax(0, 1fr);
+    gap: 9px;
+}
+
+/* Grid children default to min-width:auto, which lets one long word widen a
+   column and push the sheet sideways. Every band and test row opts out. */
+.glog-band,
+.glog-tests {
+    min-width: 0;
+}
+
+.glog-band-identity { grid-area: 1 / 1; }
+.glog-band-combat { grid-area: 1 / 2; }
+.glog-band-utility { grid-area: 1 / 3; }
+.glog-tests-attributes { grid-area: 2 / 1; }
+.glog-tests-skills { grid-area: 2 / 2 / 3 / 4; }
+.glog-col-carry { grid-area: 3 / 1; }
+.glog-col-character { grid-area: 3 / 2; }
+.glog-col-magic { grid-area: 3 / 3; }
+
+/* --- The compact stack --------------------------------------------------- */
+
+/* Explicit heights, so the stack adds up to a known number instead of
+   depending on padding and line-height:
+   16 + 38 + 32 + 40 + 18 + 4 gaps x 4 = 160. */
+.glog-compact {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.glog-compact > * {
     flex-shrink: 0;
 }
 
-.wound-effect-grave {
-    background: rgba(211, 47, 47, 0.14);
-    font-weight: 700;
+/* --- Identity ------------------------------------------------------------ */
+
+.glog-band-identity {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
 }
 
-/* --- One wound ----------------------------------------------------------- */
-
-.wound-card {
-    padding: 8px 10px;
-    border-left: 3px solid var(--danger);
+.character-portrait {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    background: #e8e4dc;
+    cursor: pointer;
 }
 
-/* The border reads the recovery track at a glance. */
-.wound-card.wound-state-treated {
-    border-left-color: #e0a030;
+.character-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    border-radius: 0;
+    display: block;
 }
 
-.wound-card.wound-state-healing {
-    border-left-color: var(--success);
+.glog-identity {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
 }
 
-.wound-card-head {
+.glog-identity-line {
     display: flex;
     align-items: baseline;
-    justify-content: space-between;
     gap: 8px;
+    min-width: 0;
 }
 
-.wound-title {
+.glog-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-subtitle {
+    flex: 0 0 auto;
+    font-size: 10px;
+    color: var(--quiet);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-name-input,
+.glog-class-input,
+.glog-class-select,
+.glog-level-input {
+    font-size: 11px;
+    padding: 2px 4px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: #fff;
+    min-width: 0;
+}
+
+.glog-name-input { flex: 1 1 40%; font-weight: 700; }
+.glog-class-select { flex: 0 1 90px; }
+.glog-class-input { flex: 1 1 80px; }
+.glog-level-input { flex: 0 0 44px; text-align: center; }
+
+/* --- Hit points ---------------------------------------------------------- */
+
+/* HP reads by length, so it is a bar and looks nothing like a button. */
+.glog-vitals {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 6px;
     min-width: 0;
 }
 
-.wound-name {
-    font-weight: 700;
-    color: var(--danger);
+.is-compact .glog-vitals {
+    height: 16px;
 }
 
-.wound-part {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+.glog-hpbar {
+    flex: 1;
+    min-width: 40px;
+    height: 9px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.13);
+    overflow: hidden;
 }
 
-.wound-state {
+.is-compact .glog-hpbar {
+    height: 7px;
+}
+
+.glog-hpbar-fill {
+    height: 100%;
+    background: var(--atk);
+}
+
+.glog-hpbar-fill.is-hurt {
+    background: var(--harm);
+}
+
+.glog-hp {
+    display: flex;
+    align-items: baseline;
     flex-shrink: 0;
-    padding: 1px 6px;
-    border-radius: 8px;
-    background: var(--bg-dark);
-    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.is-compact .glog-hp {
+    font-size: 10px;
+}
+
+.glog-hp.is-hurt {
+    color: var(--harm);
+}
+
+/* A number input reserves room for its spinners, which at this size eats the
+   second digit. Hidden, so "10 / 10" fits the space "6 / 11" needs. */
+.glog-hp-input {
+    width: 30px;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: right;
+    font-size: inherit;
+    font-weight: 700;
+    color: inherit;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.glog-hp-input::-webkit-outer-spin-button,
+.glog-hp-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.glog-hp-input:focus {
+    outline: 1px solid var(--atk);
+    background: #fff;
+}
+
+.glog-hp-max {
+    padding: 0 2px;
+    opacity: 0.75;
+}
+
+.glog-hp-step {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.glog-hp-step .hp-step {
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border-radius: 2px;
+    background: var(--sunk);
+    color: var(--quiet);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.glog-hp-step .hp-step:hover {
+    background: rgba(120, 46, 34, 0.12);
+    color: var(--atk);
+}
+
+/* --- Tier 1: the tiles you hit in a fight -------------------------------- */
+
+.glog-band-combat {
+    min-width: 0;
+}
+
+.glog-tiles {
+    display: flex;
+    gap: 9px;
+    height: 100%;
+    min-width: 0;
+}
+
+/* Splits (a thrown loadout, Acrobat Training) share this row rather than
+   wrapping, so the band keeps its height and the columns below stay aligned. */
+.is-compact .glog-tiles {
+    gap: 5px;
+    height: 38px;
+}
+
+.glog-tile {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    overflow: hidden;
+    color: #fff;
+    cursor: pointer;
+}
+
+.glog-tile-attack { background: var(--atk); }
+.glog-tile-defend { background: var(--def); }
+.glog-tile:hover { filter: brightness(1.14); }
+
+.glog-tile-label {
+    max-width: 100%;
+    padding: 0 2px;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-tile-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.is-compact .glog-tile-value {
+    font-size: 18px;
+}
+
+/* --- Tier 2: attributes -------------------------------------------------- */
+
+.glog-attributes {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.is-compact .glog-attributes {
+    gap: 4px;
+}
+
+.glog-attr {
+    height: 44px;
+    min-width: 0;
+    padding: 0 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: #fff;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.is-compact .glog-attr {
+    height: 32px;
+}
+
+.glog-attr.clickable:hover {
+    border-color: var(--atk);
+    background: #fbf7f6;
+}
+
+.glog-attr.is-impaired { border-color: rgba(211, 47, 47, 0.55); }
+.glog-attr.is-improved { border-color: rgba(76, 175, 80, 0.55); }
+
+.glog-attr-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--atk);
+    line-height: 1;
+}
+
+.glog-attr-mod {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.is-compact .glog-attr-mod {
+    font-size: 14px;
+    line-height: 1.15;
+}
+
+.glog-attr-mod.is-negative {
+    color: var(--harm);
+}
+
+.glog-attr-save {
+    font-size: 8px;
+    letter-spacing: 0.2px;
+    color: #9a9385;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.glog-attr-save:hover {
+    color: var(--atk);
+}
+
+.glog-attr-input {
+    width: 100%;
+    padding: 1px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: #fff;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* --- Tier 3: skills ------------------------------------------------------ */
+
+.glog-skills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    align-content: center;
+}
+
+.glog-skill {
+    height: 20px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: var(--sunk);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--quiet);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.is-compact .glog-skill {
+    height: 18px;
+    font-size: 9px;
+    gap: 3px;
+}
+
+.glog-skill.clickable:hover {
+    background: rgba(120, 46, 34, 0.1);
+    color: var(--atk);
+}
+
+.glog-skill-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-skill-value {
+    font-weight: 400;
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+.glog-skill-value.is-negative {
+    color: var(--harm);
+    opacity: 1;
+}
+
+/* --- Tier 4: readouts and the things you do to yourself ------------------ */
+
+.glog-band-utility {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 9px;
+    min-width: 0;
+}
+
+.glog-readouts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.glog-readout-row {
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 0 8px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.03);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: var(--quiet);
+    min-width: 0;
+}
+
+.glog-readout-row.clickable:hover {
+    background: rgba(120, 46, 34, 0.1);
+    color: var(--atk);
+}
+
+.glog-readout-row.is-magic {
+    background: rgba(120, 46, 34, 0.08);
+    color: var(--atk);
+}
+
+.glog-readout-value {
+    font-size: 11px;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.glog-readout-value.is-impaired {
+    color: var(--harm);
+}
+
+.glog-readout-value small {
+    font-size: 8px;
+    opacity: 0.8;
+}
+
+.glog-readout-input {
+    width: 40px;
+    padding: 1px 2px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    text-align: center;
+    font-size: 11px;
+}
+
+.glog-pips {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.glog-pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--atk);
+}
+
+.glog-pip.is-spent {
+    background: rgba(120, 46, 34, 0.25);
+}
+
+.glog-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2px;
+    align-content: start;
+    min-width: 0;
+}
+
+.glog-stack-btn {
+    height: 25px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 4px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.07);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--quiet);
+    overflow: hidden;
+}
+
+.glog-stack-btn:hover {
+    background: rgba(120, 46, 34, 0.1);
+    color: var(--atk);
+}
+
+.glog-stack-btn.is-danger {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--harm);
+}
+
+.glog-stack-btn.is-lit {
+    background: rgba(255, 152, 0, 0.18);
+    color: #b25a00;
+}
+
+.glog-stack-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The compact footer is one row of five, so the chips share the width and clip
+   their labels rather than pushing the sheet wider. */
+.glog-footer {
+    height: 18px;
+    margin-top: auto;
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    min-width: 0;
+}
+
+.is-compact .glog-stack {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+    min-width: 0;
+}
+
+.is-compact .glog-stack-btn {
+    flex: 1 1 0;
+    height: 18px;
+    padding: 0 3px;
+}
+
+.is-compact .glog-stack-btn i {
+    display: none;
+}
+
+.glog-chip {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0 5px;
+    border-radius: 2px;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.glog-chip.is-magic {
+    background: rgba(120, 46, 34, 0.1);
+    color: var(--atk);
+}
+
+.glog-readout {
+    flex-shrink: 0;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--quiet);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.glog-readout.clickable:hover {
+    color: var(--atk);
+}
+
+.glog-readout.is-danger {
+    color: var(--harm);
+}
+
+/* --- Columns and panels -------------------------------------------------- */
+
+.glog-col {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-height: 0;
+    min-width: 0;
+}
+
+.glog-panel {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: #fff;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.glog-panel-grow {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Wounds share a column with Features and must not crowd it out, however many
+   you are carrying. */
+.glog-panel-wounds {
+    flex: 0 1 auto;
+    max-height: 45%;
+}
+
+.glog-panel-wounds.is-carrying {
+    border-left: 3px solid var(--harm);
+}
+
+.glog-panel-head {
+    flex-shrink: 0;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 0 9px;
+    background: rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid var(--border);
+    min-width: 0;
+}
+
+.glog-panel-title {
     font-size: 9px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
+    color: var(--atk);
+    white-space: nowrap;
 }
 
-.wound-state-treated .wound-state {
-    background: rgba(224, 160, 48, 0.2);
-    color: #8a5e10;
+.glog-panel-title.is-danger { color: var(--harm); }
+.glog-panel-title.is-quiet { color: var(--quiet); }
+
+.glog-panel-note {
+    font-size: 9px;
+    color: var(--quiet);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.wound-state-healing .wound-state {
-    background: rgba(76, 175, 80, 0.18);
-    color: #2c6e2f;
+.glog-panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-.wound-meta {
+.glog-panel-padded {
+    padding: 8px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 3px;
-    color: var(--text-muted);
-    font-size: 10px;
+    flex-direction: column;
+    gap: 7px;
 }
 
-.wound-description {
-    margin-top: 6px;
+/* --- Carry column: the one remaining tab strip --------------------------- */
+
+.glog-col-carry {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+}
+
+.glog-tabstrip {
+    flex-shrink: 0;
+    display: flex;
+    border: 1px solid var(--border);
+    border-bottom: 2px solid var(--atk);
+    border-radius: 3px 3px 0 0;
+    background: rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.glog-tab {
+    flex: 1;
+    padding: 5px 8px;
+    text-align: center;
     font-size: 11px;
-    line-height: 1.45;
+    font-weight: 700;
+    color: var(--quiet);
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.wound-note {
-    margin-top: 6px;
-    padding: 4px 6px;
-    border-radius: var(--radius);
-    background: var(--bg-dark);
-    font-size: 10px;
+.glog-tab:hover { color: var(--atk); }
+
+.glog-tab.active {
+    background: var(--atk);
+    color: #fff;
 }
 
-.wound-note-danger {
-    background: rgba(211, 47, 47, 0.1);
-    color: var(--danger);
+.glog-count {
+    color: #b4ada0;
+    font-weight: 400;
 }
 
-.wound-recovery-row {
+/* Core styles `.tab` as a block; these panes are flex columns that fill what
+   is left of the sheet. */
+.glog-sheet .tab.glog-pane {
+    display: none;
+    flex: 1;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 3px 3px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.glog-sheet .tab.glog-pane.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.glog-pane-bar {
+    flex-shrink: 0;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid var(--border);
+    padding: 0 9px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    min-width: 0;
+}
+
+.glog-slots {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-encumbrance {
+    margin-left: 4px;
+    color: var(--harm);
+    font-weight: 700;
+}
+
+.glog-adds {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.glog-add {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #b4ada0;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.glog-add:hover { color: var(--atk); }
+.glog-add.is-strong { color: var(--atk); }
+
+/* --- Rows ---------------------------------------------------------------- */
+
+.glog-rows {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.glog-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 9px;
+    height: 28px;
+    border-bottom: 1px solid var(--hair);
+    font-size: 11px;
+    min-width: 0;
+}
+
+.glog-row:hover { background: #faf9f7; }
+.glog-row:last-child { border-bottom: none; }
+
+.glog-row-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-row-icon {
+    color: var(--quiet);
+    flex-shrink: 0;
+}
+
+.glog-row-slots {
+    width: 14px;
+    flex-shrink: 0;
+    text-align: right;
+    color: var(--quiet);
+}
+
+.glog-row-btn {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 2px;
+    background: var(--sunk);
+    color: var(--quiet);
+    font-size: 9px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.glog-row-btn:hover {
+    background: rgba(120, 46, 34, 0.12);
+    color: var(--atk);
+}
+
+.glog-row-btn.is-danger:hover {
+    background: rgba(211, 47, 47, 0.12);
+    color: var(--harm);
+}
+
+.glog-row-btn.is-quiet {
+    opacity: 0.45;
+}
+
+/* The equipped box is the row's status light, so it is drawn as one. */
+.glog-sheet input[type="checkbox"].glog-eq {
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 9px;
+    height: 9px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.glog-sheet input[type="checkbox"].glog-eq:checked {
+    background: var(--atk);
+    border-color: var(--atk);
+}
+
+.glog-sheet .glog-eq-torch {
+    flex-shrink: 0;
+    width: 9px;
+    height: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #b4ada0;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.glog-sheet .glog-eq-torch.torch-active {
+    color: #e08e0b;
+    background: none;
+}
+
+.glog-badge {
+    flex-shrink: 0;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.05);
+    font-size: 9px;
+    color: var(--quiet);
+    white-space: nowrap;
+}
+
+.glog-badge.is-danger {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--harm);
+    font-weight: 700;
+}
+
+/* --- Entries: features, wounds, spells ----------------------------------- */
+
+.glog-entry {
+    padding: 6px 9px;
+    border-bottom: 1px solid var(--hair);
+    cursor: pointer;
+}
+
+.glog-entry:hover { background: #faf9f7; }
+.glog-entry:last-child { border-bottom: none; }
+.glog-entry.is-inactive { opacity: 0.55; }
+
+.glog-entry-head {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+}
+
+.glog-entry-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-entry-name.is-danger { color: var(--harm); }
+
+.glog-entry-text {
+    margin-top: 3px;
+    font-size: 10px;
+    color: var(--quiet);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.glog-entry-text.is-danger { color: var(--harm); }
+
+.glog-entry-pick {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    background: rgba(211, 47, 47, 0.07);
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 0;
+}
+
+.glog-entry-pick select {
+    flex: 1 1 90px;
+    min-width: 0;
+    padding: 1px 2px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 10px;
+}
+
+.glog-tag {
+    flex-shrink: 0;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #9a9385;
+    white-space: nowrap;
+}
+
+.glog-tagbtn {
+    flex-shrink: 0;
+    height: auto;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(120, 46, 34, 0.1);
+    color: var(--atk);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.glog-tagbtn:hover { background: rgba(120, 46, 34, 0.2); }
+
+.glog-tagbtn.is-quiet {
+    background: var(--sunk);
+    color: var(--quiet);
+}
+
+.glog-pill {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.07);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--quiet);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.glog-wound {
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--hair);
+}
+
+.glog-wound:last-child { border-bottom: none; }
+.wound-state-treated .glog-pill { background: rgba(255, 152, 0, 0.16); color: #a05a00; }
+.wound-state-healing .glog-pill { background: rgba(76, 175, 80, 0.16); color: #2e6b31; }
+
+.glog-wound-foot {
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid var(--hair);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
 }
 
 .wound-requirement {
-    display: flex;
-    align-items: center;
-    gap: 5px;
     min-width: 0;
-    color: var(--text-muted);
-    font-size: 10px;
+    font-size: 9px;
     font-style: italic;
+    color: #9a9385;
+    overflow-wrap: anywhere;
 }
 
-.wound-actions {
+.glog-wound-actions {
     display: flex;
-    flex-shrink: 0;
     gap: 4px;
+    flex-shrink: 0;
 }
 
-.wound-recovery h3,
-.wound-applied h3 {
-    margin-top: 0;
+.glog-spell {
+    flex-shrink: 0;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+}
+
+.glog-spell .glog-entry-name.clickable:hover {
+    color: var(--atk);
+}
+
+.glog-md-row {
+    margin-top: 7px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+/* Spending dice is the commitment, so these look like the commitment. */
+.glog-md {
+    height: auto;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: var(--atk);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+}
+
+.glog-md:hover { filter: brightness(1.15); }
+
+.glog-md-empty {
+    font-size: 9px;
+    font-style: italic;
+    color: #b4ada0;
+}
+
+/* --- In effect ----------------------------------------------------------- */
+
+.glog-effects {
+    gap: 5px;
+}
+
+.glog-effect {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+    min-width: 0;
+}
+
+.glog-effect-label {
+    color: var(--quiet);
+    flex-shrink: 0;
+}
+
+/* One line each. A long weapon name would otherwise wrap to three and shove
+   the rest of the panel down; the full text is on the title attribute. */
+.glog-effect-value {
+    font-weight: 700;
+    text-align: right;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-effect-value.is-impaired { color: var(--harm); }
+
+.glog-effect-rule {
+    margin-top: 2px;
+    padding-top: 5px;
+    border-top: 1px solid var(--hair);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #b4ada0;
+}
+
+/* --- Empty states -------------------------------------------------------- */
+
+/* An empty sheet should look deliberate, not broken, so every list says what
+   would go in it rather than collapsing to nothing. */
+.glog-empty {
+    padding: 18px 12px;
+    text-align: center;
+    color: #b4ada0;
+}
+
+.glog-empty.is-tight {
+    padding: 10px;
+}
+
+.glog-empty i {
+    font-size: 20px;
+    opacity: 0.5;
+}
+
+.glog-empty p {
+    margin: 6px 0 0;
+    font-size: 10px;
+}
+
+.glog-empty .glog-hint {
+    font-size: 9px;
+    opacity: 0.8;
 }

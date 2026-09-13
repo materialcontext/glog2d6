@@ -4,17 +4,34 @@ import { addClassFeatures, displayFeature } from './handlers/feature-handlers.mj
 import { EventHandlerRegistry, ActionHandlerMap } from './event-registry.mjs';
 import { revealNote, openNote } from './handlers/note-handlers.mjs';
 import { SheetRollHandler } from './handlers/sheet-roll-handler.mjs';
-import { SheetStateManager } from './sheet-state-manager.mjs';
 import { EquipmentHandler } from './handlers/equipment-handler.mjs';
 import { ItemManagementHandler } from './handlers/item-management-handler.mjs';
 import { DataContextBuilder } from './data-context-builder.mjs';
+import { classUpdateFor } from './class-identity.mjs';
+import {
+    SHEET_MODES,
+    allowsEditMode,
+    modeFlagPath,
+    modeSize,
+    modeTemplate,
+    modeToggleIcon,
+    modeToggleLabel,
+    normalizeMode,
+    otherMode
+} from './sheet-mode.mjs';
 
 export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
     constructor(...args) {
         super(...args);
         this.initializeMixinsAndComponents();
+        this._applyModeOptions();
     }
 
+    /**
+     * NPCs share this class and keep their own template, so the defaults stay
+     * theirs. The character layout -- its window class and its two sizes -- is
+     * applied per instance, below.
+     */
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ["glog2d6", "sheet", "actor"],
@@ -28,7 +45,6 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         this.eventRegistry = new EventHandlerRegistry(this);
         this.actionMap = new ActionHandlerMap(this);
         this.rollHandler = new SheetRollHandler(this);
-        this.stateManager = new SheetStateManager(this);
         this.equipmentHandler = new EquipmentHandler(this.actor);
         this.itemManager = new ItemManagementHandler(this);
         this.dataContextBuilder = new DataContextBuilder(this.actor);
@@ -38,26 +54,90 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         };
     }
 
+    /**
+     * Compact vs full is a preference of *this user* about *this actor*: a GM
+     * running someone else's character in compact must not change what its
+     * player sees when they open the same document.
+     */
+    get sheetMode() {
+        if (this.actor.type !== "character") return SHEET_MODES.FULL;
+        return normalizeMode(game.user?.getFlag("glog2d6", modeFlagPath(this.actor.id)));
+    }
+
+    get isEditModeActive() {
+        return this.actor.getFlag("glog2d6", "editMode") === true;
+    }
+
+    _applyModeOptions() {
+        if (this.actor.type !== "character") return;
+
+        if (!this.options.classes.includes("glog-character")) {
+            this.options.classes = [...this.options.classes, "glog-character"];
+        }
+
+        const size = modeSize(this.sheetMode);
+        this.options.width = size.width;
+        this.options.height = size.height;
+    }
+
     get template() {
+        if (this.actor.type === "character") return modeTemplate(this.sheetMode);
         return `systems/glog2d6/templates/actor/actor-${this.actor.type}-sheet.hbs`;
+    }
+
+    /**
+     * Edit and the mode switch are window controls, not sheet content, so they
+     * live on the window frame where Foundry already puts controls.
+     */
+    _getHeaderButtons() {
+        const buttons = super._getHeaderButtons();
+        if (this.actor.type !== "character" || !this.isEditable) return buttons;
+
+        const mode = this.sheetMode;
+        const extra = [{
+            label: modeToggleLabel(mode),
+            class: "glog-mode-toggle",
+            icon: modeToggleIcon(mode),
+            onclick: event => this.handleModeToggle(event)
+        }];
+
+        if (allowsEditMode(mode)) {
+            extra.unshift({
+                label: this.isEditModeActive ? "Done" : "Edit",
+                class: "glog-edit-toggle",
+                icon: this.isEditModeActive ? "fa-solid fa-lock" : "fa-solid fa-pen-to-square",
+                onclick: event => this.handleEditModeToggle(event)
+            });
+        }
+
+        return [...extra, ...buttons];
     }
 
     async getData() {
         const context = super.getData();
-        const result = this.dataContextBuilder.buildCompleteContext(context);
-
-        console.log('Template context:', result.system);
-        return result;
+        return this.dataContextBuilder.buildCompleteContext(context, { mode: this.sheetMode });
     }
 
     activateListeners(html) {
         super.activateListeners(html);
 
-        this.stateManager.updateAllVisualElements(html);
-
         if (this.isEditable) {
             this.eventRegistry.registerAllEventHandlers(html);
         }
+    }
+
+    async handleModeToggle(event) {
+        event?.preventDefault();
+
+        const next = otherMode(this.sheetMode);
+        await game.user.setFlag("glog2d6", modeFlagPath(this.actor.id), next);
+
+        const size = modeSize(next);
+        this.options.width = size.width;
+        this.options.height = size.height;
+
+        await this.render(true);
+        this.setPosition({ width: size.width, height: size.height });
     }
 
     // Direct event handlers that delegate to roll handler
@@ -119,22 +199,43 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         }
     }
 
-    async handleSpellCast(event) {
-        event.preventDefault();
-        const spellId = event.currentTarget.dataset.itemId;
-        const spell = this.actor.items.get(spellId);
-
-        if (spell) {
-            // Your spell casting logic here
-            spell.sheet.render(true); // or implement spell casting
-        }
+    async handleEditModeToggle(event) {
+        event?.preventDefault();
+        await this.actor.setFlag("glog2d6", "editMode", !this.isEditModeActive);
+        this.render();
     }
 
-    async handleEditModeToggle(event) {
+    /**
+     * The class is two fields: a label you can type anything into, and a key
+     * that feature lookup uses. The dropdown writes both, so picking Custom
+     * frees the label without pointing the lookup at a name it cannot resolve.
+     */
+    async handleClassSelect(event) {
         event.preventDefault();
-        const currentEditMode = this.actor.getFlag("glog2d6", "editMode") || false;
 
-        await this.actor.setFlag("glog2d6", "editMode", !currentEditMode);
+        const update = classUpdateFor(
+            event.currentTarget.value,
+            this.actor.system?.details,
+            (CONFIG.GLOG?.CLASSES ?? []).map(cls => cls.name).filter(Boolean)
+        );
+
+        await this.actor.update(update);
+        this.render();
+    }
+
+    /**
+     * One point off or on, for the damage you take between proper rolls.
+     */
+    async handleHpStep(event) {
+        event.preventDefault();
+
+        const step = Number(event.currentTarget.dataset.step) || 0;
+        const max = Number(this.actor.system?.hp?.max) || 0;
+        const current = Number(this.actor.system?.hp?.value) || 0;
+        const next = Math.max(0, Math.min(current + step, max));
+
+        if (next === current) return;
+        await this.actor.update({ "system.hp.value": next });
         this.render();
     }
 
@@ -144,8 +245,6 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     async handleFeatureToggle(event) {
         return displayFeature(this, event);
-        // return toggleFeature(this, event);
-        //  move ^ this ^ later when you want to use it
     }
 
     async handleReputationSelect(event) {
@@ -162,19 +261,6 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         }
     }
 
-    async rollFeature(featureName) {
-        const config = this.rollConfigs[featureName];
-        if (!config) {
-            ui.notifications.warn(`No roll configuration for ${featureName}`);
-            return;
-        }
-
-        if (config.dialog) {
-            return this.openAttributeDialog(featureName);
-        }
-
-        return this.executeRoll(featureName, config);
-    }
     async handleTorchToggle(event) {
         const result = await toggleTorch(this.actor, event);
         if (result.ok) this.render();
@@ -199,7 +285,6 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     async handleTraumaSave(event) {
         event.preventDefault();
-        console.log('Trauma save button clicked');
 
         if (!this.actor.traumaSystem) {
             console.error('Trauma system not initialized');
@@ -329,8 +414,26 @@ export class GLOG2D6ActorSheet extends foundry.appv1.sheets.ActorSheet {
         }
     }
 
-    // Spell casting
-    async handleSpellCast(event) {
+    /**
+     * Spending dice is the commitment, so the dice buttons are the commitment:
+     * they cast straight away rather than posting a card that then asks again.
+     */
+    async handleSpellCastDice(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const spell = this.extractSpellFromEvent(event);
+        const diceCount = Number(event.currentTarget.dataset.diceCount) || 0;
+        if (!spell || diceCount < 1) return;
+
+        await this.actor.castSpellWithDice(spell, diceCount);
+        this.render(false);
+    }
+
+    /**
+     * The spell's name describes it to the table and spends nothing.
+     */
+    async handleSpellDetails(event) {
         event.preventDefault();
         const spell = this.extractSpellFromEvent(event);
 

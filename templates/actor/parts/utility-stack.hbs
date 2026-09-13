@@ -1,0 +1,17 @@
+{{!-- The four things you do to yourself rather than to someone else. --}}
+<div class="glog-stack">
+    <button type="button" class="glog-stack-btn heal-btn" data-action="heal" title="Heal 1d6">
+        <i class="fas fa-heart"></i><span class="glog-stack-label">Heal</span>
+    </button>
+    <button type="button" class="glog-stack-btn rest-btn" data-action="rest" title="Rest and recover">
+        <i class="fas fa-bed"></i><span class="glog-stack-label">Rest</span>
+    </button>
+    <button type="button" class="glog-stack-btn torch-btn{{#if system.torch.lit}} is-lit{{/if}}" data-action="torch"
+        title="{{#if system.torch.lit}}Put out your torch{{else}}Light a torch{{/if}}">
+        <i class="fas fa-fire"></i><span class="glog-stack-label">Torch</span>
+    </button>
+    <button type="button" class="glog-stack-btn is-danger trauma-save-btn" data-action="trauma"
+        title="Roll a Trauma save">
+        <i class="fas fa-skull"></i><span class="glog-stack-label">Trauma</span>
+    </button>
+</div>

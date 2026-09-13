@@ -1,0 +1,48 @@
+{{!-- Compact: the palette. Everything a player who knows their character
+      reaches for in a fight, and nothing else. Edit lives in full mode.
+
+      Every row carries an explicit height so the stack adds up to a known
+      number instead of depending on padding and line-height:
+      16 hp + 38 combat + 32 attrs + 40 skills + 18 utils + 4 gaps x 4 = 160. --}}
+<form class="{{cssClass}} glog-sheet is-compact" autocomplete="off">
+
+    <div class="glog-compact">
+
+        {{!-- HP reads by length, so it is a bar and looks nothing like a button. --}}
+        <div class="glog-vitals">
+            <div class="glog-hpbar" title="{{hpBar.value}} of {{hpBar.max}} hit points">
+                <div class="glog-hpbar-fill{{#if hpBar.hurt}} is-hurt{{/if}}" style="width: {{hpBar.percent}}%"></div>
+            </div>
+            <span class="glog-hp{{#if hpBar.hurt}} is-hurt{{/if}}">
+                <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0"
+                    class="glog-hp-input" title="Current hit points" />
+                <span class="glog-hp-max">/{{system.hp.max}}</span>
+            </span>
+            <span class="glog-hp-step">
+                <button type="button" class="hp-step" data-step="-1" title="Take a point of damage">&minus;</button>
+                <button type="button" class="hp-step" data-step="1" title="Recover a point">+</button>
+            </span>
+            <span class="glog-readout movement-display clickable" data-action="movement" title="Roll movement">
+                MV {{#if system.details.effectiveMovement}}{{system.details.effectiveMovement}}{{else}}{{system.details.movement}}{{/if}}
+            </span>
+            {{#if (gt system.wounds.count 0)}}
+            <span class="glog-readout is-danger" title="{{system.wounds.count}} wound(s) carried">
+                {{system.wounds.count}} WND
+            </span>
+            {{/if}}
+        </div>
+
+        {{> combat-tiles }}
+        {{> attribute-tiles }}
+        {{> skill-chips }}
+
+        <div class="glog-footer">
+            {{#if (gt system.magicDiceMax 0)}}
+            <span class="glog-chip is-magic" title="Magic dice remaining &mdash; cast from the full sheet">
+                <i class="fas fa-dice-d6"></i>{{system.magicDiceCurrent}}/{{system.magicDiceMax}}
+            </span>
+            {{/if}}
+            {{> utility-stack }}
+        </div>
+    </div>
+</form>

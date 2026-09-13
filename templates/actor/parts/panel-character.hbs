@@ -1,0 +1,142 @@
+{{!-- Column 2, row 3: who you are. What you can do, and what has been done to
+      you -- the two halves of the same question, so they share a column. --}}
+<section class="glog-col glog-col-character">
+
+    <div class="glog-panel glog-panel-grow">
+        <header class="glog-panel-head">
+            <span class="glog-panel-title">Features</span>
+            {{#if editMode}}
+            <span class="glog-adds">
+                <a class="glog-add item-control item-create" data-type="feature" title="New feature">+ Feature</a>
+                {{#if hasAvailableFeatures}}
+                <a class="glog-add is-strong add-class-features" title="Add every feature for this class and level">+
+                    Class</a>
+                {{/if}}
+            </span>
+            {{else}}
+            <span class="glog-panel-note">{{itemsByKind.features.length}} held</span>
+            {{/if}}
+        </header>
+
+        <div class="glog-panel-body">
+            {{#each itemsByKind.features as |item|}}
+            <div class="glog-entry feature-card{{#unless item.system.active}} is-inactive{{/unless}}"
+                data-item-id="{{item.id}}">
+                <div class="glog-entry-head">
+                    <span class="glog-entry-name">{{item.name}}</span>
+
+                    {{#unless ../editMode}}
+                    {{#if (or (hasFeatureRoll item.name) (and (contains item.name "Reputation for")
+                    item.system.reputationType))}}
+                    <button type="button" class="glog-tagbtn feature-roll-btn" data-item-id="{{item.id}}"
+                        data-feature-name="{{item.name}}" title="Roll {{item.name}}">ROLL</button>
+                    {{/if}}
+                    {{/unless}}
+
+                    {{#if (hasFeatureTip item.name)}}
+                    <span class="glog-tagbtn is-quiet feature-info-btn" title="{{getFeatureTip item.name}}">?</span>
+                    {{/if}}
+
+                    {{#if (or (eq item.name "Tracker") (eq item.name "Stalker") (eq item.name "Danger Sense"))}}
+                    <span class="glog-tagbtn is-quiet" title="This feature affects GM-initiated recon rolls">GM</span>
+                    {{/if}}
+
+                    {{#unless item.system.active}}<span class="glog-tag">INACTIVE</span>{{/unless}}
+
+                    {{#if ../editMode}}
+                    <a class="glog-row-btn item-control item-edit" title="Edit {{item.name}}"><i
+                            class="fas fa-pen"></i></a>
+                    <a class="glog-row-btn is-danger item-control item-delete" title="Delete {{item.name}}"><i
+                            class="fas fa-trash"></i></a>
+                    {{else}}
+                    <span class="glog-tag">{{item.system.template}}</span>
+                    {{/if}}
+                </div>
+
+                {{#if (and (contains item.name "Reputation for") (not ../editMode))}}
+                {{#unless item.system.reputationType}}
+                <div class="glog-entry-pick">
+                    <span>Pick your reputation</span>
+                    <select class="reputation-select" data-item-id="{{item.id}}" onclick="event.stopPropagation();"
+                        onmousedown="event.stopPropagation();">
+                        <option value="">Choose&hellip;</option>
+                        {{#each (getReputations) as |rep|}}
+                        <option value="{{rep.name}}">{{rep.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                {{/unless}}
+                {{/if}}
+
+                <div class="glog-entry-text">
+                    {{#if (and (contains item.name "Reputation for") item.system.reputationType)}}
+                    <b>{{item.system.reputationType}}.</b>
+                    {{lookup (getReputationDescription item.system.reputationType) "description"}}
+                    {{/if}}
+                    {{item.system.description}}
+                </div>
+            </div>
+            {{else}}
+            <div class="glog-empty">
+                <i class="fas fa-star"></i>
+                <p>No features yet.</p>
+                {{#if editMode}}<p class="glog-hint">Add one, or pull in your class's whole list.</p>{{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="glog-panel glog-panel-wounds{{#if (gt system.wounds.count 0)}} is-carrying{{/if}}">
+        <header class="glog-panel-head">
+            <span class="glog-panel-title is-danger">Wounds</span>
+            {{#if editMode}}
+            <span class="glog-adds">
+                <a class="glog-add add-wound-btn" title="Roll a wound by hand">+ Roll</a>
+            </span>
+            {{else}}
+            <span class="glog-panel-note">{{system.wounds.count}} carried</span>
+            {{/if}}
+        </header>
+
+        <div class="glog-panel-body">
+            {{#each wounds as |wound|}}
+            <div class="glog-wound wound-state-{{wound.state}}" data-wound-id="{{wound.id}}">
+                <div class="glog-entry-head">
+                    <span class="glog-entry-name is-danger">{{wound.name}}</span>
+                    {{#if wound.bodyPart}}<span class="glog-tag wound-part">{{upperCase wound.bodyPart}}</span>{{/if}}
+                    <span class="glog-pill">{{woundStateLabel wound.state}}</span>
+                </div>
+
+                <div class="glog-entry-text">{{wound.description}}</div>
+
+                {{#if wound.maimedResult}}
+                <div class="glog-entry-text is-danger"><b>Maimed.</b> {{wound.maimedResult}}</div>
+                {{/if}}
+                {{#if wound.effects.rerollStat}}
+                <div class="glog-entry-text is-danger"><b>Reroll your {{upperCase wound.effects.rerollStat}}.</b></div>
+                {{/if}}
+
+                <div class="glog-wound-foot">
+                    <span class="wound-requirement">{{wound.removal.reason}}</span>
+                    {{#if ../editMode}}
+                    <span class="glog-wound-actions">
+                        {{#if wound.nextState}}
+                        <a class="glog-row-btn advance-wound-btn" data-wound-id="{{wound.id}}"
+                            title="Mark {{woundStateLabel wound.nextState}}"><i class="fas fa-notes-medical"></i></a>
+                        {{/if}}
+                        <a class="glog-row-btn{{#unless wound.removal.allowed}} is-quiet{{/unless}} remove-wound-btn"
+                            data-wound-id="{{wound.id}}" title="{{wound.removal.reason}}"><i
+                                class="fas fa-check"></i></a>
+                    </span>
+                    {{/if}}
+                </div>
+            </div>
+            {{else}}
+            <div class="glog-empty is-tight">
+                <p>Unhurt.</p>
+                <p class="glog-hint">Damage at 0 HP calls for a Trauma save.</p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</section>

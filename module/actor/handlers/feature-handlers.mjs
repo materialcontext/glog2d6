@@ -1,14 +1,25 @@
+import { effectiveClassKey } from '../class-identity.mjs';
+
+/**
+ * The class a feature lookup can actually resolve: the canonical key, never the
+ * free-text label. A custom class has no key, so it has no features to add.
+ */
+function lookupClass(actor) {
+    const classNames = (CONFIG.GLOG?.CLASSES ?? []).map(cls => cls.name).filter(Boolean);
+    return effectiveClassKey(actor?.system?.details, classNames);
+}
+
 /**
  * Add class features based on comprehensive feature data
  */
 async function addClassFeatures(sheet, event) {
     event.preventDefault();
 
-    const className = sheet.actor.system.details.class;
+    const className = lookupClass(sheet.actor);
     const currentLevel = sheet.actor.system.details.level;
 
     if (!className) {
-        ui.notifications.warn("No class selected. Set your class first.");
+        ui.notifications.warn("Pick a class from the list first -- a custom class has no feature list to draw from.");
         return;
     }
 
@@ -170,7 +181,7 @@ function hasAvailableClassFeatures(actor) {
         return false;
     }
 
-    const className = actor.system.details.class;
+    const className = lookupClass(actor);
     const currentLevel = actor.system.details.level;
 
     if (!className || currentLevel < 1) {
