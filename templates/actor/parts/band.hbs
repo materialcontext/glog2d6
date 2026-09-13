@@ -1,0 +1,100 @@
+{{!-- Row 1: who you are, what you roll, what is true right now. --}}
+
+<section class="glog-band glog-band-identity">
+    <div class="character-portrait">
+        <img src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" title="Character portrait" />
+    </div>
+
+    <div class="glog-identity">
+        <div class="glog-identity-line">
+            {{#if editMode}}
+            <input name="name" type="text" value="{{actor.name}}" placeholder="Character name"
+                class="glog-name-input" />
+            {{else}}
+            <span class="glog-name">{{actor.name}}</span>
+            {{/if}}
+
+            {{#if editMode}}
+            <select class="glog-class-select class-select" title="Class">
+                <option value="">No class</option>
+                {{#each classOptions as |option|}}
+                <option value="{{option.key}}" {{#if (eq ../selectedClass option.key)}}selected{{/if}}>
+                    {{option.label}}</option>
+                {{/each}}
+            </select>
+            {{#if isCustomClass}}
+            <input name="system.details.class" type="text" value="{{system.details.class}}"
+                placeholder="Name your class" class="glog-class-input" title="Custom class name" />
+            {{/if}}
+            <input name="system.details.level" type="number" value="{{system.details.level}}" min="1"
+                class="glog-level-input" title="Level" />
+            {{else}}
+            <span class="glog-subtitle">{{classDisplay}} {{system.details.level}}</span>
+            {{/if}}
+        </div>
+
+        <div class="glog-vitals">
+            <div class="glog-hpbar" title="{{hpBar.value}} of {{hpBar.max}} hit points">
+                <div class="glog-hpbar-fill{{#if hpBar.hurt}} is-hurt{{/if}}" style="width: {{hpBar.percent}}%"></div>
+            </div>
+            <span class="glog-hp{{#if hpBar.hurt}} is-hurt{{/if}}">
+                <input name="system.hp.value" type="number" value="{{system.hp.value}}" min="0"
+                    class="glog-hp-input" title="Current hit points" />
+                {{#if editMode}}
+                <span class="glog-hp-max">/</span>
+                <input name="system.hp.max" type="number" value="{{system.hp.max}}" min="1"
+                    class="glog-hp-input" title="Maximum hit points" />
+                {{else}}
+                <span class="glog-hp-max">/{{system.hp.max}}</span>
+                {{/if}}
+            </span>
+            <span class="glog-hp-step">
+                <button type="button" class="hp-step" data-step="-1" title="Take a point of damage">&minus;</button>
+                <button type="button" class="hp-step" data-step="1" title="Recover a point">+</button>
+            </span>
+        </div>
+    </div>
+</section>
+
+<section class="glog-band glog-band-combat">
+    {{> combat-tiles }}
+</section>
+
+<section class="glog-band glog-band-utility">
+    <div class="glog-readouts">
+        {{#if editMode}}
+        <label class="glog-readout-row">
+            <span>MOVE</span>
+            <input name="system.details.movement" type="number" value="{{system.details.movement}}" min="0"
+                class="glog-readout-input" />
+        </label>
+        {{else}}
+        <div class="glog-readout-row movement-display clickable" data-action="movement" title="Roll movement">
+            <span>MOVE</span>
+            {{#if system.details.effectiveMovement}}
+            <span class="glog-readout-value{{#if (lt system.details.effectiveMovement system.details.movement)}} is-impaired{{/if}}">
+                {{system.details.effectiveMovement}}{{#if (lt system.details.effectiveMovement system.details.movement)}}
+                <small>was {{system.details.movement}}</small>{{/if}}
+            </span>
+            {{else}}
+            <span class="glog-readout-value">{{system.details.movement}}</span>
+            {{/if}}
+        </div>
+        {{/if}}
+
+        <div class="glog-readout-row is-magic" title="Magic dice remaining">
+            <span>MAGIC DICE</span>
+            {{#if magicDice.length}}
+            <span class="glog-pips">
+                {{#each magicDice as |pip|}}
+                <span class="glog-pip{{#unless pip.filled}} is-spent{{/unless}}"></span>
+                {{/each}}
+            </span>
+            {{else}}
+            <span class="glog-readout-value">&mdash;</span>
+            {{/if}}
+        </div>
+    </div>
+
+    {{> utility-stack }}
+</section>

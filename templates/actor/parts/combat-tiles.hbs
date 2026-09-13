@@ -1,0 +1,13 @@
+{{!-- ATTACK and DEFEND, filled tiles. Splits (thrown loadouts, Acrobat
+      Training) share this one row rather than wrapping, so the band keeps its
+      height and the column edges below it stay true. --}}
+<div class="glog-tiles">
+    {{#each combatTiles as |tile|}}
+    <div class="glog-tile glog-tile-{{tile.kind}} combat-card{{#unless ../editMode}} clickable{{/unless}}"
+        data-action="{{tile.action}}"{{#if tile.attackType}} data-attack-type="{{tile.attackType}}"{{/if}}
+        title="Roll {{tile.label}}">
+        <span class="glog-tile-label">{{tile.label}}</span>
+        <span class="glog-tile-value">{{tile.value}}</span>
+    </div>
+    {{/each}}
+</div>

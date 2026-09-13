@@ -1,0 +1,130 @@
+{{!-- Column 1, row 3: what you are carrying. Notes is the only tab left --
+      everything else earned a panel of its own. --}}
+<section class="glog-col glog-col-carry tabbed-content">
+
+    <nav class="glog-tabstrip sheet-tabs tabs" data-group="primary">
+        <a class="glog-tab item" data-tab="inventory">Inventory</a>
+        <a class="glog-tab item" data-tab="notes">
+            Notes{{#if itemsByKind.notes.length}} <span class="glog-count">{{itemsByKind.notes.length}}</span>{{/if}}
+        </a>
+    </nav>
+
+    <div class="tab glog-pane" data-group="primary" data-tab="inventory">
+        <div class="glog-pane-bar">
+            <span class="glog-slots">
+                Slots <b>{{system.inventory.slots.used}} / {{system.inventory.slots.max}}</b>
+                {{#unless editMode}}
+                {{#if encumbranceNote}}
+                <span class="glog-encumbrance">{{encumbranceNote}}</span>
+                {{/if}}
+                {{/unless}}
+            </span>
+            {{#if editMode}}
+            <span class="glog-adds">
+                <a class="glog-add item-control item-create" data-type="weapon" title="New weapon">+ Weapon</a>
+                <a class="glog-add item-control item-create" data-type="armor" title="New armour">+ Armour</a>
+                <a class="glog-add item-control item-create" data-type="shield" title="New shield">+ Shield</a>
+                <a class="glog-add item-control item-create" data-type="gear" title="New gear">+ Gear</a>
+                <a class="glog-add item-control item-create" data-type="torch" title="New torch">+ Torch</a>
+            </span>
+            {{/if}}
+        </div>
+
+        <div class="glog-rows">
+            {{#each itemsByKind.carried as |item|}}
+            <div class="glog-row" data-item-id="{{item.id}}">
+
+                {{#if (eq item.type "torch")}}
+                <span class="torch-icon glog-eq-torch{{#if (and ../system.torch.lit (eq ../system.torch.activeTorchId item.id))}} torch-active{{/if}} clickable"
+                    data-item-id="{{item.id}}" data-action="toggle-torch"
+                    title="{{#if (and ../system.torch.lit (eq ../system.torch.activeTorchId item.id))}}Burning &mdash; click to put out{{else}}Light this torch{{/if}}">
+                    <i class="fas fa-fire"></i>
+                </span>
+                {{else}}
+                <input type="checkbox" class="equipped-toggle glog-eq" data-item-id="{{item.id}}"
+                    {{#if item.system.equipped}}checked{{/if}} title="Equipped" />
+                {{/if}}
+
+                <span class="glog-row-name">{{item.name}}</span>
+
+                {{#if (eq item.type "weapon")}}
+                <span class="glog-badge">{{item.system.damage}}</span>
+                {{else if (eq item.type "armor")}}
+                <span class="glog-badge">+{{item.system.armorBonus}}</span>
+                {{else if (eq item.type "shield")}}
+                <span class="glog-badge">+{{item.system.armorBonus}}</span>
+                {{else if (eq item.type "torch")}}
+                {{#if item.system.duration.enabled}}
+                <span class="glog-badge{{#if (lt item.system.duration.remaining 1)}} is-danger{{/if}}">{{item.system.duration.remaining}}h</span>
+                {{/if}}
+                {{else if (eq item.type "gear")}}
+                {{#if item.system.value}}<span class="glog-badge">{{item.system.value}}gp</span>{{/if}}
+                {{/if}}
+
+                {{!-- Condition badge; one track for weapons, armor and shields --}}
+                {{#if (isBroken item.system.breakage.level)}}
+                <span class="glog-badge is-danger" title="Broken">BROKEN</span>
+                {{else if (isDamaged item.system.breakage.level)}}
+                <span class="glog-badge is-danger" title="Damaged">DMG</span>
+                {{/if}}
+                {{!-- end condition badge --}}
+
+                {{#if (gt item.system.encumbrancePenalty 0)}}
+                <span class="glog-badge is-danger" title="Encumbrance penalty">&minus;{{item.system.encumbrancePenalty}}</span>
+                {{/if}}
+
+                {{#if (and (not ../editMode) item.system.equipped (eq item.type "weapon"))}}
+                <button type="button" class="glog-row-btn weapon-attack-btn" data-item-id="{{item.id}}"
+                    title="Attack with {{item.name}}"><i class="fas fa-crosshairs"></i></button>
+                {{/if}}
+
+                {{#if ../editMode}}
+                <a class="glog-row-btn item-control item-edit" title="Edit {{item.name}}"><i class="fas fa-pen"></i></a>
+                <a class="glog-row-btn is-danger item-control item-delete" title="Delete {{item.name}}"><i
+                        class="fas fa-trash"></i></a>
+                {{else}}
+                <span class="glog-row-slots" title="Slots">{{#if item.system.slots}}{{item.system.slots}}{{else}}&mdash;{{/if}}</span>
+                {{/if}}
+            </div>
+            {{else}}
+            <div class="glog-empty">
+                <i class="fas fa-suitcase"></i>
+                <p>Carrying nothing.</p>
+                {{#unless editMode}}<p class="glog-hint">Switch on Edit to add kit.</p>{{/unless}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="tab glog-pane" data-group="primary" data-tab="notes">
+        <div class="glog-pane-bar">
+            <span class="glog-slots">Journal &amp; notes</span>
+            {{#if editMode}}
+            <span class="glog-adds">
+                <a class="glog-add item-control item-create" data-type="note" title="New note">+ Note</a>
+            </span>
+            {{/if}}
+        </div>
+
+        <div class="glog-rows">
+            {{#each itemsByKind.notes as |item|}}
+            <div class="glog-row note-card clickable" data-item-id="{{item.id}}">
+                <i class="fas fa-scroll glog-row-icon"></i>
+                <span class="glog-row-name">{{item.name}}</span>
+                {{#if ../editMode}}
+                <a class="glog-row-btn is-danger item-control item-delete" title="Delete {{item.name}}"><i
+                        class="fas fa-trash"></i></a>
+                {{else}}
+                <a class="glog-row-btn note-reveal" data-item-id="{{item.id}}" title="Read out to the table"><i
+                        class="fas fa-eye"></i></a>
+                {{/if}}
+            </div>
+            {{else}}
+            <div class="glog-empty">
+                <i class="fas fa-scroll"></i>
+                <p>Nothing written down.</p>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</section>

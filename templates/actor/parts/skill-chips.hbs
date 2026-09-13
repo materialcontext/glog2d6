@@ -1,0 +1,10 @@
+{{!-- Flat chips: clicked often, but never the thing you look at first. --}}
+<div class="glog-skills">
+    {{#each skillChips as |skill|}}
+    <div class="glog-skill action-card{{#unless ../editMode}} clickable{{/unless}}" data-action="{{skill.action}}"
+        title="Roll {{skill.label}}">
+        <span class="glog-skill-label">{{skill.label}}</span>
+        <span class="glog-skill-value{{#if skill.negative}} is-negative{{/if}}">{{skill.display}}</span>
+    </div>
+    {{/each}}
+</div>

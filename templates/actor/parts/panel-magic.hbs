@@ -1,0 +1,80 @@
+{{!-- Column 3, row 3: magic, out of the tab strip entirely, and a running
+      account of everything currently bending the numbers above. --}}
+<section class="glog-col glog-col-magic">
+
+    <div class="glog-panel glog-panel-grow">
+        <header class="glog-panel-head">
+            <span class="glog-panel-title">Spells</span>
+            {{#if editMode}}
+            <span class="glog-adds">
+                <a class="glog-add item-control item-create" data-type="spell" title="New spell">+ Spell</a>
+            </span>
+            {{else}}
+            <span class="glog-panel-note">
+                {{system.spellSlots}} slots &middot; {{system.magicDiceCurrent}}/{{system.magicDiceMax}} MD
+            </span>
+            {{/if}}
+        </header>
+
+        <div class="glog-panel-body glog-panel-padded">
+            {{#each itemsByKind.spells as |item|}}
+            <div class="glog-spell" data-item-id="{{item.id}}">
+                <div class="glog-entry-head">
+                    <span class="glog-entry-name spell-detail-btn clickable" data-item-id="{{item.id}}"
+                        title="Describe {{item.name}} in chat, spending nothing">{{item.name}}</span>
+                    {{#if item.system.range}}<span class="glog-tag">{{upperCase item.system.range}}</span>{{/if}}
+                    {{#if ../editMode}}
+                    <a class="glog-row-btn item-control item-edit" title="Edit {{item.name}}"><i
+                            class="fas fa-pen"></i></a>
+                    <a class="glog-row-btn is-danger item-control item-delete" title="Delete {{item.name}}"><i
+                            class="fas fa-trash"></i></a>
+                    {{/if}}
+                </div>
+
+                <div class="glog-entry-text">{{item.system.description}}</div>
+
+                {{#unless ../editMode}}
+                <div class="glog-md-row">
+                    {{#each ../castingOptions as |dice|}}
+                    <button type="button" class="glog-md spell-md-btn" data-item-id="{{../item.id}}"
+                        data-dice-count="{{dice}}"
+                        title="Cast {{../item.name}} with {{dice}} magic dice">{{dice}} MD</button>
+                    {{else}}
+                    <span class="glog-md-empty">No magic dice left</span>
+                    {{/each}}
+                </div>
+                {{/unless}}
+            </div>
+            {{else}}
+            <div class="glog-empty">
+                <i class="fas fa-wand-sparkles"></i>
+                <p>Nothing prepared.</p>
+                {{#if editMode}}<p class="glog-hint">Add a spell to prepare it.</p>{{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="glog-panel">
+        <header class="glog-panel-head">
+            <span class="glog-panel-title is-quiet">In effect</span>
+        </header>
+        <div class="glog-panel-body glog-panel-padded glog-effects">
+            {{#each inEffect as |row|}}
+            <div class="glog-effect">
+                <span class="glog-effect-label">{{row.label}}</span>
+                <span class="glog-effect-value{{#if row.impaired}} is-impaired{{/if}}" title="{{row.value}}">{{row.value}}</span>
+            </div>
+            {{/each}}
+            {{#if woundEffects.length}}
+            <div class="glog-effect-rule">From wounds</div>
+            {{#each woundEffects as |row|}}
+            <div class="glog-effect">
+                <span class="glog-effect-label">{{row.label}}</span>
+                <span class="glog-effect-value is-impaired" title="{{row.value}}">{{row.value}}</span>
+            </div>
+            {{/each}}
+            {{/if}}
+        </div>
+    </div>
+</section>

@@ -1,8 +1,14 @@
-<form class="{{cssClass}} {{actor.type}}" autocomplete="off">
-    {{> character-header }}
-    {{!-- Main Content --}}
-    <section class="sheet-body">
-        {{> character-stats }}
-        {{> character-tabs }}
-    </section>
+{{!-- Full: the whole character on one page. One grid governs everything, so
+      the column edges run true from the band to the bottom.
+
+      The <form> is load-bearing: actor sheets are still AppV1, and without it
+      FormApplication has no form to read, so nothing you type is ever saved. --}}
+<form class="{{cssClass}} glog-sheet is-full" autocomplete="off">
+    <div class="glog-grid">
+        {{> band }}
+        {{> tests }}
+        {{> panel-carry }}
+        {{> panel-character }}
+        {{> panel-magic }}
+    </div>
 </form>

@@ -85,7 +85,7 @@ Hooks.once('init', async function() {
         return combatEffectLabel(effect);
     });
 
-    // wounds-tab.hbs stamps every wound with the date it was taken.
+    // The wounds panel stamps every wound with the date it was taken.
     Handlebars.registerHelper('formatDate', function(value) {
         if (!value) return '';
         const date = new Date(value);
@@ -184,29 +184,34 @@ Hooks.once("ready", async function() {
     await foundry.applications.handlebars.loadTemplates([
         // sheets
         "systems/glog2d6/templates/actor/actor-character-sheet.hbs",
+        "systems/glog2d6/templates/actor/actor-character-compact.hbs",
         "systems/glog2d6/templates/actor/actor-npc-sheet.hbs",
+        "systems/glog2d6/templates/actor/actor-hireling-sheet.hbs",
         ...itemSheetTemplates(),
         "systems/glog2d6/templates/dialogs/gm-roll.hbs",
         "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
     ]);
 
-    // Register partials
-    Handlebars.registerPartial('character-header',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/character-header.hbs'));
-    Handlebars.registerPartial('character-stats',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/character-stats.hbs'));
-    Handlebars.registerPartial('character-tabs',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/character-tabs.hbs'));
-    Handlebars.registerPartial('inventory-tab',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/inventory-tab.hbs'));
-    Handlebars.registerPartial('features-tab',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/features-tab.hbs'));
-    Handlebars.registerPartial('spells-tab',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/spells-tab.hbs'));
-    Handlebars.registerPartial('wounds-tab',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/wounds-tab.hbs'));
-    Handlebars.registerPartial('notes-tab',
-        await foundry.applications.handlebars.getTemplate('systems/glog2d6/templates/actor/notes-tab.hbs'));
+    // Register partials. Compact and full share the four parts that carry the
+    // things you click; the rest belong to the full sheet alone.
+    for (const name of [
+        "combat-tiles",
+        "attribute-tiles",
+        "skill-chips",
+        "utility-stack",
+        "band",
+        "tests",
+        "panel-carry",
+        "panel-character",
+        "panel-magic"
+    ]) {
+        Handlebars.registerPartial(
+            name,
+            await foundry.applications.handlebars.getTemplate(
+                `systems/glog2d6/templates/actor/parts/${name}.hbs`
+            )
+        );
+    }
 
     Handlebars.registerHelper('getReputations', function() {
         return CONFIG.GLOG?.REPUTATIONS?.reputations || [];

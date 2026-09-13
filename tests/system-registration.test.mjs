@@ -46,7 +46,7 @@ describe("sheet registration timing", () => {
 
 describe("the portrait modules hook onto", () => {
     const actorTemplates = [
-        "templates/actor/character-header.hbs",
+        "templates/actor/parts/band.hbs",
         "templates/actor/actor-hireling-sheet.hbs"
     ];
 

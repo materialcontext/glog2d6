@@ -1,47 +1,69 @@
-import { decorateWounds } from "../systems/wounds.mjs";
 // module/actor/data-context-builder.mjs
+import { decorateWounds } from "../systems/wounds.mjs";
 import { hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
 import { analyzeEquippedWeapons, hasFeature } from '../utils/actor-analysis.mjs';
+import {
+    classOptions,
+    classDisplayName,
+    effectiveClassKey,
+    isCustomClass,
+    selectedClassOption
+} from './class-identity.mjs';
+import {
+    attackTiles,
+    attributeTiles,
+    castingOptions,
+    defenseTiles,
+    encumbranceNote,
+    hpBar,
+    inEffectRows,
+    magicDicePips,
+    partitionItems,
+    skillChips,
+    woundEffectRows
+} from './sheet-readouts.mjs';
+import { DEFAULT_SHEET_MODE, SHEET_MODES, modeToggleLabel, normalizeMode } from './sheet-mode.mjs';
 
 export class DataContextBuilder {
     constructor(actor) {
         this.actor = actor;
     }
 
-    buildCompleteContext(baseContext) {
-        // Single line fix - check if CONFIG.GLOG exists
-        if (!CONFIG.GLOG || !CONFIG.GLOG.CLASSES || !CONFIG.GLOG.FEATURES) {
-            return this._buildSafeContext(baseContext);
+    buildCompleteContext(baseContext, { mode = DEFAULT_SHEET_MODE } = {}) {
+        const enhancer = new ContextEnhancer(this.actor, baseContext)
+            .addBasicData()
+            .addModeData(mode)
+            .addEditModeData();
+
+        if (CONFIG.GLOG?.CLASSES && CONFIG.GLOG?.FEATURES) {
+            enhancer.addClassData().addFeatureData();
+        } else {
+            enhancer.addUnconfiguredClassData();
         }
 
-        const contextEnhancer = new ContextEnhancer(this.actor, baseContext);
-
-        return contextEnhancer
-            .addBasicData()
-            .addEditModeData()
-            .addClassData()
-            .addFeatureData()
+        return enhancer
             .addWeaponAnalysis()
             .addAcrobatTraining()
             .addWoundData()
-            .addDebugLogging()
+            .addViewModels()
             .getContext();
     }
 
-    // Add this fallback method
+    /**
+     * The context a sheet can still render when CONFIG.GLOG never loaded, and
+     * the one the hireling sheet uses because it has no class or features.
+     */
     _buildSafeContext(baseContext) {
-        return {
-            ...baseContext,
-            rollData: this.actor.getRollData(),
-            system: this.actor.system,
-            flags: this.actor.flags,
-            editMode: this.actor.getFlag("glog2d6", "editMode") === true,
-            weaponAnalysis: { hasWeapons: false, attackButtonType: 'generic' },
-            hasAvailableFeatures: false,
-            availableClasses: [],
-            hasAcrobatTraining: false,
-            wounds: decorateWounds(this.actor.system.wounds?.list || [])
-        };
+        return new ContextEnhancer(this.actor, baseContext)
+            .addBasicData()
+            .addModeData(SHEET_MODES.FULL)
+            .addEditModeData()
+            .addUnconfiguredClassData()
+            .addWeaponAnalysis()
+            .addAcrobatTraining()
+            .addWoundData()
+            .addViewModels()
+            .getContext();
     }
 }
 
@@ -58,14 +80,49 @@ class ContextEnhancer {
         return this;
     }
 
+    addModeData(mode) {
+        const resolved = normalizeMode(mode);
+        this.context.mode = resolved;
+        this.context.isCompact = resolved === SHEET_MODES.COMPACT;
+        this.context.modeToggleLabel = modeToggleLabel(resolved);
+        return this;
+    }
+
     addEditModeData() {
-        this.context.editMode = this.actor.getFlag("glog2d6", "editMode") === true;
+        // Compact is a palette, not an editor -- it has nothing to type into,
+        // so it never renders the edit-mode variant of anything.
+        const flagged = this.actor.getFlag("glog2d6", "editMode") === true;
+        this.context.editMode = flagged && !this.context.isCompact;
         return this;
     }
 
     addClassData() {
-        const availableClasses = this.getAvailableClasses();
-        this.context.availableClasses = [...availableClasses.map(cls => cls.name), 'Custom'];
+        const classNames = this.classNames();
+        const details = this.actor.system?.details ?? {};
+
+        this.context.availableClasses = classNames;
+        this.context.classOptions = classOptions(classNames);
+        this.context.selectedClass = selectedClassOption(details, classNames);
+        this.context.isCustomClass = isCustomClass(this.context.selectedClass);
+        this.context.classKey = effectiveClassKey(details, classNames);
+        this.context.classDisplay = classDisplayName(details);
+        return this;
+    }
+
+    /**
+     * No class list to choose from, so the dropdown would be a lie: the sheet
+     * falls back to a plain custom name.
+     */
+    addUnconfiguredClassData() {
+        const details = this.actor.system?.details ?? {};
+
+        this.context.availableClasses = [];
+        this.context.classOptions = classOptions([]);
+        this.context.selectedClass = selectedClassOption(details, []);
+        this.context.isCustomClass = true;
+        this.context.classKey = "";
+        this.context.classDisplay = classDisplayName(details);
+        this.context.hasAvailableFeatures = false;
         return this;
     }
 
@@ -85,14 +142,36 @@ class ContextEnhancer {
     }
 
     addWoundData() {
-        this.context.wounds = decorateWounds(this.actor.system.wounds?.list || []);
+        this.context.wounds = decorateWounds(this.actor.system?.wounds?.list || []);
         return this;
     }
 
-    addDebugLogging() {
-        if (this.actor.type === "character") {
-            this.logContextDebugInfo();
-        }
+    addViewModels() {
+        const system = this.actor.system ?? {};
+        const items = Array.from(this.actor.items ?? []);
+
+        this.context.attackTiles = attackTiles({
+            combat: system.combat,
+            weaponAnalysis: this.context.weaponAnalysis
+        });
+        this.context.defenseTiles = defenseTiles({
+            defense: system.defense,
+            hasAcrobatTraining: this.context.hasAcrobatTraining
+        });
+        this.context.combatTiles = [
+            ...this.context.attackTiles.map(tile => ({ ...tile, kind: "attack" })),
+            ...this.context.defenseTiles.map(tile => ({ ...tile, kind: "defend" }))
+        ];
+
+        this.context.hpBar = hpBar(system.hp?.value, system.hp?.max);
+        this.context.attributeTiles = attributeTiles(system.attributes);
+        this.context.skillChips = skillChips(system.skills);
+        this.context.magicDice = magicDicePips(system.magicDiceCurrent, system.magicDiceMax);
+        this.context.castingOptions = castingOptions(system.magicDiceCurrent);
+        this.context.encumbranceNote = encumbranceNote(system.inventory);
+        this.context.inEffect = inEffectRows({ system, items });
+        this.context.woundEffects = woundEffectRows(system.wounds?.effects);
+        this.context.itemsByKind = partitionItems(items);
         return this;
     }
 
@@ -100,8 +179,8 @@ class ContextEnhancer {
         return this.context;
     }
 
-    getAvailableClasses() {
-        return CONFIG.GLOG.CLASSES || [];
+    classNames() {
+        return (CONFIG.GLOG?.CLASSES ?? []).map(cls => cls.name).filter(Boolean);
     }
 
     checkForAvailableFeatures() {
@@ -111,17 +190,5 @@ class ContextEnhancer {
             console.warn('Error checking available features:', error);
             return false;
         }
-    }
-
-    logContextDebugInfo() {
-        const debugInfo = {
-            actorName: this.actor.name,
-            editMode: this.context.editMode,
-            weaponAnalysis: this.context.weaponAnalysis,
-            hasAcrobatTraining: this.context.hasAcrobatTraining,
-            encumbrance: this.context.system.inventory.encumbrance
-        };
-
-        console.log(`Sheet getData - ${debugInfo.actorName}:`, debugInfo);
     }
 }

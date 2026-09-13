@@ -133,7 +133,10 @@ globalThis.foundry = {
         sheets: { ItemSheetV2 },
         handlebars: { loadTemplates: async () => [], getTemplate: async () => "" }
     },
-    appv1: { sheets: {} },
+    // The actor sheets are still AppV1, so importing them needs a base class to
+    // extend. It only has to be constructible -- the behaviour under test lives
+    // in the subclass and in the pure modules it delegates to.
+    appv1: { sheets: { ActorSheet: class ActorSheet {} } },
     documents: { collections: {} }
 };
 

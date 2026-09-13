@@ -36,10 +36,15 @@ export class ItemManagementHandler {
         return event.currentTarget.dataset.type;
     }
 
+    /**
+     * Every row that owns an item carries its id, so the nearest ancestor that
+     * has one is the row -- no list of row class names to keep in step with the
+     * templates, and note rows stopped being a special case that silently did
+     * nothing.
+     */
     extractItemFromEvent(event) {
-        const itemElement = $(event.currentTarget).parents(".gear-item, .feature-card");
-        const itemId = itemElement.data("itemId");
-        return this.actor.items.get(itemId);
+        const row = event.currentTarget.closest("[data-item-id]");
+        return row ? this.actor.items.get(row.dataset.itemId) : null;
     }
 
     buildNewItemData(itemType) {

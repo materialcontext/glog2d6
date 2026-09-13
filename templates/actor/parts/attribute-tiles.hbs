@@ -1,0 +1,21 @@
+{{!-- Outlined tiles: a roll you make, not a number you read. The roll is
+      2d6 + mod, so the modifier is the headline; compact drops the raw score
+      and the save, which are bookkeeping. --}}
+<div class="glog-attributes">
+    {{#each attributeTiles as |attr|}}
+    <div class="glog-attr attribute-card{{#unless ../editMode}} clickable{{/unless}}{{#if attr.impaired}} is-impaired{{/if}}{{#if attr.improved}} is-improved{{/if}}"
+        data-attribute="{{attr.key}}" title="Test {{attr.label}} &mdash; 2d6 {{attr.display}}">
+        <span class="glog-attr-label">{{attr.label}}</span>
+        {{#if ../editMode}}
+        <input name="system.attributes.{{attr.key}}.value" type="number" value="{{attr.value}}" min="2" max="12"
+            class="glog-attr-input" />
+        {{else}}
+        <span class="glog-attr-mod{{#if attr.negative}} is-negative{{/if}}">{{attr.display}}</span>
+        {{#unless ../isCompact}}
+        <span class="glog-attr-save attribute-save clickable" data-attribute="{{attr.key}}"
+            title="Save vs {{attr.label}}">{{attr.effectiveValue}} &middot; SV</span>
+        {{/unless}}
+        {{/if}}
+    </div>
+    {{/each}}
+</div>

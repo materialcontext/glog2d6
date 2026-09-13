@@ -164,12 +164,12 @@ describe("world migration", () => {
  * The condition badge in the inventory list, compiled straight out of the real
  * template so weapon/armor/shield can't drift apart again.
  */
-const INVENTORY_TAB = readFileSync(
-    resolve(import.meta.dirname, "../templates/actor/inventory-tab.hbs"), "utf8");
+const CARRY_PANEL = readFileSync(
+    resolve(import.meta.dirname, "../templates/actor/parts/panel-carry.hbs"), "utf8");
 
-const CONDITION_FRAGMENT = INVENTORY_TAB
+const CONDITION_FRAGMENT = CARRY_PANEL
     .split("{{!-- Condition badge; one track for weapons, armor and shields --}}")[1]
-    ?.split("{{!-- Slots display --}}")[0];
+    ?.split("{{!-- end condition badge --}}")[0];
 
 const hbs = Handlebars.create();
 hbs.registerHelper("isBroken", level => BreakageCalculator.isBroken(level));
