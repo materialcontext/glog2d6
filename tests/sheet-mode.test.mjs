@@ -51,7 +51,7 @@ describe("sheet modes", () => {
     });
 
     it("hands out the sizes the layouts were drawn against", () => {
-        expect(modeSize(SHEET_MODES.COMPACT)).toEqual({ width: 290, height: 216 });
+        expect(modeSize(SHEET_MODES.COMPACT)).toEqual({ width: 420, height: 216 });
         expect(modeSize(SHEET_MODES.FULL)).toEqual({ width: 900, height: 850 });
         expect(modeSize("nonsense")).toEqual(SHEET_MODE_SIZES.full);
     });

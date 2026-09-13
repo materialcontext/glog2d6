@@ -23,7 +23,7 @@
             <div class="glog-entry feature-card{{#unless item.system.active}} is-inactive{{/unless}}"
                 data-item-id="{{item.id}}">
                 <div class="glog-entry-head">
-                    <span class="glog-entry-name">{{item.name}}</span>
+                    <span class="glog-entry-name" title="{{item.name}}">{{item.name}}</span>
 
                     {{#unless ../editMode}}
                     {{#if (or (hasFeatureRoll item.name) (and (contains item.name "Reputation for")
@@ -102,7 +102,7 @@
             {{#each wounds as |wound|}}
             <div class="glog-wound wound-state-{{wound.state}}" data-wound-id="{{wound.id}}">
                 <div class="glog-entry-head">
-                    <span class="glog-entry-name is-danger">{{wound.name}}</span>
+                    <span class="glog-entry-name is-danger" title="{{wound.name}}">{{wound.name}}</span>
                     {{#if wound.bodyPart}}<span class="glog-tag wound-part">{{upperCase wound.bodyPart}}</span>{{/if}}
                     <span class="glog-pill">{{woundStateLabel wound.state}}</span>
                 </div>
