@@ -693,3 +693,76 @@ describe("the hit point field", () => {
         expect(width).toBeGreaterThanOrEqual(30);
     });
 });
+
+/* -------------------------------------------- */
+/*  The type scale                              */
+/* -------------------------------------------- */
+
+/**
+ * Full has the room to set body copy a step larger than compact, but only the
+ * text you *read* should take it. The headline numbers are already display
+ * sized and go gawky when they grow, and the small-caps labels are set at the
+ * size the boxes around them were measured for -- a step up there put THROWN
+ * one pixel into an ellipsis.
+ */
+describe("the type scale", () => {
+    const CSS = read("glog2d6.css");
+
+    // Rule by rule: `.glog-sheet` appears more than once, and only one of them
+    // declares the scale.
+    const rules = [...CSS.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+        .map(m => ({ selector: m[1].trim().split("\n").pop().trim(), body: m[2] }));
+
+    const scaleOf = selector => {
+        const rule = rules.find(r => r.selector === selector && /--fs-/.test(r.body));
+        return Object.fromEntries([...(rule?.body ?? "").matchAll(/(--fs-[\w-]+):\s*(\d+)px/g)]
+            .map(([, k, v]) => [k, Number(v)]));
+    };
+
+    const base = scaleOf(".glog-sheet");
+    const full = scaleOf(".glog-sheet.is-full");
+
+    it("defines the whole scale once, on the sheet", () => {
+        expect(Object.keys(base).length).toBeGreaterThanOrEqual(8);
+        expect(base["--fs-body"]).toBeGreaterThan(0);
+    });
+
+    it("grows only the text you read", () => {
+        expect(Object.keys(full).sort()).toEqual(["--fs-body", "--fs-row", "--fs-skill"]);
+        for (const token of Object.keys(full)) {
+            expect(full[token], `${token} is not actually bigger in full`)
+                .toBeGreaterThan(base[token]);
+        }
+    });
+
+    it("leaves the headline numbers and small-caps labels alone", () => {
+        for (const token of ["--fs-tile", "--fs-attr", "--fs-name", "--fs-micro", "--fs-small"]) {
+            expect(full[token], `${token} must not be overridden for the full sheet`)
+                .toBeUndefined();
+        }
+    });
+
+    /** Compact was measured to the pixel; it must not inherit the full scale. */
+    it("keeps the compact sizes literal so they never follow", () => {
+        const compactRules = [...CSS.matchAll(/\.is-compact[^{]*\{([^}]*)\}/g)].map(m => m[1]);
+        const sized = compactRules.filter(r => /font-size:/.test(r));
+
+        expect(sized.length).toBeGreaterThanOrEqual(3);
+        for (const rule of sized) {
+            expect(rule, "a compact rule reads a scale token").not.toMatch(/font-size:\s*var\(/);
+        }
+    });
+
+    it("sizes the sheet from the scale rather than from stray pixels", () => {
+        const start = CSS.indexOf("   CHARACTER SHEET");
+        const strays = rules
+            .filter(r => CSS.indexOf(r.selector) > start)
+            .filter(r => !r.selector.includes("is-compact"))
+            // The empty-state glyph is an icon, not type.
+            .filter(r => !r.selector.includes("glog-empty"))
+            .filter(r => /font-size:\s*\d+px/.test(r.body))
+            .map(r => r.selector);
+
+        expect(strays, "these bypass the scale").toEqual([]);
+    });
+});

@@ -19,11 +19,17 @@ export const DEFAULT_SHEET_MODE = SHEET_MODES.FULL;
  * These are *window* sizes, not content sizes. Compact's rows carry explicit
  * heights that add up to 160; the window also has to find room for the 6px
  * padding on each side of the content and the ~30px window header, which is
- * where the rest of the 216 goes. Changing this without changing the
+ * where the rest of the 216 goes. Changing the height without changing the
  * stylesheet's row heights is how the palette starts overflowing.
+ *
+ * The width is set by the window header rather than by the content, which
+ * needs far less. The frame carries the actor name, core's Prototype Token and
+ * Close controls -- both of which render their labels as text -- and our own
+ * Edit and mode-toggle buttons. That is roughly 290px of controls before the
+ * name gets a pixel, and at 290 the close button fell off the end entirely.
  */
 export const SHEET_MODE_SIZES = Object.freeze({
-    [SHEET_MODES.COMPACT]: Object.freeze({ width: 290, height: 216 }),
+    [SHEET_MODES.COMPACT]: Object.freeze({ width: 420, height: 216 }),
     [SHEET_MODES.FULL]: Object.freeze({ width: 900, height: 850 })
 });
 

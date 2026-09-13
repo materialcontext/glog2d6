@@ -846,6 +846,34 @@
     color: inherit;
 }
 
+/* --- Type scale ----------------------------------------------------------
+   Compact was measured to the pixel, so it keeps the base scale; the full
+   sheet has the room to read a step larger and overrides the tokens rather
+   than restating a size per component. Compact-only rules below stay literal
+   on purpose, so they never follow this. */
+.glog-sheet {
+    --fs-micro: 8px;
+    --fs-small: 9px;
+    --fs-body: 10px;
+    --fs-row: 11px;
+    --fs-skill: 10px;
+    --fs-lead: 12px;
+    --fs-field: 13px;
+    --fs-name: 15px;
+    --fs-attr: 16px;
+    --fs-tile: 22px;
+}
+
+/* Only the text you READ gets a step up in the full sheet: descriptions, list
+   rows and the skill chips. The headline numbers are already display-sized and
+   grow gawky if they follow, and the small caps labels are set at the size
+   their boxes were measured for. */
+.glog-sheet.is-full {
+    --fs-body: 11px;
+    --fs-row: 12px;
+    --fs-skill: 12px;
+}
+
 /* --- The full grid ------------------------------------------------------- */
 
 /* 376 / 244 / 244 as ratios rather than pixels, so the column edges stay true
@@ -939,7 +967,7 @@
 .glog-name {
     flex: 0 1 auto;
     min-width: 0;
-    font-size: 15px;
+    font-size: var(--fs-name);
     font-weight: 700;
     line-height: 1;
     overflow: hidden;
@@ -949,7 +977,7 @@
 
 .glog-subtitle {
     flex: 0 0 auto;
-    font-size: 10px;
+    font-size: var(--fs-body);
     color: var(--quiet);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -960,7 +988,7 @@
 .glog-class-input,
 .glog-class-select,
 .glog-level-input {
-    font-size: 11px;
+    font-size: var(--fs-row);
     padding: 2px 4px;
     border: 1px solid var(--border);
     border-radius: 2px;
@@ -1013,7 +1041,7 @@
     display: flex;
     align-items: baseline;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: var(--fs-lead);
     font-weight: 700;
     line-height: 1;
 }
@@ -1070,7 +1098,7 @@
     border-radius: 2px;
     background: var(--sunk);
     color: var(--quiet);
-    font-size: 10px;
+    font-size: var(--fs-body);
     font-weight: 700;
     line-height: 1;
 }
@@ -1117,10 +1145,13 @@
 .glog-tile-defend { background: var(--def); }
 .glog-tile:hover { filter: brightness(1.14); }
 
+/* Letter-spacing adds a trailing space after the last character too, which at
+   four tiles in one column is exactly enough to push THROWN into an ellipsis.
+   The negative right margin takes that trailing space back. */
 .glog-tile-label {
     max-width: 100%;
     padding: 0 2px;
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -1132,7 +1163,7 @@
 }
 
 .glog-tile-value {
-    font-size: 22px;
+    font-size: var(--fs-tile);
     font-weight: 700;
     line-height: 1.15;
 }
@@ -1181,7 +1212,7 @@
 .glog-attr.is-improved { border-color: rgba(76, 175, 80, 0.55); }
 
 .glog-attr-label {
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.6px;
     color: var(--atk);
@@ -1189,7 +1220,7 @@
 }
 
 .glog-attr-mod {
-    font-size: 16px;
+    font-size: var(--fs-attr);
     font-weight: 700;
     line-height: 1.2;
 }
@@ -1204,7 +1235,7 @@
 }
 
 .glog-attr-save {
-    font-size: 8px;
+    font-size: var(--fs-micro);
     letter-spacing: 0.2px;
     color: #9a9385;
     line-height: 1.2;
@@ -1222,7 +1253,7 @@
     border-radius: 2px;
     background: #fff;
     text-align: center;
-    font-size: 13px;
+    font-size: var(--fs-field);
     font-weight: 700;
 }
 
@@ -1245,7 +1276,7 @@
     padding: 0 4px;
     border-radius: 3px;
     background: var(--sunk);
-    font-size: 10px;
+    font-size: var(--fs-skill);
     font-weight: 700;
     color: var(--quiet);
     cursor: pointer;
@@ -1305,7 +1336,7 @@
     padding: 0 8px;
     border-radius: 2px;
     background: rgba(0, 0, 0, 0.03);
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.4px;
     color: var(--quiet);
@@ -1323,7 +1354,7 @@
 }
 
 .glog-readout-value {
-    font-size: 11px;
+    font-size: var(--fs-row);
     color: var(--ink);
     white-space: nowrap;
 }
@@ -1333,7 +1364,7 @@
 }
 
 .glog-readout-value small {
-    font-size: 8px;
+    font-size: var(--fs-micro);
     opacity: 0.8;
 }
 
@@ -1343,7 +1374,7 @@
     border: 1px solid var(--border);
     border-radius: 2px;
     text-align: center;
-    font-size: 11px;
+    font-size: var(--fs-row);
 }
 
 .glog-pips {
@@ -1383,7 +1414,7 @@
     padding: 0 4px;
     border-radius: 2px;
     background: rgba(0, 0, 0, 0.07);
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.4px;
     text-transform: uppercase;
@@ -1447,7 +1478,7 @@
     gap: 3px;
     padding: 0 5px;
     border-radius: 2px;
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.3px;
 }
@@ -1459,7 +1490,7 @@
 
 .glog-readout {
     flex-shrink: 0;
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.3px;
     color: var(--quiet);
@@ -1525,7 +1556,7 @@
 }
 
 .glog-panel-title {
-    font-size: 9px;
+    font-size: var(--fs-small);
     font-weight: 700;
     letter-spacing: 0.8px;
     text-transform: uppercase;
@@ -1537,7 +1568,7 @@
 .glog-panel-title.is-quiet { color: var(--quiet); }
 
 .glog-panel-note {
-    font-size: 9px;
+    font-size: var(--fs-small);
     color: var(--quiet);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1581,7 +1612,7 @@
     flex: 1;
     padding: 5px 8px;
     text-align: center;
-    font-size: 11px;
+    font-size: var(--fs-row);
     font-weight: 700;
     color: var(--quiet);
     cursor: pointer;
@@ -1627,7 +1658,7 @@
     gap: 8px;
     padding: 0 9px;
     border-bottom: 1px solid var(--border);
-    font-size: 11px;
+    font-size: var(--fs-row);
     min-width: 0;
 }
 
@@ -1650,7 +1681,7 @@
 }
 
 .glog-add {
-    font-size: 9px;
+    font-size: var(--fs-small);
     font-weight: 700;
     letter-spacing: 0.4px;
     color: #b4ada0;
@@ -1678,7 +1709,7 @@
     padding: 0 9px;
     height: 28px;
     border-bottom: 1px solid var(--hair);
-    font-size: 11px;
+    font-size: var(--fs-row);
     min-width: 0;
 }
 
@@ -1717,7 +1748,7 @@
     border-radius: 2px;
     background: var(--sunk);
     color: var(--quiet);
-    font-size: 9px;
+    font-size: var(--fs-small);
     cursor: pointer;
     text-decoration: none;
 }
@@ -1763,7 +1794,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 8px;
+    font-size: var(--fs-micro);
     color: #b4ada0;
     background: none;
     border: none;
@@ -1780,7 +1811,7 @@
     padding: 1px 4px;
     border-radius: 2px;
     background: rgba(0, 0, 0, 0.05);
-    font-size: 9px;
+    font-size: var(--fs-small);
     color: var(--quiet);
     white-space: nowrap;
 }
@@ -1813,7 +1844,7 @@
 .glog-entry-name {
     flex: 1;
     min-width: 0;
-    font-size: 11px;
+    font-size: var(--fs-row);
     font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1824,7 +1855,7 @@
 
 .glog-entry-text {
     margin-top: 3px;
-    font-size: 10px;
+    font-size: var(--fs-body);
     color: var(--quiet);
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -1841,7 +1872,7 @@
     padding: 4px 6px;
     border-radius: 2px;
     background: rgba(211, 47, 47, 0.07);
-    font-size: 10px;
+    font-size: var(--fs-body);
     font-weight: 700;
     min-width: 0;
 }
@@ -1852,12 +1883,12 @@
     padding: 1px 2px;
     border: 1px solid var(--border);
     border-radius: 2px;
-    font-size: 10px;
+    font-size: var(--fs-body);
 }
 
 .glog-tag {
     flex-shrink: 0;
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.4px;
     color: #9a9385;
@@ -1871,7 +1902,7 @@
     border-radius: 2px;
     background: rgba(120, 46, 34, 0.1);
     color: var(--atk);
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.4px;
     line-height: 1.4;
@@ -1890,7 +1921,7 @@
     padding: 1px 6px;
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.07);
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.5px;
     color: var(--quiet);
@@ -1920,7 +1951,7 @@
 
 .wound-requirement {
     min-width: 0;
-    font-size: 9px;
+    font-size: var(--fs-small);
     font-style: italic;
     color: #9a9385;
     overflow-wrap: anywhere;
@@ -1957,7 +1988,7 @@
     border-radius: 2px;
     background: var(--atk);
     color: #fff;
-    font-size: 9px;
+    font-size: var(--fs-small);
     font-weight: 700;
     letter-spacing: 0.3px;
     cursor: pointer;
@@ -1966,7 +1997,7 @@
 .glog-md:hover { filter: brightness(1.15); }
 
 .glog-md-empty {
-    font-size: 9px;
+    font-size: var(--fs-small);
     font-style: italic;
     color: #b4ada0;
 }
@@ -1981,7 +2012,7 @@
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    font-size: 10px;
+    font-size: var(--fs-body);
     min-width: 0;
 }
 
@@ -2007,7 +2038,7 @@
     margin-top: 2px;
     padding-top: 5px;
     border-top: 1px solid var(--hair);
-    font-size: 8px;
+    font-size: var(--fs-micro);
     font-weight: 700;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -2035,10 +2066,10 @@
 
 .glog-empty p {
     margin: 6px 0 0;
-    font-size: 10px;
+    font-size: var(--fs-body);
 }
 
 .glog-empty .glog-hint {
-    font-size: 9px;
+    font-size: var(--fs-small);
     opacity: 0.8;
 }
