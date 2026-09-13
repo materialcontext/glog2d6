@@ -405,12 +405,15 @@ async function createWoundsTable() {
     }
 
     // Create table results
+    // The wound id is stored as a flag so a draw maps back to its entry even
+    // if a GM rewrites the text or reorders the table.
     const results = woundsData.map((wound, index) => ({
         type: CONST.TABLE_RESULT_TYPES.TEXT,
         text: `${wound.name}: ${wound.description}`,
         weight: 1,
         range: [index + 1, index + 1],
-        drawn: false
+        drawn: false,
+        flags: { glog2d6: { woundId: wound.id } }
     }));
 
     // Create the roll table

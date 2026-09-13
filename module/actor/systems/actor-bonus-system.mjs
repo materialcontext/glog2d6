@@ -48,26 +48,9 @@ export class ActorBonusSystem {
         for (const [stat, penalty] of Object.entries(penalties.stats)) {
             if (penalty > 0) {
                 const attr = this.actor.system.attributes[stat];
-
-                // Debug logging to find the issue
-                console.log(`Applying wound penalty to ${stat}:`, {
-                    attr,
-                    penalty,
-                    attrValue: attr.value,
-                    attrMod: attr.mod,
-                    attrValueType: typeof attr.value,
-                    attrModType: typeof attr.mod
-                });
-
                 const effectiveValue = Math.max(1, attr.value - penalty);
                 attr.effectiveValue = effectiveValue;
                 attr.effectiveMod = this.actor.attributeSystem.calculateSingleModifier(effectiveValue);
-
-                console.log(`After wound penalty applied:`, {
-                    effectiveValue: attr.effectiveValue,
-                    effectiveMod: attr.effectiveMod,
-                    effectiveModType: typeof attr.effectiveMod
-                });
             }
         }
 
@@ -76,6 +59,10 @@ export class ActorBonusSystem {
             statReductions: Object.fromEntries(Object.entries(penalties.stats).filter(([, v]) => v > 0)),
             movementReduction: penalties.movement,
             noHealing: penalties.healing,
+            extendedHealing: penalties.extendedHealing,
+            deathOnFailure: penalties.deathOnFailure,
+            sleepDisruption: penalties.sleepDisruption,
+            combatEffects: penalties.combatEffects,
             attackPenalty: penalties.attackPenalty,
             defensePenalty: penalties.defensePenalty,
             reactionPenalty: penalties.reactionPenalty

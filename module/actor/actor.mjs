@@ -96,6 +96,7 @@ export class GLOG2D6Actor extends Actor {
     async initiateTraumaSave() { return this.traumaSystem.initiateTraumaSave(); }
     async applyWound(...args) { return this.traumaSystem.applyWound(...args); }
     async removeWound(...args) { return this.traumaSystem.removeWound(...args); }
+    async advanceWound(...args) { return this.traumaSystem.advanceWound(...args); }
 
     _hasClass(className) {
         return this.items.some(i =>

@@ -13,6 +13,7 @@ import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
 import { initReconSystem } from "./module/systems/recon-system.mjs";
 import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
+import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
 
 /**
  * Unregister core's default sheets for a document collection, tolerating classes
@@ -74,6 +75,21 @@ Hooks.once('init', async function() {
 
     Handlebars.registerHelper('contains', function(str, substring) {
         return str && str.toLowerCase().includes(substring.toLowerCase());
+    });
+
+    Handlebars.registerHelper('woundStateLabel', function(state) {
+        return WOUND_STATE_LABELS[state] || state || '';
+    });
+
+    Handlebars.registerHelper('combatEffectLabel', function(effect) {
+        return combatEffectLabel(effect);
+    });
+
+    // wounds-tab.hbs stamps every wound with the date it was taken.
+    Handlebars.registerHelper('formatDate', function(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        return Number.isNaN(date.valueOf()) ? '' : date.toLocaleDateString();
     });
 
     // Condition helpers -- every template reads the breakage track through
