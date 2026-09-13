@@ -30,11 +30,58 @@ function unregisterCoreSheets(collection, classes) {
     }
 }
 
+/**
+ * Register every sheet this system provides.
+ *
+ * This MUST be called synchronously, before the init hook's first `await`.
+ * Foundry fires init with `Hooks.callAll`, which does not await its callbacks,
+ * so anything after an `await` in an async hook runs a tick later -- after core
+ * has moved past init and settled the sheet registry. Registering from there is
+ * a race against however long the data files take to fetch: a small world wins
+ * it, a world with real content and a dozen modules loses, and the loser gets a
+ * silently empty registry and core's fallback sheet on every actor.
+ *
+ * None of this depends on the loaded data, so there is nothing to wait for.
+ */
+function registerDocumentSheets() {
+    // Register sheet application classes.
+    // Core's default sheet class differs between the AppV1 and AppV2 eras, so try
+    // both and ignore the one that isn't registered on this core version.
+    unregisterCoreSheets(foundry.documents.collections.Actors, [
+        foundry.applications?.sheets?.ActorSheetV2,
+        foundry.appv1?.sheets?.ActorSheet
+    ]);
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
+        types: ["character", "npc"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Actor"
+    });
+
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
+        types: ["hireling"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Hireling"
+    });
+
+    unregisterCoreSheets(foundry.documents.collections.Items, [
+        foundry.applications?.sheets?.ItemSheetV2,
+        foundry.appv1?.sheets?.ItemSheet
+    ]);
+    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+        types: [...ITEM_SHEET_TYPES],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Item"
+    });
+}
+
 // Define custom Document classes
 CONFIG.Actor.documentClass = GLOG2D6Actor;
 CONFIG.Item.documentClass = GLOG2D6Item;
 
 Hooks.once('init', async function() {
+    // Before anything that can yield -- see registerDocumentSheets.
+    registerDocumentSheets();
+
     // Load all JSON data files
     await loadSystemData();
     await loadSpellData();
@@ -140,35 +187,6 @@ Hooks.once('init', async function() {
         config: false,
         type: String,
         default: ""
-    });
-
-    // Register sheet application classes.
-    // Core's default sheet class differs between the AppV1 and AppV2 eras, so try
-    // both and ignore the one that isn't registered on this core version.
-    unregisterCoreSheets(foundry.documents.collections.Actors, [
-        foundry.applications?.sheets?.ActorSheetV2,
-        foundry.appv1?.sheets?.ActorSheet
-    ]);
-    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Actor"
-    });
-
-    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
-        types: ["hireling"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Hireling"
-    });
-
-    unregisterCoreSheets(foundry.documents.collections.Items, [
-        foundry.applications?.sheets?.ItemSheetV2,
-        foundry.appv1?.sheets?.ItemSheet
-    ]);
-    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: [...ITEM_SHEET_TYPES],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Item"
     });
 
     initGMRolls();
