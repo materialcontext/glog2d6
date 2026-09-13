@@ -142,6 +142,35 @@ Hooks.once('init', async function() {
         default: ""
     });
 
+    // Register sheet application classes.
+    // Core's default sheet class differs between the AppV1 and AppV2 eras, so try
+    // both and ignore the one that isn't registered on this core version.
+    unregisterCoreSheets(foundry.documents.collections.Actors, [
+        foundry.applications?.sheets?.ActorSheetV2,
+        foundry.appv1?.sheets?.ActorSheet
+    ]);
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
+        types: ["character", "npc"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Actor"
+    });
+
+    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
+        types: ["hireling"],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Hireling"
+    });
+
+    unregisterCoreSheets(foundry.documents.collections.Items, [
+        foundry.applications?.sheets?.ItemSheetV2,
+        foundry.appv1?.sheets?.ItemSheet
+    ]);
+    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
+        types: [...ITEM_SHEET_TYPES],
+        makeDefault: true,
+        label: "GLOG2D6.SheetLabels.Item"
+    });
+
     initGMRolls();
     initReconSystem();
 
@@ -210,35 +239,6 @@ Hooks.once("ready", async function() {
             'Academic Debater', 'Adjutant', 'Field Promoted', 'Rakish Lieutenant', 'Deconstructor'
         ];
         return rollableFeatures.includes(featureName);
-    });
-
-    // Register sheet application classes.
-    // Core's default sheet class differs between the AppV1 and AppV2 eras, so try
-    // both and ignore the one that isn't registered on this core version.
-    unregisterCoreSheets(foundry.documents.collections.Actors, [
-        foundry.applications?.sheets?.ActorSheetV2,
-        foundry.appv1?.sheets?.ActorSheet
-    ]);
-    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Actor"
-    });
-
-    foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6HirelingSheet, {
-        types: ["hireling"],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Hireling"
-    });
-
-    unregisterCoreSheets(foundry.documents.collections.Items, [
-        foundry.applications?.sheets?.ItemSheetV2,
-        foundry.appv1?.sheets?.ItemSheet
-    ]);
-    foundry.documents.collections.Items.registerSheet("glog2d6", GLOG2D6ItemSheet, {
-        types: [...ITEM_SHEET_TYPES],
-        makeDefault: true,
-        label: "GLOG2D6.SheetLabels.Item"
     });
 
     document.addEventListener('error', (event) => {
