@@ -280,7 +280,7 @@ class RollSpecialEffectsAnalyzer {
     }
 }
 
-class RollChatMessageBuilder {
+export class RollChatMessageBuilder {
     constructor(actor, title, roll, extraContent, rollContext = null) {
         this.actor = actor;
         this.title = title;
@@ -304,13 +304,27 @@ class RollChatMessageBuilder {
                 </div>`
             });
 
-            // Whispered result — GM only
+            // Whispered result — GM only.
+            //
+            // `whisper` alone is not enough: ChatMessage#visible returns true
+            // for the message's own author, and the author is the player who
+            // clicked. So a whispered roll hides from the rest of the table and
+            // from nobody else. `blind` is the flag that means "sent blindly
+            // where the creating User cannot see it" -- it gates
+            // isContentVisible, so the roller gets the message without its
+            // contents while the GM, being in the whisper list, reads it whole.
+            //
+            // This is UI-level secrecy only. The dice were evaluated on the
+            // roller's own client, so the result is still in their browser and
+            // a determined player can read it from the console. Hiding it from
+            // them properly means rolling on the GM's client instead.
             const gmIds = ChatMessage.getWhisperRecipients('GM').map(u => u.id);
             const message = await ChatMessage.create({
                 speaker,
                 content,
                 roll: this.roll,
                 whisper: gmIds,
+                blind: true,
                 flags: {
                     glog2d6: {
                         subtleRoll: {
