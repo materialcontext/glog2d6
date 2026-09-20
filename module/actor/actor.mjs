@@ -307,7 +307,10 @@ export class RollChatMessageBuilder {
                 speaker,
                 content: `<div class="glog2d6-subtle-notification">
                     <em class="text-muted">${SubtleRollPolicy.getNotification(this.actor.name, this.rollContext)}</em>
-                </div>`
+                </div>`,
+                // Flagged so the GM's log can drop it: they get the result
+                // below, which says everything this does and more.
+                flags: { glog2d6: { subtleNotice: true } }
             });
 
             // Whispered result — GM only.

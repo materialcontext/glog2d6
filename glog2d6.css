@@ -2168,3 +2168,12 @@
 .glog2d6 .recon-hidden-note {
     margin-left: auto;
 }
+
+/* A subtle roll posts two messages, one per audience. The half not addressed
+   to this viewer is hidden rather than skipped, so the message still exists
+   and can still be revealed later.
+   `!important` because Foundry sets `display: flex` on the chat row itself,
+   and this has to win against it wherever the stylesheets land in the cascade. */
+.glog-subtle-hidden {
+    display: none !important;
+}
