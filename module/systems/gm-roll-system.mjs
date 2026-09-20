@@ -1,4 +1,6 @@
 // module/systems/gm-roll-system.mjs - Updated with Recon Integration
+import { initiativeModifier } from "./initiative.mjs";
+
 export class GMRollSystem {
     static ROLL_TYPES = {
         attribute: { name: 'Attribute Check', target: 'attribute', formula: '2d6 + @mod',
@@ -7,7 +9,10 @@ export class GMRollSystem {
                getData: (actor, {attribute}) => ({ mod: actor.system.attributes[attribute]?.effectiveMod || 0, save: actor.system.saves?.[attribute]?.bonus || 0 }) },
         skill: { name: 'Skill Check', target: 'skill', formula: '2d6 + @mod + @skill',
                 getData: (actor, {skill}) => { const attr = this.SKILL_ATTRS[skill] || 'cha'; return { mod: actor.system.attributes[attr]?.effectiveMod || 0, skill: actor.system.skills?.[skill]?.bonus || 0 }; } },
-        initiative: { name: 'Initiative', formula: '2d6 + @dex', getData: (actor) => ({ dex: actor.system.attributes.dex?.effectiveMod || 0 }) },
+        // Shares systems/initiative with the combat tracker, so the two cannot
+        // drift into disagreeing about what initiative is.
+        initiative: { name: 'Initiative', formula: '2d6 + @initiative',
+                     getData: (actor) => ({ initiative: initiativeModifier(actor.system) }) },
         recon: { name: 'Recon Check', isRecon: true }
     };
 

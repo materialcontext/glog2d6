@@ -3,8 +3,8 @@
  *
  * Foundry's `CONFIG.Combat.initiative.formula` defaults to `null`, and the
  * manifest carried no `initiative` field either, so the tracker had no formula
- * to roll with at all. This gives it one, and matches the house rule the GM
- * roll system already uses: 2d6 plus your DEX modifier.
+ * to roll with at all. This gives it one: 2d6 plus the better of your DEX and
+ * WIS modifiers -- quickness or noticing first, whichever serves you.
  *
  * The formula reads a single derived number rather than reaching into
  * `@attributes.dex.effectiveMod` directly. A roll term that resolves to
@@ -18,17 +18,37 @@ export const INITIATIVE_FORMULA = "2d6 + @initiative";
 /** 2d6 plus an integer is an integer; decimals here only add noise. */
 export const INITIATIVE_DECIMALS = 0;
 
+/** Initiative is the better of these two, not a fixed attribute. */
+export const INITIATIVE_ATTRIBUTES = Object.freeze(["dex", "wis"]);
+
 /**
- * The modifier a given actor adds to initiative: their effective DEX where
- * wounds and encumbrance have been applied, their plain DEX where they have
- * not, and zero for anything without a DEX at all.
+ * One attribute's contribution: its effective modifier where wounds and
+ * encumbrance have been applied, its plain modifier where they have not.
+ *
+ * `??` rather than `||`, so an effective modifier of zero counts as zero
+ * instead of falling through to the unmodified value.
  */
-export function initiativeModifier(system = {}) {
-    const dex = system?.attributes?.dex ?? {};
-    const mod = dex.effectiveMod ?? dex.mod ?? 0;
+function attributeModifier(attribute) {
+    const mod = attribute?.effectiveMod ?? attribute?.mod ?? 0;
     const value = Number(mod);
 
     return Number.isFinite(value) ? value : 0;
+}
+
+/**
+ * The modifier an actor adds to initiative: the better of DEX and WIS.
+ *
+ * Only attributes the actor actually has are considered. Treating an absent
+ * one as zero would quietly floor a clumsy character at +0 rather than letting
+ * their negative modifier stand.
+ */
+export function initiativeModifier(system = {}) {
+    const attributes = system?.attributes ?? {};
+    const present = INITIATIVE_ATTRIBUTES
+        .filter(key => attributes?.[key] != null)
+        .map(key => attributeModifier(attributes[key]));
+
+    return present.length ? Math.max(...present) : 0;
 }
 
 /** The shape Foundry wants on CONFIG.Combat.initiative. */
