@@ -2107,3 +2107,73 @@
     font-size: var(--fs-small);
     opacity: 0.8;
 }
+
+/* ==========================================================================
+   RECON DIALOG
+   --------------------------------------------------------------------------
+   The character list has to stay usable at a party of thirty, which means a
+   bounded height and something to search with.
+   ========================================================================== */
+
+.glog2d6 .recon-filter {
+    margin-top: 4px;
+}
+
+.glog2d6 .recon-actors {
+    max-height: 220px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 6px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-light);
+}
+
+/* Left-aligned, so a sorted list reads as a column you can run your eye down.
+   Centred names put every initial in a different place, which is the opposite
+   of what sorting them was for. */
+.glog2d6 .recon-actor {
+    min-width: 0;
+    margin: 0;
+    justify-content: flex-start;
+}
+
+.glog2d6 .recon-actor span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog2d6 .recon-actor input[type="checkbox"] {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.glog2d6 .recon-select-all,
+.glog2d6 .recon-select-none {
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.glog2d6 .recon-select-all:hover,
+.glog2d6 .recon-select-none:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.glog2d6 .recon-hidden-note {
+    margin-left: auto;
+}
+
+/* A subtle roll posts two messages, one per audience. The half not addressed
+   to this viewer is hidden rather than skipped, so the message still exists
+   and can still be revealed later.
+   `!important` because Foundry sets `display: flex` on the chat row itself,
+   and this has to win against it wherever the stylesheets land in the cascade. */
+.glog-subtle-hidden {
+    display: none !important;
+}

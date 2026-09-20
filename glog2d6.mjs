@@ -5,6 +5,7 @@ import { GLOG2D6HirelingSheet } from "./module/actor/hireling-sheet.mjs";
 import { GLOG2D6ItemSheet } from "./module/item/item-sheet.mjs";
 import { ITEM_SHEET_TYPES, itemSheetTemplates } from "./module/item/item-sheet-config.mjs";
 import { SubtleRollReveal } from './module/dice/subtle-roll-reveal.mjs';
+import { SUBTLE_HIDDEN_CLASS, hidesSubtleMessage } from './module/dice/subtle-roll-visibility.mjs';
 import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders, migrateContent } from "./scripts/initialize-content.mjs";
@@ -15,6 +16,7 @@ import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
 import { featureBadge, itemSummary } from "./module/actor/sheet-readouts.mjs";
+import { initiativeConfig } from "./module/systems/initiative.mjs";
 
 /**
  * Unregister core's default sheets for a document collection, tolerating classes
@@ -82,6 +84,10 @@ CONFIG.Item.documentClass = GLOG2D6Item;
 Hooks.once('init', async function() {
     // Before anything that can yield -- see registerDocumentSheets.
     registerDocumentSheets();
+
+    // Without this the combat tracker has no formula at all: Foundry's default
+    // is null and the manifest declares none.
+    CONFIG.Combat.initiative = initiativeConfig();
 
     // Load all JSON data files
     await loadSystemData();
@@ -355,6 +361,14 @@ Hooks.on("chatMessage", (log, msg) => {
 });
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
+    // Each viewer keeps the half of a subtle roll addressed to them; see
+    // dice/subtle-roll-visibility.
+    if (hidesSubtleMessage(message.flags, { isGM: game.user.isGM })) {
+        const row = html.closest?.("[data-message-id]") ?? html;
+        row.classList?.add(SUBTLE_HIDDEN_CLASS);
+        return;
+    }
+
     const $html = $(html);
 
     $html.find('.gm-roll-btn').click(async e => {

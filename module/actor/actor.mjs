@@ -12,6 +12,7 @@ import { ActorTorchSystem } from "./systems/actor-torch-system.mjs";
 import { ActorRestSystem } from "./systems/actor-rest-system.mjs";
 import { ActorSpellSystem } from "./systems/actor-spell-system.mjs";
 import { ActorTraumaSystem } from "./systems/actor-trauma-system.mjs";
+import { initiativeModifier } from "../systems/initiative.mjs";
 
 export class GLOG2D6Actor extends Actor {
     constructor(data, context) {
@@ -73,6 +74,11 @@ export class GLOG2D6Actor extends Actor {
         } catch (error) {
             console.error("Error in prepareDerivedData for", this.name, ":", error);
         }
+
+        // Outside the try on purpose. The combat tracker's formula reads this,
+        // and an actor that cannot roll initiative because some unrelated
+        // derivation threw is a worse failure than the one that threw.
+        this.system.initiative = initiativeModifier(this.system);
     }
 
     // Roll method delegations
@@ -301,7 +307,10 @@ export class RollChatMessageBuilder {
                 speaker,
                 content: `<div class="glog2d6-subtle-notification">
                     <em class="text-muted">${SubtleRollPolicy.getNotification(this.actor.name, this.rollContext)}</em>
-                </div>`
+                </div>`,
+                // Flagged so the GM's log can drop it: they get the result
+                // below, which says everything this does and more.
+                flags: { glog2d6: { subtleNotice: true } }
             });
 
             // Whispered result — GM only.
