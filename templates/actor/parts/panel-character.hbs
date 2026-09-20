@@ -28,7 +28,7 @@
                     {{#unless ../editMode}}
                     {{#if (or (hasFeatureRoll item.name) (and (contains item.name "Reputation for")
                     item.system.reputationType))}}
-                    <button type="button" class="glog-tagbtn feature-roll-btn" data-item-id="{{item.id}}"
+                    <button type="button" class="glog-md feature-roll-btn" data-item-id="{{item.id}}"
                         data-feature-name="{{item.name}}" title="Roll {{item.name}}">ROLL</button>
                     {{/if}}
                     {{/unless}}

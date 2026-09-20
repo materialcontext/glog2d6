@@ -10,6 +10,7 @@ import {
     encumbranceNote,
     hpBar,
     inEffectRows,
+    itemSummary,
     magicDicePips,
     partitionItems,
     signed,
@@ -322,5 +323,55 @@ describe("what your wounds are costing you", () => {
             .filter(r => r.label === "Healing")).toHaveLength(1);
         expect(woundEffectRows({ extendedHealing: true })
             .find(r => r.label === "Healing").value).toContain("slower");
+    });
+});
+
+describe("the item summary", () => {
+    const of = (type, system, name = "Thing") => itemSummary({ name, type, system });
+
+    it("leads with the name", () => {
+        expect(of("gear", {})).toBe("Thing");
+        expect(of("weapon", { damage: "1d6" })).toMatch(/^Thing — /);
+    });
+
+    /** The three the row has no width for and used to drop entirely. */
+    it("carries weapon size, armour type and gear size", () => {
+        expect(of("weapon", { size: "heavy", damage: "1d10" })).toContain("heavy");
+        expect(of("armor", { type: "chain", armorBonus: 2 })).toContain("chain");
+        expect(of("gear", { size: "bulky" })).toContain("bulky");
+    });
+
+    it("carries a torch's light radius and how long it has left", () => {
+        const lit = of("torch", { lightRadius: { bright: 30, dim: 60 }, duration: { enabled: true, remaining: 4 } });
+        expect(lit).toContain("30/60 ft light");
+        expect(lit).toContain("4h left");
+        expect(of("torch", { duration: { enabled: false } })).toContain("burns indefinitely");
+    });
+
+    it("names a condition, and only when there is one", () => {
+        expect(of("weapon", { breakage: { level: 2 } })).toContain("broken");
+        expect(of("weapon", { breakage: { level: 1 } })).toContain("damaged");
+        expect(of("weapon", { breakage: { level: 0 } })).not.toContain("fine");
+    });
+
+    /** Gear has no condition track, so it must never claim one. */
+    it("does not give unbreakable things a condition", () => {
+        expect(of("gear", { breakage: { level: 2 } })).not.toContain("broken");
+    });
+
+    it("counts slots in the singular when there is one", () => {
+        expect(of("gear", { slots: 1 })).toContain("1 slot");
+        expect(of("gear", { slots: 2 })).toContain("2 slots");
+        expect(of("gear", { slots: 0 })).not.toContain("slot");
+    });
+
+    it("mentions an encumbrance penalty only when it bites", () => {
+        expect(of("weapon", { encumbrancePenalty: 1 })).toContain("−1 encumbrance");
+        expect(of("weapon", { encumbrancePenalty: 0 })).not.toContain("encumbrance");
+    });
+
+    it("survives an item with nothing on it", () => {
+        expect(itemSummary({})).toBe("");
+        expect(itemSummary(undefined)).toBe("");
     });
 });

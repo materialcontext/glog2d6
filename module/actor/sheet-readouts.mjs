@@ -305,3 +305,55 @@ export function castingOptions(current) {
     const available = Math.max(0, num(current));
     return Array.from({ length: available }, (_, index) => index + 1);
 }
+
+/**
+ * The whole truth about an item, as one line for its row's tooltip.
+ *
+ * A 28px row has space for the few facts you scan by -- name, damage, whether
+ * it is broken. Size, armour type and light radius matter too, just not enough
+ * to spend row width on, so they live here instead of being dropped.
+ */
+export function itemSummary(item) {
+    const system = item?.system ?? {};
+    const name = item?.name ?? "";
+    const parts = [];
+
+    switch (item?.type) {
+        case "weapon":
+            if (system.size) parts.push(String(system.size));
+            if (system.damage) parts.push(`${system.damage} damage`);
+            break;
+        case "armor":
+            if (system.type) parts.push(String(system.type));
+            parts.push(`+${num(system.armorBonus)} armour`);
+            break;
+        case "shield":
+            parts.push("shield", `+${num(system.armorBonus)} armour`);
+            break;
+        case "torch": {
+            const bright = num(system.lightRadius?.bright);
+            const dim = num(system.lightRadius?.dim);
+            if (bright || dim) parts.push(`${bright}/${dim} ft light`);
+            parts.push(system.duration?.enabled
+                ? `${num(system.duration.remaining)}h left`
+                : "burns indefinitely");
+            break;
+        }
+        case "gear":
+            if (system.size) parts.push(String(system.size));
+            if (num(system.value)) parts.push(`${num(system.value)}gp`);
+            break;
+    }
+
+    if (num(system.encumbrancePenalty) > 0) {
+        parts.push(`\u2212${num(system.encumbrancePenalty)} encumbrance`);
+    }
+    if (num(system.slots) > 0) {
+        parts.push(`${num(system.slots)} slot${num(system.slots) === 1 ? "" : "s"}`);
+    }
+    if (BREAKABLE_TYPES.includes(item?.type) && !BreakageCalculator.isFine(system.breakage?.level)) {
+        parts.push(BreakageCalculator.label(system.breakage?.level).toLowerCase());
+    }
+
+    return parts.length ? `${name} \u2014 ${parts.join(" \u00b7 ")}` : name;
+}

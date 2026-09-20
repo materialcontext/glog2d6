@@ -14,6 +14,7 @@ import { initReconSystem } from "./module/systems/recon-system.mjs";
 import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
+import { itemSummary } from "./module/actor/sheet-readouts.mjs";
 
 /**
  * Unregister core's default sheets for a document collection, tolerating classes
@@ -87,6 +88,9 @@ Hooks.once('init', async function() {
     await loadSpellData();
 
     // Register Handlebars helpers
+    // The facts a 28px row has no width for, on the row's tooltip instead.
+    Handlebars.registerHelper('itemSummary', itemSummary);
+
     Handlebars.registerHelper('upperCase', function(str) {
         return str.toUpperCase();
     });

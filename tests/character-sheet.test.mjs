@@ -14,6 +14,7 @@ import {
     encumbranceNote,
     hpBar,
     inEffectRows,
+    itemSummary,
     magicDicePips,
     partitionItems,
     skillChips,
@@ -45,6 +46,7 @@ function environment() {
     hbs.registerHelper("not", v => !v);
     hbs.registerHelper("upperCase", s => String(s ?? "").toUpperCase());
     hbs.registerHelper("contains", (h, n) => String(h ?? "").includes(n));
+    hbs.registerHelper("itemSummary", itemSummary);
     hbs.registerHelper("isBroken", l => Number(l) >= 2);
     hbs.registerHelper("isDamaged", l => Number(l) === 1);
     hbs.registerHelper("woundStateLabel", s => String(s ?? ""));
@@ -101,7 +103,7 @@ function loadedSystem() {
     system.magicDiceCurrent = 2;
     system.magicDiceMax = 3;
     system.spellSlots = 2;
-    system.torch.lit = true;
+    system.torch = { lit: true, activeTorchId: "t1" };
     for (const key of ATTRS) system.attributes[key] = { value: 9, mod: 1, effectiveMod: -1, effectiveValue: 5 };
     system.wounds = {
         count: 2,
@@ -126,7 +128,7 @@ function items() {
         { id: "w1", name: LONG, type: "weapon", img: "a.png", system: { equipped: true, damage: "1d10", slots: 2, breakage: { level: 1 }, encumbrancePenalty: 1 } },
         { id: "a1", name: "Brigandine", type: "armor", img: "a.png", system: { equipped: true, armorBonus: 2, slots: 0, breakage: { level: 0 } } },
         { id: "s1", name: "Kite Shield", type: "shield", img: "a.png", system: { equipped: true, armorBonus: 1, slots: 1, breakage: { level: 2 } } },
-        { id: "t1", name: "Pitch Torch", type: "torch", img: "a.png", system: { slots: 1, duration: { enabled: true, remaining: 0.5 } } },
+        { id: "t1", name: "Pitch Torch", type: "torch", img: "a.png", system: { slots: 1, lightRadius: { bright: 30, dim: 60 }, duration: { enabled: true, remaining: 0.5 } } },
         { id: "g1", name: "Rope", type: "gear", img: "a.png", system: { slots: 1, value: 1 } },
         { id: "f1", name: "Reputation for Violence", type: "feature", img: "a.png", system: { active: true, template: "level-1", description: LONG } },
         { id: "f2", name: "Tracker", type: "feature", img: "a.png", system: { active: false, template: "level-2", description: "x" } },
@@ -434,10 +436,19 @@ describe("the stylesheet", () => {
     const CSS = read("glog2d6.css");
     const classesUsed = new Set();
 
+    // Strip the handlebars first. Matching only brace-free class attributes
+    // silently skipped every conditionally-applied class -- which is most of
+    // the states worth styling.
     for (const source of [...Object.values(SHEETS).map(read), ...PARTS.map(read)]) {
-        for (const [, group] of source.matchAll(/class="([^"{}]*)"/g)) {
+        const bare = source
+            .replace(/\{\{![\s\S]*?\}\}/g, " ")
+            .replace(/\{\{[^{}]*\}\}/g, " ");
+        for (const [, group] of bare.matchAll(/class="([^"]*)"/g)) {
             for (const name of group.split(/\s+/)) {
-                if (name.startsWith("glog-")) classesUsed.add(name);
+                // A name left dangling on a hyphen is the stem of an
+                // interpolated class (glog-tile-{{kind}}), not a class.
+                if (!name.startsWith("glog-") || name.includes("{") || name.endsWith("-")) continue;
+                classesUsed.add(name);
             }
         }
     }
@@ -497,6 +508,19 @@ describe("the stylesheet", () => {
             const block = new RegExp(`\\.${name}\\s*\\{[^}]*\\}`).exec(CSS)?.[0] ?? "";
             expect(block, `.${name} does not clip`).toMatch(/text-overflow:\s*ellipsis/);
             expect(block, `.${name} does not wrap or hide`).toMatch(/overflow:\s*hidden/);
+        }
+    });
+
+    /**
+     * The class-name sweep above only collects `glog-` prefixed names, so the
+     * `is-` state modifiers need saying out loud. A torch has three states and
+     * they have to be three colours, or "running low" and "about to go out"
+     * look identical.
+     */
+    it("gives each badge state a rule of its own", () => {
+        for (const state of ["is-danger", "is-low", "is-lit"]) {
+            expect(CSS, `.glog-badge.${state} is unstyled`)
+                .toMatch(new RegExp(`\\.glog-badge\\.${state}\\s*\\{`));
         }
     });
 
@@ -764,5 +788,99 @@ describe("the type scale", () => {
             .map(r => r.selector);
 
         expect(strays, "these bypass the scale").toEqual([]);
+    });
+});
+
+/* -------------------------------------------- */
+/*  Nothing the old sheet showed got dropped    */
+/* -------------------------------------------- */
+
+/**
+ * The tab rewrite quietly lost a handful of item and spell details. These pin
+ * the ones that came back, so the next layout change has to be deliberate
+ * about dropping them rather than silently doing it.
+ */
+describe("what the item rows carry", () => {
+    const doc = () => render("full", { loaded: true });
+
+    it("puts the facts the row has no width for on its tooltip", () => {
+        const pane = doc().querySelector('.tab[data-tab="inventory"]');
+        const rows = [...pane.querySelectorAll(".glog-row[data-item-id]")];
+        const titles = rows.map(r => r.getAttribute("title")).filter(Boolean);
+
+        expect(titles.length).toBe(rows.length);
+        expect(titles.join(" ")).toContain("armour");
+        expect(titles.some(t => /\d+ slot/.test(t))).toBe(true);
+    });
+
+    it("shows a torch's light radius", () => {
+        expect(doc().body.textContent).toContain("30/60ft");
+    });
+
+    it("marks the torch that is actually burning", () => {
+        const lit = [...doc().querySelectorAll(".glog-badge.is-lit")];
+        expect(lit).toHaveLength(1);
+        expect(lit[0].textContent.trim()).toBe("LIT");
+    });
+
+    /** Three tiers, not two: plenty, running low, about to go out. */
+    it.each([
+        [4, []],
+        [1.5, ["is-low"]],
+        [0.5, ["is-danger"]]
+    ])("grades %sh of torch left as %s", (remaining, expected) => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full" });
+        const torch = ctx.itemsByKind.carried.find(i => i.type === "torch");
+        torch.system.duration.remaining = remaining;
+
+        const d = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document;
+        const badge = [...d.querySelectorAll(".glog-badge")]
+            .find(b => b.textContent.trim() === `${remaining}h`);
+
+        expect(badge, `no badge for ${remaining}h`).not.toBeNull();
+        for (const cls of ["is-low", "is-danger"]) {
+            expect(badge.classList.contains(cls), `${remaining}h should${expected.includes(cls) ? "" : " not"} be ${cls}`)
+                .toBe(expected.includes(cls));
+        }
+    });
+});
+
+describe("what the spell cards carry", () => {
+    const doc = () => render("full", { loaded: true });
+
+    it("shows the spell's art", () => {
+        expect(doc().querySelectorAll(".glog-spell-img").length)
+            .toBe(doc().querySelectorAll(".glog-spell").length);
+    });
+
+    it("shows how long a spell lasts when it says", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full" });
+        ctx.itemsByKind.spells[0].system.duration = "one hour per die";
+
+        const d = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document;
+        expect(d.querySelector(".glog-spell-meta").textContent).toContain("one hour per die");
+    });
+
+    it("says nothing about duration when the spell does not", () => {
+        expect(doc().querySelector(".glog-spell-meta")).toBeNull();
+    });
+
+    /** Inventory stays dense; only the spell cards get art. */
+    it("leaves the inventory rows without art", () => {
+        expect(doc().querySelector(".glog-row img")).toBeNull();
+    });
+});
+
+describe("rolling a feature", () => {
+    /** One visual language for "press this and dice happen". */
+    it("uses the same button as spending magic dice", () => {
+        const d = render("full", { loaded: true });
+        const roll = d.querySelector(".feature-roll-btn");
+
+        expect(roll).not.toBeNull();
+        expect(roll.classList.contains("glog-md")).toBe(true);
+        expect(roll.classList.contains("glog-tagbtn")).toBe(false);
     });
 });

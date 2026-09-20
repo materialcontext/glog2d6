@@ -1822,6 +1822,21 @@
     font-weight: 700;
 }
 
+/* A torch with under two hours left is worth noticing before it is worth
+   panicking about, so it gets its own step short of danger. */
+.glog-badge.is-low {
+    background: rgba(255, 152, 0, 0.18);
+    color: #a05a00;
+    font-weight: 700;
+}
+
+.glog-badge.is-lit {
+    background: rgba(255, 152, 0, 0.22);
+    color: #8a4b00;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
 /* --- Entries: features, wounds, spells ----------------------------------- */
 
 .glog-entry {
@@ -1972,6 +1987,25 @@
 
 .glog-spell .glog-entry-name.clickable:hover {
     color: var(--atk);
+}
+
+/* Spell cards are padded boxes rather than rows, so they have the room for
+   art that the inventory list does not. */
+.glog-spell-img {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 2px;
+    object-fit: cover;
+    align-self: center;
+}
+
+.glog-spell-meta {
+    margin-top: 3px;
+    font-size: var(--fs-small);
+    font-style: italic;
+    color: #9a9385;
 }
 
 .glog-md-row {
