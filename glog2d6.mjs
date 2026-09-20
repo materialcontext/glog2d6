@@ -15,6 +15,7 @@ import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
 import { featureBadge, itemSummary } from "./module/actor/sheet-readouts.mjs";
+import { initiativeConfig } from "./module/systems/initiative.mjs";
 
 /**
  * Unregister core's default sheets for a document collection, tolerating classes
@@ -82,6 +83,10 @@ CONFIG.Item.documentClass = GLOG2D6Item;
 Hooks.once('init', async function() {
     // Before anything that can yield -- see registerDocumentSheets.
     registerDocumentSheets();
+
+    // Without this the combat tracker has no formula at all: Foundry's default
+    // is null and the manifest declares none.
+    CONFIG.Combat.initiative = initiativeConfig();
 
     // Load all JSON data files
     await loadSystemData();

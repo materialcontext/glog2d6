@@ -1,4 +1,6 @@
 // module/dialogs/recon-dialog.mjs
+import { reconActorChoices, selectedActorIds, wireReconSelection } from "./recon-selection.mjs";
+
 export class ReconDialog extends FormApplication {
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
@@ -13,7 +15,7 @@ export class ReconDialog extends FormApplication {
 
     getData() {
         return {
-            actors: game.actors.filter(a => a.type === 'character'),
+            actors: reconActorChoices(game.actors),
             checkTypes: {
                 'recon': 'Recon (normal exploration)',
                 'ambush': 'Ambush (low/no light conditions)'
@@ -21,22 +23,14 @@ export class ReconDialog extends FormApplication {
         };
     }
 
+    activateListeners(html) {
+        super.activateListeners(html);
+        wireReconSelection(html[0] ?? html);
+    }
+
     async _updateObject(event, data) {
-        console.log('Dialog data:', data);
-
-        const actorIds = [];
-
-        // Look for properties that start with "actors."
-        for (const [key, value] of Object.entries(data)) {
-            if (key.startsWith('actors.') && value) {
-                const actorId = key.replace('actors.', '');
-                actorIds.push(actorId);
-            }
-        }
-
-        console.log('Selected actor IDs:', actorIds);
-
-        if (!actorIds.length) return ui.notifications.warn('Select actors');
+        const actorIds = selectedActorIds(data);
+        if (!actorIds.length) return ui.notifications.warn('Select at least one character');
 
         const params = {
             location: data.location,

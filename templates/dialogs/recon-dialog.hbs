@@ -20,14 +20,30 @@
     </div>
 
     <div class="form-group flex flex-col flex-gap-2">
-        <label class="text-small text-bold text-upper text-muted">Characters</label>
-        <div class="grid-2 flex-gap-4 mt-4">
+        <div class="flex flex-between flex-center">
+            <label class="text-small text-bold text-upper text-muted">Characters</label>
+            <span class="recon-count text-small text-muted">0 selected</span>
+        </div>
+
+        {{!-- No `name`, so the filter never reaches the submitted data. --}}
+        <input type="search" class="input recon-filter" placeholder="Filter by name" autocomplete="off">
+
+        <div class="recon-actors">
             {{#each actors as |actor|}}
-            <label class="flex flex-center flex-gap-4 p-4 section clickable">
-                <input type="checkbox" name="actors.{{actor.id}}" value="true" checked>
+            <label class="recon-actor flex flex-center flex-gap-4 p-4 section clickable"
+                data-actor-name="{{actor.nameLower}}">
+                <input type="checkbox" name="actors.{{actor.id}}" value="true">
                 <span class="text-small">{{actor.name}}</span>
             </label>
+            {{else}}
+            <p class="text-small text-muted p-4">No characters in this world.</p>
             {{/each}}
+        </div>
+
+        <div class="flex flex-gap-8">
+            <a class="recon-select-all text-small">Select all</a>
+            <a class="recon-select-none text-small">Select none</a>
+            <span class="recon-hidden-note text-small text-muted"></span>
         </div>
     </div>
 
