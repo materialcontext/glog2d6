@@ -32,7 +32,7 @@
 
         <div class="glog-rows">
             {{#each itemsByKind.carried as |item|}}
-            <div class="glog-row" data-item-id="{{item.id}}">
+            <div class="glog-row" data-item-id="{{item.id}}" title="{{itemSummary item}}">
 
                 {{#if (eq item.type "torch")}}
                 <span class="torch-icon glog-eq-torch{{#if (and ../system.torch.lit (eq ../system.torch.activeTorchId item.id))}} torch-active{{/if}} clickable"
@@ -54,8 +54,15 @@
                 {{else if (eq item.type "shield")}}
                 <span class="glog-badge">+{{item.system.armorBonus}}</span>
                 {{else if (eq item.type "torch")}}
+                {{#if item.system.lightRadius.bright}}
+                <span class="glog-badge">{{item.system.lightRadius.bright}}/{{item.system.lightRadius.dim}}ft</span>
+                {{/if}}
                 {{#if item.system.duration.enabled}}
-                <span class="glog-badge{{#if (lt item.system.duration.remaining 1)}} is-danger{{/if}}">{{item.system.duration.remaining}}h</span>
+                <span
+                    class="glog-badge{{#if (lt item.system.duration.remaining 1)}} is-danger{{else if (lt item.system.duration.remaining 2)}} is-low{{/if}}">{{item.system.duration.remaining}}h</span>
+                {{/if}}
+                {{#if (and ../system.torch.lit (eq ../system.torch.activeTorchId item.id))}}
+                <span class="glog-badge is-lit" title="Currently burning">LIT</span>
                 {{/if}}
                 {{else if (eq item.type "gear")}}
                 {{#if item.system.value}}<span class="glog-badge">{{item.system.value}}gp</span>{{/if}}

@@ -365,7 +365,7 @@ export function scarFromWound(wound) {
         system: {
             description: lines.join(" "),
             classSource: "",
-            template: "custom",
+            template: "scar",
             level: 1,
             // Inactive on purpose: every feature consumer filters on `active`,
             // so a scar is history rather than a mechanical bonus.

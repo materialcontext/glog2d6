@@ -20,6 +20,7 @@
             {{#each itemsByKind.spells as |item|}}
             <div class="glog-spell" data-item-id="{{item.id}}">
                 <div class="glog-entry-head">
+                    <img class="glog-spell-img" src="{{item.img}}" alt="" />
                     <span class="glog-entry-name spell-detail-btn clickable" data-item-id="{{item.id}}"
                         title="{{item.name}} &mdash; describe in chat, spending nothing">{{item.name}}</span>
                     {{#if item.system.range}}<span class="glog-tag">{{upperCase item.system.range}}</span>{{/if}}
@@ -32,6 +33,9 @@
                 </div>
 
                 <div class="glog-entry-text">{{item.system.description}}</div>
+                {{#if item.system.duration}}
+                <div class="glog-spell-meta">Lasts {{item.system.duration}}</div>
+                {{/if}}
 
                 {{#unless ../editMode}}
                 <div class="glog-md-row">

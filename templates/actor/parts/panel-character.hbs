@@ -28,7 +28,7 @@
                     {{#unless ../editMode}}
                     {{#if (or (hasFeatureRoll item.name) (and (contains item.name "Reputation for")
                     item.system.reputationType))}}
-                    <button type="button" class="glog-tagbtn feature-roll-btn" data-item-id="{{item.id}}"
+                    <button type="button" class="glog-md feature-roll-btn" data-item-id="{{item.id}}"
                         data-feature-name="{{item.name}}" title="Roll {{item.name}}">ROLL</button>
                     {{/if}}
                     {{/unless}}
@@ -49,7 +49,9 @@
                     <a class="glog-row-btn is-danger item-control item-delete" title="Delete {{item.name}}"><i
                             class="fas fa-trash"></i></a>
                     {{else}}
-                    <span class="glog-tag">{{item.system.template}}</span>
+                    {{#if (featureBadge item)}}
+                    <span class="glog-tag">{{featureBadge item}}</span>
+                    {{/if}}
                     {{/if}}
                 </div>
 

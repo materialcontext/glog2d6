@@ -348,7 +348,7 @@ async function createItemsFromData(meleeFolderId, rangedFolderId, ammunitionFold
                 img: "icons/sundries/scrolls/scroll-bound-brown.webp",
                 system: {
                     classSource: "Custom",
-                    template: "custom",
+                    template: "X",
                     level: 1,
                     description: feature.description,
                     active: true,
@@ -519,7 +519,7 @@ async function createMissingContent() {
                     img: "icons/sundries/scrolls/scroll-bound-brown.webp",
                     system: {
                         classSource: "Custom",
-                        template: "custom",
+                        template: "X",
                         level: 1,
                         description: feature.description,
                         active: true,

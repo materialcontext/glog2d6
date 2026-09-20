@@ -151,3 +151,73 @@ globalThis.CONFIG.GLOG = globalThis.CONFIG.GLOG ?? {
 };
 
 globalThis.ui = { notifications: { info() {}, warn() {}, error() {} } };
+
+/* -------------------------------------------- */
+/*  Document and dice doubles                   */
+/* -------------------------------------------- */
+
+/**
+ * Enough of the global document and dice classes for the actor module to
+ * evaluate. These are deliberately inert -- tests that care about behaviour
+ * install their own spies over the top.
+ */
+class FakeRoll {
+    constructor(formula = "", data = {}) {
+        this.formula = formula;
+        this.data = data;
+        this.total = 0;
+        this.terms = [];
+    }
+    async evaluate() { return this; }
+    toJSON() { return { formula: this.formula, total: this.total }; }
+    static fromData(data) { return Object.assign(new FakeRoll(), data); }
+}
+
+globalThis.Roll = FakeRoll;
+
+globalThis.Actor = class Actor {
+    constructor(data = {}) { Object.assign(this, data); }
+    prepareBaseData() {}
+    prepareDerivedData() {}
+    getRollData() { return {}; }
+    getFlag() {}
+    async setFlag() {}
+    async update() {}
+};
+
+globalThis.Item = class Item {
+    constructor(data = {}) { Object.assign(this, data); }
+    prepareBaseData() {}
+    prepareDerivedData() {}
+};
+
+globalThis.ChatMessage = class ChatMessage {
+    static async create(data) { return { id: "msg", ...data }; }
+    static getSpeaker() { return { alias: "Someone" }; }
+    static getWhisperRecipients() { return []; }
+};
+
+/** The v1 application globals the dialog modules extend at module scope. */
+globalThis.Application = class Application {
+    constructor(options = {}) { this.options = options; }
+    static get defaultOptions() { return {}; }
+    render() { return this; }
+    activateListeners() {}
+};
+
+globalThis.FormApplication = class FormApplication extends globalThis.Application {
+    constructor(object, options) { super(options); this.object = object; }
+};
+
+globalThis.Dialog = class Dialog {
+    static async confirm() { return false; }
+    render() {}
+};
+
+globalThis.game = globalThis.game ?? {
+    user: { id: "u1", isGM: false, getFlag() {}, async setFlag() {} },
+    settings: { register() {}, get() {}, async set() {} },
+    i18n: { localize: k => k, format: k => k },
+    messages: { get() {} }
+};
+

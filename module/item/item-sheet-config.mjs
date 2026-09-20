@@ -63,7 +63,11 @@ export const FEATURE_TEMPLATES = Object.freeze({
     B: "Template B",
     C: "Template C",
     D: "Template D",
-    custom: "Custom"
+    X: "Template X",
+    scar: "Scar",
+    // Written before untemplated features settled on X. Kept in the list so a
+    // feature already stored this way still shows its own value selected.
+    custom: "Template X (legacy)"
 });
 
 export const LIGHT_ANIMATIONS = Object.freeze({
