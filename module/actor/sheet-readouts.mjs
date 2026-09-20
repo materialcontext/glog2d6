@@ -357,3 +357,33 @@ export function itemSummary(item) {
 
     return parts.length ? `${name} \u2014 ${parts.join(" \u00b7 ")}` : name;
 }
+
+/**
+ * What a feature's tag says: the class it came from and the template that
+ * granted it, together -- "Fighter D".
+ *
+ * The template key alone was meaningless on the sheet ("A" tells you nothing
+ * without the class), and the class alone could not tell two templates apart.
+ */
+export const FEATURE_TEMPLATE_LABELS = Object.freeze({
+    "level-0": "0",
+    // Older features were written this way before untemplated ones settled
+    // on X; they mean the same thing.
+    custom: "X"
+});
+
+export function featureBadge(item) {
+    const system = item?.system ?? {};
+    const name = String(item?.name ?? "");
+    const template = String(system.template ?? "").trim();
+
+    // A scar is something that happened to you, not a template you were
+    // granted. Newer ones say so in the field; older ones only in the name.
+    if (template === "scar" || name.startsWith("Scar:")) return "Scar";
+
+    const label = FEATURE_TEMPLATE_LABELS[template] ?? template;
+    const source = String(system.classSource ?? "").trim();
+
+    if (!label) return source;
+    return source ? `${source} ${label}` : label;
+}

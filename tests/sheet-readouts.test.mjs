@@ -8,6 +8,7 @@ import {
     castingOptions,
     defenseTiles,
     encumbranceNote,
+    featureBadge,
     hpBar,
     inEffectRows,
     itemSummary,
@@ -373,5 +374,50 @@ describe("the item summary", () => {
     it("survives an item with nothing on it", () => {
         expect(itemSummary({})).toBe("");
         expect(itemSummary(undefined)).toBe("");
+    });
+});
+
+describe("the feature badge", () => {
+    const of = (system, name = "Something") => featureBadge({ name, system });
+
+    it("names the class and the template together", () => {
+        expect(of({ classSource: "Fighter", template: "D" })).toBe("Fighter D");
+        expect(of({ classSource: "Wizard", template: "A" })).toBe("Wizard A");
+    });
+
+    /** level-0 is template zero: the feature that makes you the class. */
+    it("reads level-0 as 0", () => {
+        expect(of({ classSource: "Fighter", template: "level-0" })).toBe("Fighter 0");
+    });
+
+    it("gives an untemplated feature X", () => {
+        expect(of({ classSource: "Custom", template: "X" })).toBe("Custom X");
+        expect(of({ classSource: "", template: "X" })).toBe("X");
+    });
+
+    /** A scar is something that happened to you, not a template. */
+    it("calls a scar a scar", () => {
+        expect(of({ classSource: "", template: "scar" }, "Scar: Shoulder")).toBe("Scar");
+    });
+
+    it("recognises a scar written before the field existed", () => {
+        expect(of({ classSource: "", template: "custom" }, "Scar: Leg")).toBe("Scar");
+    });
+
+    /**
+     * Existing worlds are full of features stored as "custom", from back when
+     * that was the word for untemplated. They mean X and must not read
+     * "Custom Custom".
+     */
+    it("reads the old spelling of untemplated as X", () => {
+        expect(of({ classSource: "Custom", template: "custom" })).toBe("Custom X");
+        expect(of({ classSource: "Fighter", template: "custom" })).toBe("Fighter X");
+    });
+
+    it("says what it can when half the information is missing", () => {
+        expect(of({ classSource: "Fighter", template: "" })).toBe("Fighter");
+        expect(of({ classSource: "", template: "" })).toBe("");
+        expect(featureBadge({})).toBe("");
+        expect(featureBadge(undefined)).toBe("");
     });
 });

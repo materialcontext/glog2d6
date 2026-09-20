@@ -263,7 +263,7 @@
         "feature": {
             "description": "",
             "classSource": "",
-            "template": "level-0",
+            "template": "X",
             "level": 1,
             "active": true,
             "prerequisites": "",

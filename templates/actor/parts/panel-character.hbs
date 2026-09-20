@@ -49,7 +49,9 @@
                     <a class="glog-row-btn is-danger item-control item-delete" title="Delete {{item.name}}"><i
                             class="fas fa-trash"></i></a>
                     {{else}}
-                    <span class="glog-tag">{{item.system.template}}</span>
+                    {{#if (featureBadge item)}}
+                    <span class="glog-tag">{{featureBadge item}}</span>
+                    {{/if}}
                     {{/if}}
                 </div>
 

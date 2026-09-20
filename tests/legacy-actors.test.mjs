@@ -6,7 +6,7 @@ import { beforeAll, afterAll, describe, expect, it, vi } from "vitest";
 
 import { DataContextBuilder } from "../module/actor/data-context-builder.mjs";
 import { SHEET_MODES } from "../module/actor/sheet-mode.mjs";
-import { itemSummary } from "../module/actor/sheet-readouts.mjs";
+import { featureBadge, itemSummary } from "../module/actor/sheet-readouts.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const read = path => readFileSync(resolve(ROOT, path), "utf8");
@@ -43,6 +43,7 @@ function environment() {
     hbs.registerHelper("upperCase", s => String(s ?? "").toUpperCase());
     hbs.registerHelper("contains", (h, n) => String(h ?? "").includes(n));
     hbs.registerHelper("itemSummary", itemSummary);
+    hbs.registerHelper("featureBadge", featureBadge);
     hbs.registerHelper("isBroken", l => Number(l) >= 2);
     hbs.registerHelper("isDamaged", l => Number(l) === 1);
     hbs.registerHelper("woundStateLabel", s => String(s ?? ""));

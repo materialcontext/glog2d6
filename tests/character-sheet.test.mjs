@@ -12,6 +12,7 @@ import {
     castingOptions,
     defenseTiles,
     encumbranceNote,
+    featureBadge,
     hpBar,
     inEffectRows,
     itemSummary,
@@ -47,6 +48,7 @@ function environment() {
     hbs.registerHelper("upperCase", s => String(s ?? "").toUpperCase());
     hbs.registerHelper("contains", (h, n) => String(h ?? "").includes(n));
     hbs.registerHelper("itemSummary", itemSummary);
+    hbs.registerHelper("featureBadge", featureBadge);
     hbs.registerHelper("isBroken", l => Number(l) >= 2);
     hbs.registerHelper("isDamaged", l => Number(l) === 1);
     hbs.registerHelper("woundStateLabel", s => String(s ?? ""));
@@ -882,5 +884,66 @@ describe("rolling a feature", () => {
         expect(roll).not.toBeNull();
         expect(roll.classList.contains("glog-md")).toBe(true);
         expect(roll.classList.contains("glog-tagbtn")).toBe(false);
+    });
+});
+
+describe("the feature tag", () => {
+    it("names the class and template together rather than a bare key", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full" });
+        const [feature] = ctx.itemsByKind.features;
+        feature.system.classSource = "Fighter";
+        feature.system.template = "D";
+
+        const d = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document;
+        const tags = [...d.querySelectorAll(".glog-tag")].map(t => t.textContent.trim());
+
+        expect(tags).toContain("Fighter D");
+        expect(tags).not.toContain("D");
+    });
+
+    it("prints nothing rather than an empty tag when there is nothing to say", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full" });
+        for (const f of ctx.itemsByKind.features) {
+            f.system.classSource = "";
+            f.system.template = "";
+        }
+
+        const d = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document;
+        const empty = [...d.querySelectorAll(".feature-card .glog-tag")]
+            .filter(t => !t.textContent.trim());
+        expect(empty).toEqual([]);
+    });
+});
+
+/**
+ * The stored template values, the dropdown that edits them, and the labels the
+ * badge prints all have to agree, or a feature shows one thing on the sheet and
+ * another in its own item sheet.
+ */
+describe("feature templates", () => {
+    it("offers every value the system writes", () => {
+        const config = read("module/item/item-sheet-config.mjs");
+        const block = /FEATURE_TEMPLATES = Object\.freeze\(\{([\s\S]*?)\}\)/.exec(config)[1];
+
+        for (const key of ["level-0", "A", "B", "C", "D", "X", "scar"]) {
+            expect(block, `${key} is not offered in the feature sheet`)
+                .toMatch(new RegExp(`(^|\\s)"?${key}"?\\s*:`, "m"));
+        }
+    });
+
+    /** Dropping it would silently reassign every feature already stored so. */
+    it("still lists the legacy spelling", () => {
+        expect(read("module/item/item-sheet-config.mjs")).toMatch(/custom:\s*"/);
+    });
+
+    it("writes X, not custom, wherever a feature has no template", () => {
+        const sources = ["scripts/initialize-content.mjs", "template.json"];
+        for (const file of sources) {
+            expect(read(file), `${file} still writes the old default`)
+                .not.toMatch(/"?template"?:\s*"custom"/);
+        }
+        expect(read("module/systems/wounds.mjs")).toMatch(/template:\s*"scar"/);
     });
 });
