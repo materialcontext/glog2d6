@@ -244,6 +244,12 @@ export function initGMRolls() {
         for (const type of Object.keys(ROLL_TYPES)) {
             game.glog2d6[type] = (actors, params) => game.glog2d6.gmRollSystem.create(type, actors, params);
         }
+
+        // The whole party, for the check that is usually asked of everyone.
+        game.glog2d6.quickRecon = () => {
+            const party = game.actors.filter(a => a.type === "character").map(a => a.id);
+            return party.length ? game.glog2d6.recon(party) : ui.notifications.warn("No characters found");
+        };
     });
 
     setInterval(() => {
