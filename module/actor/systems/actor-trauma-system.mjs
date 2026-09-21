@@ -8,13 +8,21 @@ import {
     nextWoundState,
     normalizeWound,
     scarFromWound,
+    woundEntryFromItem,
     woundItemData,
     woundsFromItems,
     woundCount,
-    woundRemoval,
-    woundSeverity
+    woundRemoval
 } from "../../systems/wounds.mjs";
 
+import {
+    isDocumentResult,
+    ownsItsRoll,
+    resultForValue,
+    resultUuid,
+    rollFormulaFor,
+    severityFor
+} from "../../systems/wound-table.mjs";
 import {
     anatomyTags,
     damageSource,
@@ -409,13 +417,39 @@ class WoundApplier {
      * so the same damage no longer always produces the same wound.
      */
     async _rollWound(table) {
-        const roll = new Roll(`1d${SEVERITY_DIE}`);
+        const worldTable = this._worldTable();
+
+        // A table that says how damage enters its formula is rolled as written
+        // and read against its own ranges; anything else keeps the severity
+        // the system has always computed. See systems/wound-table.
+        const roll = new Roll(rollFormulaFor(worldTable), { excess: this.damage });
         await roll.evaluate();
 
-        const severity = woundSeverity(roll.total, this.damage, table.length);
-        const entry = this._entryFor(severity, table);
+        const severity = severityFor(worldTable, {
+            total: roll.total,
+            damage: this.damage,
+            entryCount: table.length
+        });
+        const entry = await this._entryFor(severity, table, worldTable);
 
-        return { entry, severity, roll, wound: await this._createWoundInstance(entry, severity) };
+        return {
+            entry,
+            severity,
+            roll,
+            detail: this._rollDetail(worldTable, roll),
+            wound: await this._createWoundInstance(entry, severity)
+        };
+    }
+
+    /**
+     * How the severity was arrived at, in the table's own terms. A table that
+     * owns its roll already counted the damage, so saying so twice would read
+     * as though it had been added again.
+     */
+    _rollDetail(worldTable, roll) {
+        return ownsItsRoll(worldTable)
+            ? `${roll.formula} = ${roll.total}`
+            : `d${SEVERITY_DIE} ${roll.total} + ${this.damage} damage`;
     }
 
     /**
@@ -431,14 +465,15 @@ class WoundApplier {
             ?? null;
     }
 
-    _entryFor(severity, table) {
-        const worldTable = this._worldTable();
-        const result = worldTable?.results?.find(r => {
-            const [low, high] = r.range ?? [];
-            return Number.isFinite(low) && severity >= low && severity <= high;
-        });
+    async _entryFor(severity, table, worldTable = this._worldTable()) {
+        const result = resultForValue(worldTable?.results ?? [], severity);
 
         if (result) {
+            // A result pointing at a wound Item is the whole entry: the GM
+            // authored it, so nothing needs matching back to the shipped list.
+            const authored = await this._authoredEntry(result);
+            if (authored) return authored;
+
             const tagged = result.getFlag?.("glog2d6", "woundId");
             const byFlag = tagged && table.find(entry => entry.id === tagged);
             if (byFlag) return byFlag;
@@ -448,7 +483,23 @@ class WoundApplier {
             if (byName) return byName;
         }
 
-        return table[severity - 1];
+        return table[severity - 1] ?? table.at(-1);
+    }
+
+    /** The wound Item a document result points at, if it resolves to one. */
+    async _authoredEntry(result) {
+        if (!isDocumentResult(result)) return null;
+
+        const uuid = resultUuid(result);
+        if (!uuid) return null;
+
+        try {
+            const document = await fromUuid(uuid);
+            return document?.type === "wound" ? woundEntryFromItem(document) : null;
+        } catch (error) {
+            console.warn("glog2d6 | Could not resolve wound table result", uuid, error);
+            return null;
+        }
     }
 
     async _createWoundInstance(woundEntry, severity) {
@@ -494,14 +545,14 @@ class WoundApplier {
     }
 
     async _sendWoundChatMessage(rolled) {
-        const cards = rolled.map(({ wound, severity, roll }) => `
+        const cards = rolled.map(({ wound, severity, detail }) => `
             <div class="p-8 section mb-8">
                 <div class="text-small mb-4">
                     <strong>${wound.name}</strong>
                     <span class="text-muted">&mdash; ${wound.bodyPart}</span>
                 </div>
                 <div class="text-small text-muted mb-4">
-                    Severity ${severity} (d${SEVERITY_DIE} ${roll.total} + ${this.damage} damage)
+                    Severity ${severity} (${detail})
                 </div>
                 <div class="text-small">${wound.description}</div>
                 ${wound.effects.rerollStat

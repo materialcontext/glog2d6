@@ -486,3 +486,23 @@ export function woundItemData(wound = {}) {
         }
     };
 }
+
+/**
+ * A wound Item read as a *table entry* rather than as an inflicted wound.
+ *
+ * This is what lets a GM author a wound, drop it in a compendium and point a
+ * roll table at it: the drawn document becomes the entry the roll would
+ * otherwise have found in the shipped list.
+ */
+export function woundEntryFromItem(item) {
+    if (!item) return null;
+    const system = item.system ?? {};
+
+    return {
+        id: system.typeId || item.id,
+        name: item.name,
+        img: item.img,
+        description: system.description ?? "",
+        effects: { ...(system.effects ?? {}) }
+    };
+}
