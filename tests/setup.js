@@ -41,6 +41,11 @@ function expandObject(flat) {
     return expanded;
 }
 
+let nextId = 0;
+function randomID() {
+    return `id${++nextId}`;
+}
+
 function isPlainObject(value) {
     return !!value && typeof value === "object" && !Array.isArray(value);
 }
@@ -127,7 +132,7 @@ const HandlebarsApplicationMixin = Base => class extends Base {};
 /* -------------------------------------------- */
 
 globalThis.foundry = {
-    utils: { deepClone, getProperty, setProperty, expandObject, mergeObject },
+    utils: { deepClone, getProperty, setProperty, expandObject, mergeObject, randomID },
     applications: {
         api: { ApplicationV2, DocumentSheetV2, HandlebarsApplicationMixin },
         sheets: { ItemSheetV2 },

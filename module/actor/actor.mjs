@@ -102,7 +102,6 @@ export class GLOG2D6Actor extends Actor {
     async rollReaction(...args) { return this.rolls.rollReaction(...args); }
     async rollDiplomacy(...args) { return this.rolls.rollDiplomacy(...args); }
     async rollIntimidate(...args) { return this.rolls.rollIntimidate(...args); }
-    async rollTraumaSave(...args) { return this.rolls.rollTraumaSave(...args); }
     async rollTraumaSave(...args) { return this.traumaSystem.rollTraumaSave(...args); }
     async initiateTraumaSave() { return this.traumaSystem.initiateTraumaSave(); }
     async applyWound(...args) { return this.traumaSystem.applyWound(...args); }
@@ -458,7 +457,7 @@ export class RollChatMessageBuilder {
         }
 
         if (this.roll.isCriticalFailure && this.title.includes("Defense")) {
-            setTimeout(() => this.actor.rollTraumaSave("Critical Defense Failure"), 100);
+            setTimeout(() => this.actor.rollTraumaSave(1, 0, "Critical Defense Failure"), 100);
         }
     }
 }

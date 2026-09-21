@@ -117,7 +117,7 @@ AppV1 is removed:
   `foundry.appv1.sheets.ActorSheet`
 - `module/systems/error-tracking.mjs` — compares against
   `foundry.appv1.sheets.ActorSheet.prototype`
-- `FormApplication` subclasses: `gm-roll-system.mjs`, `recon-dialog.mjs`,
+- `FormApplication` subclasses: `roll-request-dialog.mjs`,
   `reputation-roll-dialog.mjs`, `attribute-selection-dialog.mjs`,
   `actor-trauma-system.mjs`
 - `Dialog` / `Dialog.confirm` in `actor-sheet.mjs` and `sheet-roll-handler.mjs`
@@ -142,7 +142,7 @@ Hooks.on("getSceneControlButtons", controls => {
     controls.tokens.tools.glog2d6Recon = {
         name: "glog2d6Recon", title: "Recon Check", icon: "fas fa-binoculars",
         button: true, order: Object.keys(controls.tokens.tools).length,
-        onChange: () => new ReconDialog().render(true)
+        onChange: () => game.glog2d6.rollRequest("recon")
     };
 });
 ```

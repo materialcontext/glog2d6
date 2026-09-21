@@ -57,6 +57,18 @@ export function damageSource({ actor = null, item = null, tags = null, table = n
     };
 }
 
+/**
+ * The same blow, drawn from a table named outright.
+ *
+ * Precedence inside `damageSource` answers "what is this attacker like"; this
+ * answers "what was this particular blow", which is the GM's to say and so
+ * wins over both the weapon and the attacker.
+ */
+export function withTable(source, table) {
+    const named = text(table);
+    return named ? { ...source, table: named } : source;
+}
+
 /** An empty source: damage from nowhere in particular. */
 export function unknownSource() {
     return damageSource({});

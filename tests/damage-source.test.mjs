@@ -9,6 +9,7 @@ import {
     describeSource,
     unknownSource,
     weaponTags,
+    withTable,
     woundTableFor,
     woundTableRef
 } from "../module/systems/damage-source.mjs";
@@ -94,6 +95,28 @@ describe("what biases the anatomy", () => {
     it("reaches the unarmed bias now that it is looked up", () => {
         expect(bodyPartTable(["unarmed"])).toEqual(BODY_PART_BIAS.unarmed);
         expect(bodyPartTable(["unarmed"])).not.toEqual(BODY_PARTS);
+    });
+});
+
+/**
+ * Precedence inside `damageSource` answers what an attacker is like; naming a
+ * table outright is the GM saying what this particular blow was.
+ */
+describe("a table named outright", () => {
+    it("wins over both the weapon's and the attacker's", () => {
+        expect(woundTableFor(withTable(damageSource({ actor: wolf, item: gun }), "Falling"))).toBe("Falling");
+    });
+
+    it("leaves the blow alone when nothing was named", () => {
+        const blow = damageSource({ actor: wolf });
+        expect(withTable(blow, "")).toBe(blow);
+        expect(withTable(blow, "   ")).toBe(blow);
+        expect(withTable(blow, null)).toBe(blow);
+    });
+
+    it("changes nothing else about the blow", () => {
+        expect(withTable(damageSource({ actor: wolf, item: gun }), "Falling"))
+            .toMatchObject({ actorName: "Dire Wolf", itemName: "Arquebus", tags: ["firearm"] });
     });
 });
 

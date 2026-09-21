@@ -11,7 +11,8 @@ const INIT = /Hooks\.once\('init'[\s\S]*?\n\}\);/.exec(ENTRY)[0];
 /**
  * The GM could call for a recon check and nobody's button did anything, while
  * every other GM roll worked. The difference was where the wiring was
- * registered.
+ * registered. (Both kinds of request now share one lifecycle, so there is one
+ * place left to get this wrong -- which is the point.)
  *
  * Two rules, learned separately and both needed:
  *
@@ -25,7 +26,7 @@ const INIT = /Hooks\.once\('init'[\s\S]*?\n\}\);/.exec(ENTRY)[0];
  *    the still-unregistered buttons with it.
  */
 describe("chat wiring", () => {
-    const setups = ["initGMRolls", "initReconSystem"];
+    const setups = ["initGMRolls"];
 
     it.each(setups)("%s is called before init can yield", name => {
         const call = INIT.indexOf(`${name}()`);
@@ -37,8 +38,7 @@ describe("chat wiring", () => {
     });
 
     const sources = {
-        initGMRolls: "module/systems/gm-roll-system.mjs",
-        initReconSystem: "module/systems/recon-system.mjs"
+        initGMRolls: "module/systems/gm-roll-system.mjs"
     };
 
     /**
@@ -50,8 +50,11 @@ describe("chat wiring", () => {
     const topLevelLines = (file, name) => {
         const source = read(file);
         const body = source.slice(source.indexOf(`export function ${name}()`));
-        return body.split("\n")
-            .slice(1)
+        const lines = body.split("\n").slice(1);
+        const end = lines.findIndex(line => line === "}");
+
+        return lines
+            .slice(0, end === -1 ? undefined : end)
             .filter(line => /^ {4}\S/.test(line))
             // Comments talk about `game.user` precisely because it matters here.
             .map(line => line.replace(/\/\/.*$/, ""))
@@ -91,7 +94,7 @@ describe("chat wiring", () => {
 
         for (const file of files) {
             const source = read(file);
-            for (const [, selector] of source.matchAll(/\.find\('\.?\[?([\w-]+)[^']*'\)\s*\.click/g)) {
+            for (const [, selector] of source.matchAll(/\.find\(["']\.?\[?([\w-]+)[^"']*["']\)\s*\.click/g)) {
                 (bindings[selector] ??= []).push(file);
             }
         }

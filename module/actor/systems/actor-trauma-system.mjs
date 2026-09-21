@@ -23,6 +23,7 @@ import {
     rollFormulaFor,
     severityFor
 } from "../../systems/wound-table.mjs";
+import { TRAUMA_DC, requestDamage, rollSpec, succeeded, traumaBonus } from "../../systems/roll-requests.mjs";
 import {
     anatomyTags,
     damageSource,
@@ -61,8 +62,13 @@ class ActorTraumaSystem {
         return dialog.render(true);
     }
 
-    async rollTraumaSave(excessDamage, customBonus = 0) {
-        const traumaRoller = new TraumaSaveRoller(this.actor, excessDamage, customBonus);
+    /**
+     * @param {number} excessDamage  Damage past what was left.
+     * @param {number} [customBonus] A bonus for this save alone.
+     * @param {string} [reason]      What called for it, for the card.
+     */
+    async rollTraumaSave(excessDamage, customBonus = 0, reason = "") {
+        const traumaRoller = new TraumaSaveRoller(this.actor, excessDamage, customBonus, reason);
         return traumaRoller.execute();
     }
 
@@ -218,13 +224,7 @@ class TraumaSaveDialog extends FormApplication {
     }
 
     _getTraumaBonuses() {
-        const toughFeature = this.actor.items.find(i =>
-            i.type === "feature" &&
-            i.system.active &&
-            i.name === "Tough"
-        );
-
-        return toughFeature ? 1 : 0;
+        return traumaBonus(this.actor);
     }
 
     _getWoundsPreview() {
@@ -257,46 +257,38 @@ class TraumaSaveDialog extends FormApplication {
 }
 
 class TraumaSaveRoller {
-    constructor(actor, excessDamage, customBonus = 0) {
+    constructor(actor, excessDamage, customBonus = 0, reason = "") {
         this.actor = actor;
-        this.excessDamage = excessDamage;
+        // Sanitised here rather than trusted: this used to take whatever the
+        // caller passed, and one caller passed a sentence, which travelled
+        // all the way to the wound button's damage.
+        this.excessDamage = requestDamage({ damage: excessDamage });
         this.customBonus = customBonus;
+        this.reason = reason;
     }
 
     async execute() {
-        const rollData = this._buildRollData();
-        const roll = this.actor.createRoll("2d6 + @con + @trauma + @custom", rollData, 'trauma');
+        const { formula, data } = this._spec();
+        const roll = this.actor.createRoll(formula, data, 'trauma');
         await roll.evaluate();
 
-        const success = roll.total >= 10;
-        const chatMessage = await this._createChatMessage(roll, success);
-
-        if (!success) {
-            this._addApplyWoundButton(chatMessage, roll); // Pass the roll separately
-        }
+        const success = succeeded("trauma", roll.total);
+        await this._createChatMessage(roll, success);
 
         return { roll, success };
     }
 
-    _buildRollData() {
-        const conMod = this.actor.system.attributes.con.effectiveMod;
-        const traumaBonus = this._getTraumaBonuses();
-
+    /**
+     * The same save the GM calls for, with room for a bonus this one time.
+     * Shared with systems/roll-requests so a character rolling their own
+     * trauma save and a GM calling for one cannot come to different sums.
+     */
+    _spec() {
+        const { formula, data } = rollSpec("trauma", this.actor);
         return {
-            con: conMod,
-            trauma: traumaBonus,
-            custom: this.customBonus
+            formula: `${formula} + @custom`,
+            data: { ...data, custom: this.customBonus }
         };
-    }
-
-    _getTraumaBonuses() {
-        const toughFeature = this.actor.items.find(i =>
-            i.type === "feature" &&
-            i.system.active &&
-            (i.name === "Tough" || i.name.includes("Trauma"))
-        );
-
-        return toughFeature ? 1 : 0;
     }
 
     async _createChatMessage(roll, success) {
@@ -310,12 +302,13 @@ class TraumaSaveRoller {
                 <div class="p-8 section mb-8" style="background: linear-gradient(135deg, #fff8f8 0%, white 100%);">
                     <div class="text-small mb-4"><strong>Roll:</strong> ${this._formatRollDisplay(roll)}</div>
                     <div class="text-small mb-4"><strong>Total:</strong> ${roll.total}</div>
-                    <div class="text-small mb-4"><strong>Target:</strong> 10</div>
+                    <div class="text-small mb-4"><strong>Target:</strong> ${TRAUMA_DC}</div>
                     <div class="text-small mb-4"><strong>Result:</strong> <span class="${resultClass} text-bold">${resultText}</span></div>
                     <div class="text-small"><strong>Excess Damage:</strong> ${this.excessDamage}</div>
+                    ${this.reason ? `<div class="text-small text-muted mt-4">${this.reason}</div>` : ''}
                     ${breakdown}
                 </div>
-                ${!success ? `<div id="wound-application-${roll._id}"></div>` : ''}
+                ${success ? '' : this._applyWoundButton()}
             </div>
         `;
 
@@ -335,7 +328,7 @@ class TraumaSaveRoller {
     }
 
     _buildBreakdown() {
-        const rollData = this._buildRollData();
+        const rollData = this._spec().data;
         const parts = [];
 
         if (rollData.con !== 0) {
@@ -358,26 +351,21 @@ class TraumaSaveRoller {
         return `[${diceResults.join(', ')}]`;
     }
 
-    async _addApplyWoundButton(chatMessage, roll) {
-        const buttonHtml = `
+    /**
+     * A failed save offers the wound; it never imposes one. The button used
+     * to be patched into the message a tenth of a second after it was posted,
+     * which is a race for the sake of nothing -- the card knows it failed
+     * while it is being built.
+     */
+    _applyWoundButton() {
+        return `
         <button type="button" class="btn btn-danger p-8 mt-8 apply-wound-btn w-full"
                 data-actor-id="${this.actor.id}"
                 data-damage="${this.excessDamage}"
-                data-roll-id="${roll._id}">
+                data-attacker=""
+                data-wound-table="">
             <i class="fas fa-plus"></i> Apply Wound (${this.excessDamage} damage)
-        </button>
-    `;
-
-        setTimeout(async () => {
-            const message = game.messages.get(chatMessage.id);
-            if (message) {
-                const content = message.content.replace(
-                    `<div id="wound-application-${roll._id}"></div>`,
-                    buttonHtml
-                );
-                await message.update({ content });
-            }
-        }, 100);
+        </button>`;
     }
 }
 

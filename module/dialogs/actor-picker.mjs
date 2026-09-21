@@ -1,15 +1,19 @@
 /**
- * Choosing who is looking, for a recon check.
+ * Choosing who a request is asked of.
+ *
+ * Written for the recon dialog and now shared by every kind of request, which
+ * is the point: a GM calling for a trauma save picks the party the same way
+ * they pick who is keeping watch.
  *
  * Pure: no Foundry globals, so the awkward parts -- which names a filter
  * matches, which boxes came back ticked -- are testable on their own.
  */
 
 /**
- * The characters a recon check can target, in an order you can search by eye.
+ * The characters a request can be asked of, in an order you can search by eye.
  * World order is insertion order, which stops being findable at about a dozen.
  */
-export function reconActorChoices(actors = []) {
+export function actorChoices(actors = []) {
     return [...actors]
         .filter(actor => actor?.type === "character")
         .map(actor => ({
@@ -31,15 +35,28 @@ export function matchesFilter(nameLower, term) {
     return String(nameLower ?? "").includes(needle);
 }
 
+const PREFIX = "actors.";
+
 /**
- * The actor ids ticked in the submitted form. Checkboxes arrive as
- * `actors.<id>`, and an unticked one arrives as false rather than not at all.
+ * The actor ids ticked in the submitted form.
+ *
+ * An unticked box arrives as false rather than not at all, so the value has
+ * to be read rather than the key's presence. The boxes are named
+ * `actors.<id>`, which reaches `_updateObject` flat or expanded into an
+ * `actors` object depending on how the form was submitted -- both are read
+ * here, because a picker that silently finds nobody is the worst of the two
+ * failure modes.
  */
 export function selectedActorIds(data = {}) {
-    return Object.entries(data)
-        .filter(([key, value]) => key.startsWith("actors.") && value)
-        .map(([key]) => key.slice("actors.".length))
-        .filter(Boolean);
+    const flat = Object.entries(data)
+        .filter(([key, value]) => key.startsWith(PREFIX) && value)
+        .map(([key]) => key.slice(PREFIX.length));
+
+    const nested = Object.entries(data?.actors ?? {})
+        .filter(([, value]) => value)
+        .map(([id]) => id);
+
+    return [...new Set([...flat, ...nested])].filter(Boolean);
 }
 
 /**
@@ -53,11 +70,11 @@ export function selectedActorIds(data = {}) {
  * @param {HTMLElement} root
  * @returns {() => void} a refresh, called once before returning
  */
-export function wireReconSelection(root) {
-    const rows = [...root.querySelectorAll(".recon-actor")];
+export function wireActorPicker(root) {
+    const rows = [...root.querySelectorAll(".picker-actor")];
     const boxes = rows.map(row => row.querySelector("input[type=checkbox]"));
-    const count = root.querySelector(".recon-count");
-    const note = root.querySelector(".recon-hidden-note");
+    const count = root.querySelector(".picker-count");
+    const note = root.querySelector(".picker-hidden-note");
 
     const refresh = () => {
         const selected = boxes.filter(box => box.checked).length;
@@ -75,19 +92,19 @@ export function wireReconSelection(root) {
     // Filtering hides rows, it never unticks them -- typing a name should not
     // silently drop someone you had already chosen. That makes a selection you
     // cannot see possible, which is what the note above is for.
-    root.querySelector(".recon-filter")?.addEventListener("input", event => {
+    root.querySelector(".picker-filter")?.addEventListener("input", event => {
         const term = event.currentTarget.value;
         for (const row of rows) row.hidden = !matchesFilter(row.dataset.actorName, term);
         refresh();
     });
 
     // "All" means what you can currently see, once a filter is on.
-    root.querySelector(".recon-select-all")?.addEventListener("click", () => {
+    root.querySelector(".picker-select-all")?.addEventListener("click", () => {
         rows.forEach((row, index) => { if (!row.hidden) boxes[index].checked = true; });
         refresh();
     });
 
-    root.querySelector(".recon-select-none")?.addEventListener("click", () => {
+    root.querySelector(".picker-select-none")?.addEventListener("click", () => {
         for (const box of boxes) box.checked = false;
         refresh();
     });

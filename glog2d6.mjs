@@ -10,9 +10,8 @@ import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders, migrateContent } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
-import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
-import { initReconSystem } from "./module/systems/recon-system.mjs";
-import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
+import { blowFrom, initGMRolls } from "./module/systems/gm-roll-system.mjs";
+import { RollRequestDialog } from "./module/dialogs/roll-request-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
 import { featureBadge, itemSummary } from "./module/actor/sheet-readouts.mjs";
@@ -89,10 +88,14 @@ Hooks.once('init', async function() {
     // is null and the manifest declares none.
     CONFIG.Combat.initiative = initiativeConfig();
 
-    // Both register chat-message wiring, so like the sheets they must be set
-    // up before init can yield -- see registerDocumentSheets.
+    // Registers chat-message wiring, so like the sheets it must be set up
+    // before init can yield -- see registerDocumentSheets.
     initGMRolls();
-    initReconSystem();
+
+    // Every kind of request -- a save, a recon check, a trauma save -- is
+    // called for through the one dialog.
+    game.glog2d6 ??= {};
+    game.glog2d6.rollRequest = (type) => new RollRequestDialog(type).render(true);
 
     // Load all JSON data files
     await loadSystemData();
@@ -221,8 +224,7 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/actor/actor-npc-sheet.hbs",
         "systems/glog2d6/templates/actor/actor-hireling-sheet.hbs",
         ...itemSheetTemplates(),
-        "systems/glog2d6/templates/dialogs/gm-roll.hbs",
-        "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
+        "systems/glog2d6/templates/dialogs/roll-request.hbs"
     ]);
 
     // Register partials. Compact and full share the four parts that carry the
@@ -348,7 +350,7 @@ Hooks.on("getSceneControlButtons", controls => {
         button: true,
         visible: true,
         order: Object.keys(tokenControls.tools).length,
-        onChange: () => new ReconDialog().render(true)
+        onChange: () => game.glog2d6.rollRequest("recon")
     };
 });
 
@@ -357,7 +359,7 @@ Hooks.on("chatMessage", (log, msg) => {
     if (!game.user.isGM) return;
 
     if (msg === "/recon") {
-        new ReconDialog().render(true);
+        game.glog2d6.rollRequest("recon");
         return false;
     }
 });
@@ -421,7 +423,12 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
         const actor = game.actors.get(actorId);
         if (actor) {
-            await actor.applyWound(damage);
+            // What struck, where the GM said so, so the wound is drawn from
+            // that attacker's table and rolled against the right anatomy.
+            await actor.applyWound(damage, blowFrom({
+                attacker: button.dataset.attacker,
+                woundTable: button.dataset.woundTable
+            }));
             button.disabled = true;
             button.textContent = "Applied";
         } else {
