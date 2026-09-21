@@ -89,6 +89,11 @@ Hooks.once('init', async function() {
     // is null and the manifest declares none.
     CONFIG.Combat.initiative = initiativeConfig();
 
+    // Both register chat-message wiring, so like the sheets they must be set
+    // up before init can yield -- see registerDocumentSheets.
+    initGMRolls();
+    initReconSystem();
+
     // Load all JSON data files
     await loadSystemData();
     await loadSpellData();
@@ -201,9 +206,6 @@ Hooks.once('init', async function() {
         type: String,
         default: ""
     });
-
-    initGMRolls();
-    initReconSystem();
 
     console.log('glog2d6 | System initialization complete');
 });
@@ -370,18 +372,6 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     }
 
     const $html = $(html);
-
-    $html.find('.gm-roll-btn').click(async e => {
-        e.preventDefault();
-        const { rollId, actorId } = e.currentTarget.dataset;
-        try {
-            await game.glog2d6.gmRollSystem.execute(rollId, actorId);
-            e.currentTarget.disabled = true;
-            e.currentTarget.textContent = 'Rolled';
-        } catch (error) {
-            ui.notifications.error(error.message);
-        }
-    });
 
     if (game.user.isGM) {
         const messageId = html.dataset?.messageId

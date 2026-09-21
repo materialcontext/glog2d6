@@ -148,13 +148,8 @@ export function initGMRolls() {
     game.glog2d6 ??= {};
     game.glog2d6.gmRollSystem = new GMRollSystem();
 
-    if (game.user.isGM) {
-        game.glog2d6.groupRoll = () => new GMRollDialog().render(true);
-        ['attribute', 'save', 'skill', 'initiative', 'recon'].forEach(type => {
-            game.glog2d6[type] = (actors, params) => game.glog2d6.gmRollSystem.create(type, actors, params);
-        });
-    }
-
+    // Registered before anything that reads `game.user`, so a convenience
+    // helper failing can never take the buttons down with it.
     Hooks.on("renderChatMessageHTML", (msg, html) => {
         const $html = $(html);
 
@@ -173,6 +168,16 @@ export function initGMRolls() {
 
     Hooks.on("chatMessage", (log, msg) => {
         if (msg === "/gmroll") { game.glog2d6.groupRoll(); return false; }
+    });
+
+    // `game.user` belongs to a connected game rather than to init.
+    Hooks.once("ready", () => {
+        if (!game.user.isGM) return;
+
+        game.glog2d6.groupRoll = () => new GMRollDialog().render(true);
+        ['attribute', 'save', 'skill', 'initiative', 'recon'].forEach(type => {
+            game.glog2d6[type] = (actors, params) => game.glog2d6.gmRollSystem.create(type, actors, params);
+        });
     });
 
     setInterval(() => {

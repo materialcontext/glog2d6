@@ -175,28 +175,12 @@ export function initReconSystem() {
     game.glog2d6 ??= {};
     game.glog2d6.reconSystem = new ReconSystem();
 
-    // Socket listener — only GM processes execute
-    game.socket.on("system.glog2d6", async (data) => {
-        if (data.type !== "reconExecute" || !game.user.isGM) return;
-        try {
-            await game.glog2d6.reconSystem.execute(data.reconId, data.actorId);
-        } catch (error) {
-            console.error("Recon execute failed:", error);
-        }
-    });
-
-    if (game.user.isGM) {
-        game.glog2d6.recon = (actors, params) => game.glog2d6.reconSystem.initiate(actors, params);
-        game.glog2d6.quickRecon = () => {
-            const actors = game.actors.filter(a => a.type === 'character').map(a => a.id);
-            return actors.length ? game.glog2d6.recon(actors) : ui.notifications.warn("No characters found");
-        };
-    }
-
+    // Registered first, and before anything that can throw. This used to sit
+    // below the socket listener, so when `game.socket` was not yet available
+    // the whole function threw and the buttons were never wired at all -- the
+    // GM could call for a recon check and nobody's button did anything.
     Hooks.on("renderChatMessageHTML", (_, html) => {
-        const $html = $(html);
-
-        $html.find('[data-recon-id]').click(async e => {
+        $(html).find('[data-recon-id]').click(async e => {
             e.preventDefault();
             const { reconId, actorId } = e.currentTarget.dataset;
             try {
@@ -211,6 +195,30 @@ export function initReconSystem() {
                 ui.notifications.error(error.message);
             }
         });
+    });
+
+    // The socket belongs to a connected game, not to init. Claiming it here
+    // rather than above is what keeps a missing one from taking the wiring
+    // down with it.
+    Hooks.once("ready", () => {
+        // Only the GM rolls: `active` lives in the GM's memory, and a player's
+        // client has no record of the check to execute.
+        game.socket.on("system.glog2d6", async (data) => {
+            if (data.type !== "reconExecute" || !game.user.isGM) return;
+            try {
+                await game.glog2d6.reconSystem.execute(data.reconId, data.actorId);
+            } catch (error) {
+                console.error("glog2d6 | Recon execute failed:", error);
+            }
+        });
+
+        if (game.user.isGM) {
+            game.glog2d6.recon = (actors, params) => game.glog2d6.reconSystem.initiate(actors, params);
+            game.glog2d6.quickRecon = () => {
+                const actors = game.actors.filter(a => a.type === 'character').map(a => a.id);
+                return actors.length ? game.glog2d6.recon(actors) : ui.notifications.warn("No characters found");
+            };
+        }
     });
 
     // Cleanup
