@@ -131,7 +131,9 @@ export const BODY_PART_BIAS = Object.freeze({
  */
 export function bodyPartTable(weaponTags = []) {
     const tags = Array.isArray(weaponTags) ? weaponTags : [weaponTags];
-    for (const tag of ["firearm", "explosive", "ranged", "thrown", "melee"]) {
+    // "unarmed" belongs here too. It was defined in BODY_PART_BIAS but left out
+    // of this list, so the bias was unreachable and fists rolled unweighted.
+    for (const tag of ["firearm", "explosive", "ranged", "thrown", "melee", "unarmed"]) {
         if (tags.includes(tag)) return BODY_PART_BIAS[tag];
     }
     return BODY_PARTS;

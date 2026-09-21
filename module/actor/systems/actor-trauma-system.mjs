@@ -15,6 +15,14 @@ import {
     woundSeverity
 } from "../../systems/wounds.mjs";
 
+import {
+    anatomyTags,
+    damageSource,
+    describeSource,
+    unknownSource,
+    woundTableFor
+} from "../../systems/damage-source.mjs";
+
 export const WOUND_TABLE_NAME = "GLOG Wounds Table";
 class ActorTraumaSystem {
     constructor(actor) {
@@ -50,8 +58,12 @@ class ActorTraumaSystem {
         return traumaRoller.execute();
     }
 
-    async applyWound(damage) {
-        const woundApplier = new WoundApplier(this.actor, damage);
+    /**
+     * @param {number} damage   Damage in excess of what was left.
+     * @param {object} [source] What hit you -- see systems/damage-source.
+     */
+    async applyWound(damage, source = null) {
+        const woundApplier = new WoundApplier(this.actor, damage, { source });
         return woundApplier.apply();
     }
 
@@ -365,7 +377,11 @@ class WoundApplier {
     constructor(actor, damage, options = {}) {
         this.actor = actor;
         this.damage = damage;
-        this.weaponTags = options.weaponTags ?? this._equippedWeaponTags();
+
+        // What hit you, not what you happen to be holding. This used to read
+        // the victim's own equipped weapon, so being shot while carrying a
+        // sword rolled melee anatomy.
+        this.source = options.source ?? unknownSource();
     }
 
     async apply() {
@@ -388,14 +404,6 @@ class WoundApplier {
         return wounds;
     }
 
-    /** Weapon tags of whatever the character has equipped, to bias anatomy. */
-    _equippedWeaponTags() {
-        const weapon = this.actor.items.find(i => i.type === "weapon" && i.system.equipped);
-        if (!weapon) return ["unarmed"];
-        const raw = weapon.system.weaponType;
-        return Array.isArray(raw) ? raw : (raw ? [raw] : ["melee"]);
-    }
-
     /**
      * Roll one wound. Damage sets the band and the die sets the position in it,
      * so the same damage no longer always produces the same wound.
@@ -414,8 +422,17 @@ class WoundApplier {
      * Prefer the world's roll table so a GM editing it actually changes play.
      * Falls back to the shipped data when the table is missing or unrecognised.
      */
+    /** The world table this blow draws from, by uuid or by name. */
+    _worldTable() {
+        const ref = woundTableFor(this.source, { fallback: WOUND_TABLE_NAME });
+        return game.tables?.get(ref)
+            ?? game.tables?.find(t => t.uuid === ref)
+            ?? game.tables?.find(t => t.name === ref)
+            ?? null;
+    }
+
     _entryFor(severity, table) {
-        const worldTable = game.tables?.find(t => t.name === WOUND_TABLE_NAME);
+        const worldTable = this._worldTable();
         const result = worldTable?.results?.find(r => {
             const [low, high] = r.range ?? [];
             return Number.isFinite(low) && severity >= low && severity <= high;
@@ -461,7 +478,7 @@ class WoundApplier {
     async _rollBodyPart() {
         const roll = new Roll("1d6");
         await roll.evaluate();
-        return bodyPartFor(roll.total, this.weaponTags);
+        return bodyPartFor(roll.total, anatomyTags(this.source));
     }
 
     async _rollMaimedResult() {

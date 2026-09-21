@@ -8,6 +8,7 @@
         "templates": {
             "base": {
                 "initiative": 0,
+                "woundTable": "",
                 "hp": {
                     "value": 10,
                     "max": 10
@@ -222,6 +223,7 @@
             ],
             "damage": "1d6",
             "weaponType": "melee",
+            "woundTable": "",
             "size": "medium",
             "attackPenalty": 0,
             "encumbrancePenalty": 0,
