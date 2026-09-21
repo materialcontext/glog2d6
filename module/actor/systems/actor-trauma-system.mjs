@@ -8,6 +8,8 @@ import {
     nextWoundState,
     normalizeWound,
     scarFromWound,
+    woundItemData,
+    woundsFromItems,
     woundCount,
     woundRemoval,
     woundSeverity
@@ -53,9 +55,15 @@ class ActorTraumaSystem {
         return woundApplier.apply();
     }
 
-    /** Wounds as stored, with recovery fields filled in for older entries. */
+    /** The wound Items this actor is carrying, flattened for the rules. */
     get woundList() {
-        return (this.actor.system.wounds?.list || []).map(normalizeWound);
+        return woundsFromItems(this.actor.items);
+    }
+
+    /** The document behind a flattened wound. */
+    _woundItem(woundId) {
+        const item = this.actor.items.get(woundId);
+        return item?.type === "wound" ? item : null;
     }
 
     /**
@@ -72,8 +80,7 @@ class ActorTraumaSystem {
             return null;
         }
 
-        const updated = wounds.map(w => (w.id === woundId ? { ...w, state } : w));
-        await this.actor.update({ "system.wounds.list": updated });
+        await this._woundItem(woundId)?.update({ "system.state": state });
         ui.notifications.info(`${wound.name} is now ${state}.`);
         return state;
     }
@@ -93,11 +100,7 @@ class ActorTraumaSystem {
             return null;
         }
 
-        const remaining = wounds.filter(w => w.id !== woundId);
-        await this.actor.update({
-            "system.wounds.list": remaining,
-            "system.wounds.count": remaining.length
-        });
+        await this._woundItem(woundId)?.delete();
 
         const reroll = await this._rerollMaxHp(wound);
         const scar = await this._leaveScar(wound);
@@ -468,14 +471,9 @@ class WoundApplier {
         return results[roll.total - 1] ?? "Roll on the maimed table";
     }
 
+    /** Wounds are documents, so taking one is creating one. */
     async _addWoundsToActor(wounds) {
-        const current = this.actor.system.wounds?.list || [];
-        const updated = [...current, ...wounds];
-
-        await this.actor.update({
-            "system.wounds.list": updated,
-            "system.wounds.count": updated.length
-        });
+        await this.actor.createEmbeddedDocuments("Item", wounds.map(woundItemData));
     }
 
     async _sendWoundChatMessage(rolled) {

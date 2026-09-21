@@ -75,6 +75,11 @@ export class GLOG2D6Actor extends Actor {
             console.error("Error in prepareDerivedData for", this.name, ":", error);
         }
 
+        // Wounds are documents, so the count is however many are on the actor.
+        if (this.system.wounds) {
+            this.system.wounds.count = this.items.filter(i => i.type === "wound").length;
+        }
+
         // Outside the try on purpose. The combat tracker's formula reads this,
         // and an actor that cannot roll initiative because some unrelated
         // derivation threw is a worse failure than the one that threw.

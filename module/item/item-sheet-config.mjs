@@ -9,6 +9,7 @@
  * matching `templates/item/item-<type>-sheet.hbs` next to the others.
  */
 
+import { BODY_PARTS, WOUND_STATE_LABELS } from "../systems/wounds.mjs";
 import { BREAKAGE_LABELS, BreakageCalculator } from "../systems/breakage-calculator.mjs";
 
 const TEMPLATE_ROOT = "systems/glog2d6/templates/item";
@@ -257,6 +258,18 @@ export const ITEM_SHEET_CONFIG = Object.freeze({
 
     note: {
         position: { width: 480, height: 420 }
+    },
+
+    /**
+     * A wound is a document so a GM can author one, drop it in a compendium and
+     * point a roll table at it. Its fields are the ones the rules read.
+     */
+    wound: {
+        position: { width: 520, height: 560 },
+        choices: () => ({
+            woundStates: WOUND_STATE_LABELS,
+            bodyParts: Object.fromEntries(BODY_PARTS.map(part => [part, part]))
+        })
     }
 });
 

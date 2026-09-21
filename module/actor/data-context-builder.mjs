@@ -1,5 +1,5 @@
 // module/actor/data-context-builder.mjs
-import { decorateWounds } from "../systems/wounds.mjs";
+import { decorateWounds, woundsFromItems } from "../systems/wounds.mjs";
 import { hasAvailableClassFeatures } from './handlers/feature-handlers.mjs';
 import { analyzeEquippedWeapons, hasFeature } from '../utils/actor-analysis.mjs';
 import {
@@ -142,7 +142,7 @@ class ContextEnhancer {
     }
 
     addWoundData() {
-        this.context.wounds = decorateWounds(this.actor.system?.wounds?.list || []);
+        this.context.wounds = decorateWounds(woundsFromItems(this.actor.items ?? []));
         return this;
     }
 

@@ -39,7 +39,8 @@
             "torch": {},
             "feature": {},
             "spell": {},
-            "note": {}
+            "note": {},
+            "wound": {}
         }
     },
     "primaryTokenAttribute": "hp",

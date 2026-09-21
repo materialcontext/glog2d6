@@ -161,12 +161,28 @@ describe("actors saved by earlier versions", () => {
         expect(context.woundEffects).toEqual([]);
     });
 
-    it("opens with a wounds block from before effects were aggregated", () => {
+    /**
+     * Wounds became documents. An actor still carrying the old embedded list
+     * has no wounds as far as the sheet is concerned -- which is right, and
+     * must not throw on the way to saying so.
+     */
+    it("ignores a wounds list left over from when wounds were embedded", () => {
         const system = skeletal();
         system.wounds = { count: 1, list: [{ id: "w", typeId: "hobbled", name: "Hobbled" }] };
         const [[, doc]] = renderBoth(actor(system));
-        expect(doc.querySelectorAll(".glog-wound")).toHaveLength(1);
+        expect(doc.querySelectorAll(".glog-wound")).toHaveLength(0);
         expect(doc.body.textContent).not.toMatch(/undefined/);
+    });
+
+    it("reads wounds off the actor's items instead", () => {
+        const wound = {
+            id: "w1", name: "Hobbled", type: "wound", img: "w.png",
+            system: { typeId: "hobbled", state: "untreated", bodyPart: "Leg",
+                      description: "Movement reduced.", effects: { movementReduction: 10 } }
+        };
+        const [[, doc]] = renderBoth(actor(skeletal(), [wound]));
+        expect(doc.querySelectorAll(".glog-wound")).toHaveLength(1);
+        expect(doc.body.textContent).toContain("Hobbled");
     });
 
     /**

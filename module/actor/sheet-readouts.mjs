@@ -285,13 +285,14 @@ const CARRIED_TYPES = Object.freeze(["weapon", "armor", "shield", "gear", "torch
  * items at all" -- the templates used to conflate the two.
  */
 export function partitionItems(items = []) {
-    const bucket = { carried: [], features: [], spells: [], notes: [] };
+    const bucket = { carried: [], features: [], spells: [], notes: [], wounds: [] };
 
     for (const item of items) {
         if (CARRIED_TYPES.includes(item?.type)) bucket.carried.push(item);
         else if (item?.type === "feature") bucket.features.push(item);
         else if (item?.type === "spell") bucket.spells.push(item);
         else if (item?.type === "note") bucket.notes.push(item);
+        else if (item?.type === "wound") bucket.wounds.push(item);
     }
 
     return bucket;

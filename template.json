@@ -148,7 +148,6 @@
             },
             "wounds": {
                 "count": 0,
-                "list": [],
                 "effects": {
                     "statReductions": {},
                     "movementReduction": 0,
@@ -204,7 +203,8 @@
             "feature",
             "spell",
             "torch",
-            "note"
+            "note",
+            "wound"
         ],
         "templates": {
             "base": {
@@ -260,6 +260,17 @@
                 "level": 0,
                 "maxLevel": 2
             }
+        },
+        "wound": {
+            "description": "",
+            "typeId": "",
+            "damage": 0,
+            "severity": 0,
+            "state": "untreated",
+            "bodyPart": "",
+            "maimedResult": "",
+            "dateAcquired": "",
+            "effects": {}
         },
         "feature": {
             "description": "",

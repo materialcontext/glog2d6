@@ -225,8 +225,14 @@ export function aggregateWoundEffects(wounds = [], definitions = []) {
     const counted = new Set();
 
     for (const wound of wounds) {
+        // The wound's own effects win. It embedded them when it was taken, so
+        // editing or deleting the table it came from cannot silently rewrite
+        // what someone is already carrying; the definition is only a fallback
+        // for anything written before that was true.
         const entry = byId.get(wound?.typeId);
-        const effects = entry?.effects ?? wound?.effects;
+        const effects = wound?.effects && Object.keys(wound.effects).length
+            ? wound.effects
+            : entry?.effects;
         if (!effects) continue;
 
         // A non-stacking wound contributes once no matter how many you carry.
@@ -409,4 +415,72 @@ export function decorateWounds(wounds = [], now = Date.now()) {
         nextState: nextWoundState(wound.state),
         removal: woundRemoval(wound, normalized, now)
     }));
+}
+
+/* -------------------------------------------- */
+/*  Wounds as documents                         */
+/* -------------------------------------------- */
+
+/** What a wound Item looks like before anyone edits it. */
+export const WOUND_ITEM_TYPE = "wound";
+export const WOUND_ICON = "icons/skills/wounds/injury-triple-slash-bleed.webp";
+
+/**
+ * Flatten a wound Item into the shape the rules in this file already speak.
+ *
+ * Wounds became Items so that a GM can author them, drop them in a compendium
+ * and point a roll table at them. None of the rules cared where a wound was
+ * stored, so rather than teach them about documents, documents are translated
+ * at the edge.
+ */
+export function woundFromItem(item) {
+    if (!item) return null;
+    const system = item.system ?? {};
+
+    return normalizeWound({
+        id: item.id,
+        name: item.name,
+        img: item.img,
+        typeId: system.typeId,
+        description: system.description,
+        damage: system.damage,
+        severity: system.severity,
+        state: system.state,
+        bodyPart: system.bodyPart,
+        maimedResult: system.maimedResult,
+        dateAcquired: system.dateAcquired,
+        effects: system.effects
+    });
+}
+
+/** Every wound an actor is carrying, flattened, in the order they were taken. */
+export function woundsFromItems(items = []) {
+    return [...items]
+        .filter(item => item?.type === WOUND_ITEM_TYPE)
+        .map(woundFromItem);
+}
+
+/**
+ * The document data for a wound about to be taken.
+ *
+ * Effects are copied onto the wound rather than referenced, so it keeps saying
+ * what it did on the day it was inflicted.
+ */
+export function woundItemData(wound = {}) {
+    return {
+        name: wound.name ?? "Wound",
+        type: WOUND_ITEM_TYPE,
+        img: wound.img ?? WOUND_ICON,
+        system: {
+            typeId: wound.typeId ?? "",
+            description: wound.description ?? "",
+            damage: Math.max(0, Math.floor(Number(wound.damage) || 0)),
+            severity: Math.max(0, Math.floor(Number(wound.severity) || 0)),
+            state: WOUND_STATE_ORDER.includes(wound.state) ? wound.state : WOUND_STATES.UNTREATED,
+            bodyPart: wound.bodyPart ?? "",
+            maimedResult: wound.maimedResult ?? "",
+            dateAcquired: wound.dateAcquired ?? new Date().toISOString(),
+            effects: { ...(wound.effects ?? {}) }
+        }
+    };
 }
