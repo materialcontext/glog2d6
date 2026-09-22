@@ -11,6 +11,7 @@ import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders, migrateContent } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { blowFrom, initGMRolls } from "./module/systems/gm-roll-system.mjs";
+import { applyDamage, initContestFlow } from "./module/systems/contest-flow.mjs";
 import { RollRequestDialog } from "./module/dialogs/roll-request-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
@@ -91,6 +92,7 @@ Hooks.once('init', async function() {
     // Registers chat-message wiring, so like the sheets it must be set up
     // before init can yield -- see registerDocumentSheets.
     initGMRolls();
+    initContestFlow();
 
     // Every kind of request -- a save, a recon check, a trauma save -- is
     // called for through the one dialog.
@@ -326,7 +328,7 @@ Hooks.once("ready", async function() {
     }
 });
 
-// GM Recon check, as a one-shot tool under the Token scene controls.
+// Calling for a roll, as a one-shot tool under the Token scene controls.
 //
 // This used to inject an icon into the chat controls on `renderSidebarTab`.
 // That hook stopped firing when the sidebar moved to ApplicationV2 in v13, and
@@ -343,14 +345,14 @@ Hooks.on("getSceneControlButtons", controls => {
         return;
     }
 
-    tokenControls.tools.glog2d6Recon = {
-        name: "glog2d6Recon",
-        title: "Recon Check",
-        icon: "fas fa-binoculars",
+    tokenControls.tools.glog2d6RollRequest = {
+        name: "glog2d6RollRequest",
+        title: "Call For a Roll",
+        icon: "fas fa-dice",
         button: true,
         visible: true,
         order: Object.keys(tokenControls.tools).length,
-        onChange: () => game.glog2d6.rollRequest("recon")
+        onChange: () => game.glog2d6.rollRequest()
     };
 });
 
@@ -427,6 +429,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
             // that attacker's table and rolled against the right anatomy.
             await actor.applyWound(damage, blowFrom({
                 attacker: button.dataset.attacker,
+                weapon: button.dataset.weapon,
                 woundTable: button.dataset.woundTable
             }));
             button.disabled = true;
@@ -473,19 +476,40 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     $html.find('.damage-roll-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
-        const actorId = button.dataset.actorId;
-        const weaponId = button.dataset.weaponId;
-        const attackResult = parseInt(button.dataset.attackResult);
+        const { actorId, weaponId, targetId, crit } = button.dataset;
 
         const actor = game.actors.get(actorId);
         const weapon = actor?.items.get(weaponId);
 
         if (actor && weapon) {
-            await actor.rollWeaponDamage(weapon, attackResult);
+            // The margin the contest was won by, worked out where the contest
+            // was. This used to be the literal string "{{roll.total}}".
+            await actor.rollWeaponDamage(weapon, parseInt(button.dataset.baseDamage) || 0, {
+                crit: Boolean(crit),
+                targetId: targetId ?? ""
+            });
             button.disabled = true;
             button.textContent = "Rolled";
         } else {
             ui.notifications.error("Actor or weapon not found!");
         }
+    });
+
+    $html.find('.apply-damage-btn').click(async (event) => {
+        event.preventDefault();
+        const button = event.currentTarget;
+        const { targetId, attackerId, weaponId, crit } = button.dataset;
+
+        await applyDamage({
+            targetId,
+            amount: parseInt(button.dataset.damage) || 0,
+            dieTotal: parseInt(button.dataset.dieTotal) || 0,
+            crit: Boolean(crit),
+            attackerId,
+            weaponId
+        });
+
+        button.disabled = true;
+        button.textContent = "Applied";
     });
 });

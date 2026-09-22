@@ -24,9 +24,7 @@ import {
 } from "./roll-requests.mjs";
 import { reconRow, reconSummary, rollRecon } from "./recon-system.mjs";
 import { damageSource, withTable, woundTableFor } from "./damage-source.mjs";
-
-export const SOCKET = "system.glog2d6";
-export const EXECUTE_REQUEST = "rollExecute";
+import { RELAY, askTheGM, listenForRelays, onlyTheGMCan } from "./gm-relay.mjs";
 
 /** How long a request stays answerable. */
 const REQUEST_LIFETIME = 3600000;
@@ -85,6 +83,7 @@ function traumaRow(result, request) {
                 data-actor-id="${result.actorId}"
                 data-damage="${damage}"
                 data-attacker="${request.params.attacker ?? ""}"
+                data-weapon="${request.params.weapon ?? ""}"
                 data-wound-table="${request.params.woundTable ?? ""}">
             <i class="fas fa-plus"></i> Apply Wound (${damage} damage)
         </button>`;
@@ -226,17 +225,20 @@ export function initGMRolls() {
         if (msg === "/gmroll") { game.glog2d6.rollRequest(); return false; }
     });
 
-    // The socket and `game.user` belong to a connected game rather than to
+    // Answering a request is the GM's to do: the request lives in their
+    // memory, so a player executing it locally found nothing there.
+    onlyTheGMCan(RELAY.EXECUTE_REQUEST, (data, user) =>
+        game.glog2d6.gmRollSystem.execute(data.rollId, data.actorId, user));
+
+    // Calling for a save is the GM's too, but a blow that lands during a
+    // player's own roll has to be able to ask for one.
+    onlyTheGMCan(RELAY.CALL_TRAUMA, (data) =>
+        game.glog2d6.gmRollSystem.create("trauma", data.actorIds, data.params ?? {}));
+
+    // `game.user` and the socket belong to a connected game rather than to
     // init, so they are claimed here rather than above.
     Hooks.once("ready", () => {
-        game.socket.on(SOCKET, async (data) => {
-            if (data?.type !== EXECUTE_REQUEST || !game.user.isGM) return;
-            try {
-                await game.glog2d6.gmRollSystem.execute(data.rollId, data.actorId, game.users.get(data.userId));
-            } catch (error) {
-                console.error("glog2d6 | Roll request failed:", error);
-            }
-        });
+        listenForRelays();
 
         if (!game.user.isGM) return;
 
@@ -267,16 +269,20 @@ export function initGMRolls() {
  */
 export function blowFrom(params = {}) {
     const attacker = params.attacker ? game.actors.get(params.attacker) : null;
-    return withTable(damageSource({ actor: attacker }), params.woundTable);
+    const weapon = params.weapon ? attacker?.items?.get(params.weapon) : null;
+
+    return withTable(damageSource({ actor: attacker, item: weapon }), params.woundTable);
+}
+
+/** Answer a request, from whichever client clicked the button. */
+export async function requestRoll(rollId, actorId) {
+    return askTheGM(RELAY.EXECUTE_REQUEST, { rollId, actorId });
 }
 
 /**
- * Answer a request. A player's click has to reach the GM: the request lives
- * in the GM's memory, so a player executing it locally found nothing there
- * and the button did nothing at all.
+ * Call for a trauma save because a blow landed, rather than because the GM
+ * opened the dialog. The player whose defence was beaten still rolls it.
  */
-export async function requestRoll(rollId, actorId) {
-    if (game.user.isGM) return game.glog2d6.gmRollSystem.execute(rollId, actorId, game.user);
-    game.socket.emit(SOCKET, { type: EXECUTE_REQUEST, rollId, actorId, userId: game.user.id });
-    return null;
+export async function callForTraumaSave(actorIds, params = {}) {
+    return askTheGM(RELAY.CALL_TRAUMA, { actorIds, params });
 }

@@ -168,7 +168,9 @@ class MultipleAttackOptionsStrategy {
     async execute() {
         const attackType = await this.promptForAttackType();
         if (attackType) {
-            await this.actor.rollAttack(attackType);
+            // The first argument is the weapon; passing the type there made
+            // the chosen attack read `"melee".system` and throw.
+            await this.actor.rollAttack(null, attackType);
         }
     }
 
