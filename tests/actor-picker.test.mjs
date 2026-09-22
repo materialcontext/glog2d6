@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
-import { matchesFilter, reconActorChoices, selectedActorIds, wireReconSelection } from "../module/dialogs/recon-selection.mjs";
+import { matchesFilter, actorChoices, selectedActorIds, wireActorPicker } from "../module/dialogs/actor-picker.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const read = p => readFileSync(resolve(ROOT, p), "utf8");
@@ -17,20 +17,20 @@ const world = [
     { id: "h", name: "Torchbearer", type: "hireling" }
 ];
 
-describe("who a recon check can target", () => {
+describe("who a request can be asked of", () => {
     it("is the characters, and only the characters", () => {
-        expect(reconActorChoices(world).map(a => a.id).sort()).toEqual(["a", "b", "c"]);
+        expect(actorChoices(world).map(a => a.id).sort()).toEqual(["a", "b", "c"]);
     });
 
     /** World order is insertion order, which stops being findable at a dozen. */
     it("sorts them so a long list can be searched by eye", () => {
-        expect(reconActorChoices(world).map(a => a.name))
+        expect(actorChoices(world).map(a => a.name))
             .toEqual(["Brother Cedric", "mareth of the Ford", "Ulric"]);
     });
 
     it("survives an empty world", () => {
-        expect(reconActorChoices([])).toEqual([]);
-        expect(reconActorChoices()).toEqual([]);
+        expect(actorChoices([])).toEqual([]);
+        expect(actorChoices()).toEqual([]);
     });
 });
 
@@ -68,51 +68,67 @@ describe("reading the submitted form", () => {
 
     it("returns nothing when nothing is ticked", () => {
         expect(selectedActorIds({ "actors.a": false })).toEqual([]);
+        expect(selectedActorIds({ actors: { a: false } })).toEqual([]);
         expect(selectedActorIds({})).toEqual([]);
         expect(selectedActorIds()).toEqual([]);
+    });
+
+    /**
+     * Foundry hands `_updateObject` an expanded object when the form is
+     * submitted with nothing to merge into it, and the flat one otherwise.
+     * A picker that reads only one shape finds nobody and tells the GM to
+     * select someone they already selected.
+     */
+    it("reads the boxes however the form arrives", () => {
+        expect(selectedActorIds({ actors: { a: true, b: false, c: true } })).toEqual(["a", "c"]);
+        expect(selectedActorIds({ checkType: "ambush", actors: { a: true } })).toEqual(["a"]);
+    });
+
+    it("does not count the same character twice", () => {
+        expect(selectedActorIds({ "actors.a": true, actors: { a: true } })).toEqual(["a"]);
     });
 });
 
 /**
- * The bug: every box arrived ticked, so the default recon check was the whole
+ * The bug: every box arrived ticked, so the default request went to the whole
  * party whether you meant it or not.
  */
 describe("the dialog markup", () => {
-    const html = Handlebars.compile(read("templates/dialogs/recon-dialog.hbs"))({
-        actors: reconActorChoices(world),
-        checkTypes: { recon: "Recon", ambush: "Ambush" }
+    const html = Handlebars.compile(read("templates/dialogs/roll-request.hbs"))({
+        actors: actorChoices(world),
+        types: [{ key: "recon", name: "Recon Check" }]
     });
     const doc = new JSDOM(html).window.document;
 
     it("starts with nobody selected", () => {
-        const boxes = [...doc.querySelectorAll('.recon-actor input[type="checkbox"]')];
+        const boxes = [...doc.querySelectorAll('.picker-actor input[type="checkbox"]')];
         expect(boxes).toHaveLength(3);
         expect(boxes.filter(b => b.hasAttribute("checked"))).toEqual([]);
     });
 
     it("offers a filter that never reaches the submitted data", () => {
-        const filter = doc.querySelector(".recon-filter");
+        const filter = doc.querySelector(".picker-filter");
         expect(filter).not.toBeNull();
         expect(filter.getAttribute("name"), "the filter would submit as a field").toBeNull();
     });
 
     it("carries a lowercased name on each row for the filter to match", () => {
-        const rows = [...doc.querySelectorAll(".recon-actor")];
+        const rows = [...doc.querySelectorAll(".picker-actor")];
         expect(rows.map(r => r.dataset.actorName))
             .toEqual(["brother cedric", "mareth of the ford", "ulric"]);
     });
 
     it("offers select all and select none, and somewhere to report the count", () => {
-        for (const sel of [".recon-select-all", ".recon-select-none", ".recon-count"]) {
+        for (const sel of [".picker-select-all", ".picker-select-none", ".picker-count"]) {
             expect(doc.querySelector(sel), `${sel} is missing`).not.toBeNull();
         }
     });
 
     it("says so when there is nobody to pick", () => {
-        const empty = new JSDOM(Handlebars.compile(read("templates/dialogs/recon-dialog.hbs"))(
-            { actors: [], checkTypes: {} })).window.document;
-        expect(empty.querySelector(".recon-actor")).toBeNull();
-        expect(empty.querySelector(".recon-actors").textContent).toContain("No characters");
+        const empty = new JSDOM(Handlebars.compile(read("templates/dialogs/roll-request.hbs"))(
+            { actors: [], types: [] })).window.document;
+        expect(empty.querySelector(".picker-actor")).toBeNull();
+        expect(empty.querySelector(".picker-actors").textContent).toContain("No characters");
     });
 });
 
@@ -128,23 +144,23 @@ describe("using the picker", () => {
     ];
 
     function open() {
-        const html = Handlebars.compile(read("templates/dialogs/recon-dialog.hbs"))({
-            actors: reconActorChoices(party),
-            checkTypes: { recon: "Recon" }
+        const html = Handlebars.compile(read("templates/dialogs/roll-request.hbs"))({
+            actors: actorChoices(party),
+            types: [{ key: "recon", name: "Recon Check" }]
         });
         const dom = new JSDOM(`<div id="root">${html}</div>`);
         const root = dom.window.document.querySelector("#root");
-        wireReconSelection(root);
+        wireActorPicker(root);
 
-        const rows = () => [...root.querySelectorAll(".recon-actor")];
+        const rows = () => [...root.querySelectorAll(".picker-actor")];
         return {
             root,
             visible: () => rows().filter(r => !r.hidden).map(r => r.textContent.trim()),
             boxFor: name => rows().find(r => r.textContent.includes(name)).querySelector("input"),
-            count: () => root.querySelector(".recon-count").textContent,
-            note: () => root.querySelector(".recon-hidden-note").textContent,
+            count: () => root.querySelector(".picker-count").textContent,
+            note: () => root.querySelector(".picker-hidden-note").textContent,
             type: term => {
-                const filter = root.querySelector(".recon-filter");
+                const filter = root.querySelector(".picker-filter");
                 filter.value = term;
                 filter.dispatchEvent(new dom.window.Event("input"));
             },
@@ -201,7 +217,7 @@ describe("using the picker", () => {
     it("selects all of what the filter leaves visible", () => {
         const ui = open();
         ui.type("ford");
-        ui.click(".recon-select-all");
+        ui.click(".picker-select-all");
 
         expect(ui.count()).toBe("2 selected");
         expect(ui.boxFor("Brother Cedric").checked).toBe(false);
@@ -209,9 +225,9 @@ describe("using the picker", () => {
 
     it("clears everything, including what is hidden", () => {
         const ui = open();
-        ui.click(".recon-select-all");
+        ui.click(".picker-select-all");
         ui.type("cedric");
-        ui.click(".recon-select-none");
+        ui.click(".picker-select-none");
 
         expect(ui.count()).toBe("0 selected");
         expect(ui.boxFor("Mareth of the Ford").checked).toBe(false);

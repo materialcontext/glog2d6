@@ -65,6 +65,14 @@
             </div>
 
             <div class="form-group flex flex-col flex-gap-2">
+                <label for="system.woundTable" class="text-small text-bold text-upper text-muted">Wound Table</label>
+                <input name="system.woundTable" type="text" value="{{system.woundTable}}"
+                    placeholder="Leave blank for the default" class="input" />
+                <span class="text-small text-muted">A roll table by name or uuid. Wounds this weapon
+                    leaves are drawn from it whoever swings it.</span>
+            </div>
+
+            <div class="form-group flex flex-col flex-gap-2">
                 <label for="system.encumbrancePenalty"
                     class="text-small text-bold text-upper text-muted">Encumbrance Penalty</label>
                 <input type="number" name="system.encumbrancePenalty" value="{{system.encumbrancePenalty}}" min="0"

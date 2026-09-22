@@ -8,10 +8,29 @@ import {
     nextWoundState,
     normalizeWound,
     scarFromWound,
+    woundEntryFromItem,
+    woundItemData,
+    woundsFromItems,
     woundCount,
-    woundRemoval,
-    woundSeverity
+    woundRemoval
 } from "../../systems/wounds.mjs";
+
+import {
+    isDocumentResult,
+    ownsItsRoll,
+    resultForValue,
+    resultUuid,
+    rollFormulaFor,
+    severityFor
+} from "../../systems/wound-table.mjs";
+import { TRAUMA_DC, requestDamage, rollSpec, succeeded, traumaBonus } from "../../systems/roll-requests.mjs";
+import {
+    anatomyTags,
+    damageSource,
+    describeSource,
+    unknownSource,
+    woundTableFor
+} from "../../systems/damage-source.mjs";
 
 export const WOUND_TABLE_NAME = "GLOG Wounds Table";
 class ActorTraumaSystem {
@@ -43,19 +62,34 @@ class ActorTraumaSystem {
         return dialog.render(true);
     }
 
-    async rollTraumaSave(excessDamage, customBonus = 0) {
-        const traumaRoller = new TraumaSaveRoller(this.actor, excessDamage, customBonus);
+    /**
+     * @param {number} excessDamage  Damage past what was left.
+     * @param {number} [customBonus] A bonus for this save alone.
+     * @param {string} [reason]      What called for it, for the card.
+     */
+    async rollTraumaSave(excessDamage, customBonus = 0, reason = "") {
+        const traumaRoller = new TraumaSaveRoller(this.actor, excessDamage, customBonus, reason);
         return traumaRoller.execute();
     }
 
-    async applyWound(damage) {
-        const woundApplier = new WoundApplier(this.actor, damage);
+    /**
+     * @param {number} damage   Damage in excess of what was left.
+     * @param {object} [source] What hit you -- see systems/damage-source.
+     */
+    async applyWound(damage, source = null) {
+        const woundApplier = new WoundApplier(this.actor, damage, { source });
         return woundApplier.apply();
     }
 
-    /** Wounds as stored, with recovery fields filled in for older entries. */
+    /** The wound Items this actor is carrying, flattened for the rules. */
     get woundList() {
-        return (this.actor.system.wounds?.list || []).map(normalizeWound);
+        return woundsFromItems(this.actor.items);
+    }
+
+    /** The document behind a flattened wound. */
+    _woundItem(woundId) {
+        const item = this.actor.items.get(woundId);
+        return item?.type === "wound" ? item : null;
     }
 
     /**
@@ -72,8 +106,7 @@ class ActorTraumaSystem {
             return null;
         }
 
-        const updated = wounds.map(w => (w.id === woundId ? { ...w, state } : w));
-        await this.actor.update({ "system.wounds.list": updated });
+        await this._woundItem(woundId)?.update({ "system.state": state });
         ui.notifications.info(`${wound.name} is now ${state}.`);
         return state;
     }
@@ -93,11 +126,7 @@ class ActorTraumaSystem {
             return null;
         }
 
-        const remaining = wounds.filter(w => w.id !== woundId);
-        await this.actor.update({
-            "system.wounds.list": remaining,
-            "system.wounds.count": remaining.length
-        });
+        await this._woundItem(woundId)?.delete();
 
         const reroll = await this._rerollMaxHp(wound);
         const scar = await this._leaveScar(wound);
@@ -195,13 +224,7 @@ class TraumaSaveDialog extends FormApplication {
     }
 
     _getTraumaBonuses() {
-        const toughFeature = this.actor.items.find(i =>
-            i.type === "feature" &&
-            i.system.active &&
-            i.name === "Tough"
-        );
-
-        return toughFeature ? 1 : 0;
+        return traumaBonus(this.actor);
     }
 
     _getWoundsPreview() {
@@ -234,46 +257,38 @@ class TraumaSaveDialog extends FormApplication {
 }
 
 class TraumaSaveRoller {
-    constructor(actor, excessDamage, customBonus = 0) {
+    constructor(actor, excessDamage, customBonus = 0, reason = "") {
         this.actor = actor;
-        this.excessDamage = excessDamage;
+        // Sanitised here rather than trusted: this used to take whatever the
+        // caller passed, and one caller passed a sentence, which travelled
+        // all the way to the wound button's damage.
+        this.excessDamage = requestDamage({ damage: excessDamage });
         this.customBonus = customBonus;
+        this.reason = reason;
     }
 
     async execute() {
-        const rollData = this._buildRollData();
-        const roll = this.actor.createRoll("2d6 + @con + @trauma + @custom", rollData, 'trauma');
+        const { formula, data } = this._spec();
+        const roll = this.actor.createRoll(formula, data, 'trauma');
         await roll.evaluate();
 
-        const success = roll.total >= 10;
-        const chatMessage = await this._createChatMessage(roll, success);
-
-        if (!success) {
-            this._addApplyWoundButton(chatMessage, roll); // Pass the roll separately
-        }
+        const success = succeeded("trauma", roll.total);
+        await this._createChatMessage(roll, success);
 
         return { roll, success };
     }
 
-    _buildRollData() {
-        const conMod = this.actor.system.attributes.con.effectiveMod;
-        const traumaBonus = this._getTraumaBonuses();
-
+    /**
+     * The same save the GM calls for, with room for a bonus this one time.
+     * Shared with systems/roll-requests so a character rolling their own
+     * trauma save and a GM calling for one cannot come to different sums.
+     */
+    _spec() {
+        const { formula, data } = rollSpec("trauma", this.actor);
         return {
-            con: conMod,
-            trauma: traumaBonus,
-            custom: this.customBonus
+            formula: `${formula} + @custom`,
+            data: { ...data, custom: this.customBonus }
         };
-    }
-
-    _getTraumaBonuses() {
-        const toughFeature = this.actor.items.find(i =>
-            i.type === "feature" &&
-            i.system.active &&
-            (i.name === "Tough" || i.name.includes("Trauma"))
-        );
-
-        return toughFeature ? 1 : 0;
     }
 
     async _createChatMessage(roll, success) {
@@ -287,12 +302,13 @@ class TraumaSaveRoller {
                 <div class="p-8 section mb-8" style="background: linear-gradient(135deg, #fff8f8 0%, white 100%);">
                     <div class="text-small mb-4"><strong>Roll:</strong> ${this._formatRollDisplay(roll)}</div>
                     <div class="text-small mb-4"><strong>Total:</strong> ${roll.total}</div>
-                    <div class="text-small mb-4"><strong>Target:</strong> 10</div>
+                    <div class="text-small mb-4"><strong>Target:</strong> ${TRAUMA_DC}</div>
                     <div class="text-small mb-4"><strong>Result:</strong> <span class="${resultClass} text-bold">${resultText}</span></div>
                     <div class="text-small"><strong>Excess Damage:</strong> ${this.excessDamage}</div>
+                    ${this.reason ? `<div class="text-small text-muted mt-4">${this.reason}</div>` : ''}
                     ${breakdown}
                 </div>
-                ${!success ? `<div id="wound-application-${roll._id}"></div>` : ''}
+                ${success ? '' : this._applyWoundButton()}
             </div>
         `;
 
@@ -312,7 +328,7 @@ class TraumaSaveRoller {
     }
 
     _buildBreakdown() {
-        const rollData = this._buildRollData();
+        const rollData = this._spec().data;
         const parts = [];
 
         if (rollData.con !== 0) {
@@ -335,26 +351,21 @@ class TraumaSaveRoller {
         return `[${diceResults.join(', ')}]`;
     }
 
-    async _addApplyWoundButton(chatMessage, roll) {
-        const buttonHtml = `
+    /**
+     * A failed save offers the wound; it never imposes one. The button used
+     * to be patched into the message a tenth of a second after it was posted,
+     * which is a race for the sake of nothing -- the card knows it failed
+     * while it is being built.
+     */
+    _applyWoundButton() {
+        return `
         <button type="button" class="btn btn-danger p-8 mt-8 apply-wound-btn w-full"
                 data-actor-id="${this.actor.id}"
                 data-damage="${this.excessDamage}"
-                data-roll-id="${roll._id}">
+                data-attacker=""
+                data-wound-table="">
             <i class="fas fa-plus"></i> Apply Wound (${this.excessDamage} damage)
-        </button>
-    `;
-
-        setTimeout(async () => {
-            const message = game.messages.get(chatMessage.id);
-            if (message) {
-                const content = message.content.replace(
-                    `<div id="wound-application-${roll._id}"></div>`,
-                    buttonHtml
-                );
-                await message.update({ content });
-            }
-        }, 100);
+        </button>`;
     }
 }
 
@@ -362,7 +373,11 @@ class WoundApplier {
     constructor(actor, damage, options = {}) {
         this.actor = actor;
         this.damage = damage;
-        this.weaponTags = options.weaponTags ?? this._equippedWeaponTags();
+
+        // What hit you, not what you happen to be holding. This used to read
+        // the victim's own equipped weapon, so being shot while carrying a
+        // sword rolled melee anatomy.
+        this.source = options.source ?? unknownSource();
     }
 
     async apply() {
@@ -385,40 +400,68 @@ class WoundApplier {
         return wounds;
     }
 
-    /** Weapon tags of whatever the character has equipped, to bias anatomy. */
-    _equippedWeaponTags() {
-        const weapon = this.actor.items.find(i => i.type === "weapon" && i.system.equipped);
-        if (!weapon) return ["unarmed"];
-        const raw = weapon.system.weaponType;
-        return Array.isArray(raw) ? raw : (raw ? [raw] : ["melee"]);
-    }
-
     /**
      * Roll one wound. Damage sets the band and the die sets the position in it,
      * so the same damage no longer always produces the same wound.
      */
     async _rollWound(table) {
-        const roll = new Roll(`1d${SEVERITY_DIE}`);
+        const worldTable = this._worldTable();
+
+        // A table that says how damage enters its formula is rolled as written
+        // and read against its own ranges; anything else keeps the severity
+        // the system has always computed. See systems/wound-table.
+        const roll = new Roll(rollFormulaFor(worldTable), { excess: this.damage });
         await roll.evaluate();
 
-        const severity = woundSeverity(roll.total, this.damage, table.length);
-        const entry = this._entryFor(severity, table);
+        const severity = severityFor(worldTable, {
+            total: roll.total,
+            damage: this.damage,
+            entryCount: table.length
+        });
+        const entry = await this._entryFor(severity, table, worldTable);
 
-        return { entry, severity, roll, wound: await this._createWoundInstance(entry, severity) };
+        return {
+            entry,
+            severity,
+            roll,
+            detail: this._rollDetail(worldTable, roll),
+            wound: await this._createWoundInstance(entry, severity)
+        };
+    }
+
+    /**
+     * How the severity was arrived at, in the table's own terms. A table that
+     * owns its roll already counted the damage, so saying so twice would read
+     * as though it had been added again.
+     */
+    _rollDetail(worldTable, roll) {
+        return ownsItsRoll(worldTable)
+            ? `${roll.formula} = ${roll.total}`
+            : `d${SEVERITY_DIE} ${roll.total} + ${this.damage} damage`;
     }
 
     /**
      * Prefer the world's roll table so a GM editing it actually changes play.
      * Falls back to the shipped data when the table is missing or unrecognised.
      */
-    _entryFor(severity, table) {
-        const worldTable = game.tables?.find(t => t.name === WOUND_TABLE_NAME);
-        const result = worldTable?.results?.find(r => {
-            const [low, high] = r.range ?? [];
-            return Number.isFinite(low) && severity >= low && severity <= high;
-        });
+    /** The world table this blow draws from, by uuid or by name. */
+    _worldTable() {
+        const ref = woundTableFor(this.source, { fallback: WOUND_TABLE_NAME });
+        return game.tables?.get(ref)
+            ?? game.tables?.find(t => t.uuid === ref)
+            ?? game.tables?.find(t => t.name === ref)
+            ?? null;
+    }
+
+    async _entryFor(severity, table, worldTable = this._worldTable()) {
+        const result = resultForValue(worldTable?.results ?? [], severity);
 
         if (result) {
+            // A result pointing at a wound Item is the whole entry: the GM
+            // authored it, so nothing needs matching back to the shipped list.
+            const authored = await this._authoredEntry(result);
+            if (authored) return authored;
+
             const tagged = result.getFlag?.("glog2d6", "woundId");
             const byFlag = tagged && table.find(entry => entry.id === tagged);
             if (byFlag) return byFlag;
@@ -428,7 +471,23 @@ class WoundApplier {
             if (byName) return byName;
         }
 
-        return table[severity - 1];
+        return table[severity - 1] ?? table.at(-1);
+    }
+
+    /** The wound Item a document result points at, if it resolves to one. */
+    async _authoredEntry(result) {
+        if (!isDocumentResult(result)) return null;
+
+        const uuid = resultUuid(result);
+        if (!uuid) return null;
+
+        try {
+            const document = await fromUuid(uuid);
+            return document?.type === "wound" ? woundEntryFromItem(document) : null;
+        } catch (error) {
+            console.warn("glog2d6 | Could not resolve wound table result", uuid, error);
+            return null;
+        }
     }
 
     async _createWoundInstance(woundEntry, severity) {
@@ -458,7 +517,7 @@ class WoundApplier {
     async _rollBodyPart() {
         const roll = new Roll("1d6");
         await roll.evaluate();
-        return bodyPartFor(roll.total, this.weaponTags);
+        return bodyPartFor(roll.total, anatomyTags(this.source));
     }
 
     async _rollMaimedResult() {
@@ -468,25 +527,20 @@ class WoundApplier {
         return results[roll.total - 1] ?? "Roll on the maimed table";
     }
 
+    /** Wounds are documents, so taking one is creating one. */
     async _addWoundsToActor(wounds) {
-        const current = this.actor.system.wounds?.list || [];
-        const updated = [...current, ...wounds];
-
-        await this.actor.update({
-            "system.wounds.list": updated,
-            "system.wounds.count": updated.length
-        });
+        await this.actor.createEmbeddedDocuments("Item", wounds.map(woundItemData));
     }
 
     async _sendWoundChatMessage(rolled) {
-        const cards = rolled.map(({ wound, severity, roll }) => `
+        const cards = rolled.map(({ wound, severity, detail }) => `
             <div class="p-8 section mb-8">
                 <div class="text-small mb-4">
                     <strong>${wound.name}</strong>
                     <span class="text-muted">&mdash; ${wound.bodyPart}</span>
                 </div>
                 <div class="text-small text-muted mb-4">
-                    Severity ${severity} (d${SEVERITY_DIE} ${roll.total} + ${this.damage} damage)
+                    Severity ${severity} (${detail})
                 </div>
                 <div class="text-small">${wound.description}</div>
                 ${wound.effects.rerollStat

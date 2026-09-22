@@ -96,12 +96,12 @@ describe("the initiative modifier", () => {
 /** Two initiative rolls in one system must not disagree about the rule. */
 describe("the GM roll agrees with the tracker", () => {
     it("uses the same modifier, not its own reading of DEX", () => {
-        const gm = read("module/systems/gm-roll-system.mjs");
-        const entry = /initiative: \{[\s\S]*?\},\n/.exec(gm)[0];
+        const requests = read("module/systems/roll-requests.mjs");
+        const entry = /initiative: \{[\s\S]*?\n    \},\n/.exec(requests)[0];
 
-        expect(entry).toContain("initiativeModifier(actor.system)");
+        expect(entry).toMatch(/initiativeModifier\(actor\??\.system\)/);
         expect(entry).not.toContain("attributes.dex");
-        expect(gm).toContain('from "./initiative.mjs"');
+        expect(requests).toContain('from "./initiative.mjs"');
     });
 });
 

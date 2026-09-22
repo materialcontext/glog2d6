@@ -1,0 +1,105 @@
+{{!-- templates/dialogs/roll-request.hbs --}}
+{{!-- Every group carries the field it is for; which are shown is decided by
+      the request type, in dialogs/request-form. --}}
+<form autocomplete="off">
+    <div class="form-group flex flex-col flex-gap-2">
+        <label class="text-small text-bold text-upper text-muted">Call For</label>
+        <select name="type" class="input">
+            {{#each types as |type|}}
+            <option value="{{type.key}}">{{type.name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="attribute" hidden>
+        <label class="text-small text-bold text-upper text-muted">Attribute</label>
+        <select name="attribute" class="input">
+            {{#each attributes as |attr|}}
+            <option value="{{attr}}">{{upperCase attr}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="skill" hidden>
+        <label class="text-small text-bold text-upper text-muted">Skill</label>
+        <select name="skill" class="input">
+            {{#each skills as |skill|}}
+            <option value="{{skill}}">{{capitalize skill}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="target" hidden>
+        <label class="text-small text-bold text-upper text-muted">Target (optional)</label>
+        <input type="number" name="target" min="1" max="20" class="input">
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="location" hidden>
+        <label class="text-small text-bold text-upper text-muted">Location (optional)</label>
+        <input type="text" name="location" placeholder="e.g., Dark Forest, Ancient Ruins" class="input">
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="damage" hidden>
+        <label class="text-small text-bold text-upper text-muted">Excess Damage</label>
+        <input type="number" name="damage" min="1" value="1" class="input">
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="attacker" hidden>
+        <label class="text-small text-bold text-upper text-muted">Struck By (optional)</label>
+        <select name="attacker" class="input">
+            <option value="">Nothing in particular</option>
+            {{#each attackers as |attacker|}}
+            <option value="{{attacker.id}}">{{attacker.name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="woundTable" hidden>
+        <label class="text-small text-bold text-upper text-muted">Wound Table (optional)</label>
+        <select name="woundTable" class="input">
+            <option value="">Whatever the attacker uses</option>
+            {{#each tables as |table|}}
+            <option value="{{table}}">{{table}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2" data-field="description" hidden>
+        <label class="text-small text-bold text-upper text-muted">Description (optional)</label>
+        <input type="text" name="description" placeholder="Context..." class="input">
+    </div>
+
+    <div class="form-group flex flex-col flex-gap-2">
+        <div class="flex flex-between flex-center">
+            <label class="text-small text-bold text-upper text-muted">Characters</label>
+            <span class="picker-count text-small text-muted">0 selected</span>
+        </div>
+
+        {{!-- No `name`, so the filter never reaches the submitted data. --}}
+        <input type="search" class="input picker-filter" placeholder="Filter by name" autocomplete="off">
+
+        <div class="picker-actors">
+            {{#each actors as |actor|}}
+            <label class="picker-actor flex flex-center flex-gap-4 p-4 section clickable"
+                data-actor-name="{{actor.nameLower}}">
+                <input type="checkbox" name="actors.{{actor.id}}" value="true">
+                <span class="text-small">{{actor.name}}</span>
+            </label>
+            {{else}}
+            <p class="text-small text-muted p-4">No characters in this world.</p>
+            {{/each}}
+        </div>
+
+        <div class="flex flex-gap-8">
+            <a class="picker-select-all text-small">Select all</a>
+            <a class="picker-select-none text-small">Select none</a>
+            <span class="picker-hidden-note text-small text-muted"></span>
+        </div>
+    </div>
+
+    <div class="form-group flex flex-center mt-15">
+        <button type="submit" class="btn btn-primary p-8">
+            <i class="fas fa-dice"></i> Call For It
+        </button>
+    </div>
+</form>

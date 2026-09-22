@@ -10,9 +10,8 @@ import { setupGlobalUtils } from "./scripts/system-utils.mjs";
 import { loadSpellData, loadSystemData } from "./data/data-loader.mjs";
 import { createDefaultFolders, migrateContent } from "./scripts/initialize-content.mjs";
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
-import { initGMRolls } from "./module/systems/gm-roll-system.mjs";
-import { initReconSystem } from "./module/systems/recon-system.mjs";
-import { ReconDialog } from "./module/dialogs/recon-dialog.mjs";
+import { blowFrom, initGMRolls } from "./module/systems/gm-roll-system.mjs";
+import { RollRequestDialog } from "./module/dialogs/roll-request-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
 import { featureBadge, itemSummary } from "./module/actor/sheet-readouts.mjs";
@@ -88,6 +87,15 @@ Hooks.once('init', async function() {
     // Without this the combat tracker has no formula at all: Foundry's default
     // is null and the manifest declares none.
     CONFIG.Combat.initiative = initiativeConfig();
+
+    // Registers chat-message wiring, so like the sheets it must be set up
+    // before init can yield -- see registerDocumentSheets.
+    initGMRolls();
+
+    // Every kind of request -- a save, a recon check, a trauma save -- is
+    // called for through the one dialog.
+    game.glog2d6 ??= {};
+    game.glog2d6.rollRequest = (type) => new RollRequestDialog(type).render(true);
 
     // Load all JSON data files
     await loadSystemData();
@@ -202,9 +210,6 @@ Hooks.once('init', async function() {
         default: ""
     });
 
-    initGMRolls();
-    initReconSystem();
-
     console.log('glog2d6 | System initialization complete');
 });
 
@@ -219,8 +224,7 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/actor/actor-npc-sheet.hbs",
         "systems/glog2d6/templates/actor/actor-hireling-sheet.hbs",
         ...itemSheetTemplates(),
-        "systems/glog2d6/templates/dialogs/gm-roll.hbs",
-        "systems/glog2d6/templates/dialogs/recon-dialog.hbs"
+        "systems/glog2d6/templates/dialogs/roll-request.hbs"
     ]);
 
     // Register partials. Compact and full share the four parts that carry the
@@ -346,7 +350,7 @@ Hooks.on("getSceneControlButtons", controls => {
         button: true,
         visible: true,
         order: Object.keys(tokenControls.tools).length,
-        onChange: () => new ReconDialog().render(true)
+        onChange: () => game.glog2d6.rollRequest("recon")
     };
 });
 
@@ -355,7 +359,7 @@ Hooks.on("chatMessage", (log, msg) => {
     if (!game.user.isGM) return;
 
     if (msg === "/recon") {
-        new ReconDialog().render(true);
+        game.glog2d6.rollRequest("recon");
         return false;
     }
 });
@@ -370,18 +374,6 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     }
 
     const $html = $(html);
-
-    $html.find('.gm-roll-btn').click(async e => {
-        e.preventDefault();
-        const { rollId, actorId } = e.currentTarget.dataset;
-        try {
-            await game.glog2d6.gmRollSystem.execute(rollId, actorId);
-            e.currentTarget.disabled = true;
-            e.currentTarget.textContent = 'Rolled';
-        } catch (error) {
-            ui.notifications.error(error.message);
-        }
-    });
 
     if (game.user.isGM) {
         const messageId = html.dataset?.messageId
@@ -431,7 +423,12 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
         const actor = game.actors.get(actorId);
         if (actor) {
-            await actor.applyWound(damage);
+            // What struck, where the GM said so, so the wound is drawn from
+            // that attacker's table and rolled against the right anatomy.
+            await actor.applyWound(damage, blowFrom({
+                attacker: button.dataset.attacker,
+                woundTable: button.dataset.woundTable
+            }));
             button.disabled = true;
             button.textContent = "Applied";
         } else {

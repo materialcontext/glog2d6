@@ -8,6 +8,7 @@
         "templates": {
             "base": {
                 "initiative": 0,
+                "woundTable": "",
                 "hp": {
                     "value": 10,
                     "max": 10
@@ -148,7 +149,6 @@
             },
             "wounds": {
                 "count": 0,
-                "list": [],
                 "effects": {
                     "statReductions": {},
                     "movementReduction": 0,
@@ -204,7 +204,8 @@
             "feature",
             "spell",
             "torch",
-            "note"
+            "note",
+            "wound"
         ],
         "templates": {
             "base": {
@@ -222,6 +223,7 @@
             ],
             "damage": "1d6",
             "weaponType": "melee",
+            "woundTable": "",
             "size": "medium",
             "attackPenalty": 0,
             "encumbrancePenalty": 0,
@@ -260,6 +262,17 @@
                 "level": 0,
                 "maxLevel": 2
             }
+        },
+        "wound": {
+            "description": "",
+            "typeId": "",
+            "damage": 0,
+            "severity": 0,
+            "state": "untreated",
+            "bodyPart": "",
+            "maimedResult": "",
+            "dateAcquired": "",
+            "effects": {}
         },
         "feature": {
             "description": "",

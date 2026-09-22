@@ -120,6 +120,16 @@
     display: flex;
 }
 
+/*
+ * `hidden` has to beat the layout utilities. The browser's own
+ * `[hidden] { display: none }` loses to any author rule that sets a display,
+ * so a filtered-out character or a field group the request does not use went
+ * on taking up the dialog.
+ */
+.glog2d6 [hidden] {
+    display: none !important;
+}
+
 .flex-row {
     flex-direction: row;
 }
@@ -2115,11 +2125,11 @@
    bounded height and something to search with.
    ========================================================================== */
 
-.glog2d6 .recon-filter {
+.glog2d6 .picker-filter {
     margin-top: 4px;
 }
 
-.glog2d6 .recon-actors {
+.glog2d6 .picker-actors {
     max-height: 220px;
     overflow-y: auto;
     display: grid;
@@ -2135,37 +2145,37 @@
 /* Left-aligned, so a sorted list reads as a column you can run your eye down.
    Centred names put every initial in a different place, which is the opposite
    of what sorting them was for. */
-.glog2d6 .recon-actor {
+.glog2d6 .picker-actor {
     min-width: 0;
     margin: 0;
     justify-content: flex-start;
 }
 
-.glog2d6 .recon-actor span {
+.glog2d6 .picker-actor span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.glog2d6 .recon-actor input[type="checkbox"] {
+.glog2d6 .picker-actor input[type="checkbox"] {
     flex-shrink: 0;
     margin: 0;
 }
 
-.glog2d6 .recon-select-all,
-.glog2d6 .recon-select-none {
+.glog2d6 .picker-select-all,
+.glog2d6 .picker-select-none {
     color: var(--primary);
     cursor: pointer;
     text-decoration: none;
 }
 
-.glog2d6 .recon-select-all:hover,
-.glog2d6 .recon-select-none:hover {
+.glog2d6 .picker-select-all:hover,
+.glog2d6 .picker-select-none:hover {
     color: var(--primary-hover);
     text-decoration: underline;
 }
 
-.glog2d6 .recon-hidden-note {
+.glog2d6 .picker-hidden-note {
     margin-left: auto;
 }
 
