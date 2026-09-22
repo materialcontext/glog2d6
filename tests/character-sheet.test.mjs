@@ -15,6 +15,7 @@ import {
     featureBadge,
     hpBar,
     inEffectRows,
+    inflictedWoundTable,
     itemSummary,
     magicDicePips,
     partitionItems,
@@ -190,6 +191,7 @@ function context({ loaded, mode, editMode = false }) {
         encumbranceNote: encumbranceNote(system.inventory),
         inEffect: inEffectRows({ system, items: list }),
         woundEffects: woundEffectRows(system.wounds.effects),
+        inflictsFrom: inflictedWoundTable({ items: list, system }),
         itemsByKind: partitionItems(list)
     };
 }
@@ -380,6 +382,51 @@ describe("the full sheet", () => {
 
     it("keeps that field out of the way while playing", () => {
         expect(render("full", { loaded: true }).querySelector('input[name="system.woundTable"]')).toBeNull();
+    });
+
+    /**
+     * The field is only a fallback -- an equipped weapon that names a table
+     * beats it, per blow -- so the sheet reports what actually applies in
+     * both modes rather than leaving it to be inferred from a box that loses.
+     */
+    it("reports the table that actually applies, in either mode", () => {
+        for (const editMode of [true, false]) {
+            const readout = render("full", { loaded: true, editMode }).querySelector(".glog-inflicts");
+            expect(readout, `missing with editMode ${editMode}`).not.toBeNull();
+            expect(readout.textContent).toContain("from");
+        }
+    });
+
+    it("names the weapon when a weapon is what decides it", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full" });
+        ctx.inflictsFrom = inflictedWoundTable({
+            system: {},
+            items: [{ name: "Flame Sword", type: "weapon", system: { equipped: true, woundTable: "Burns" } }]
+        });
+
+        const text = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document
+            .querySelector(".glog-inflicts").textContent;
+
+        expect(text).toContain("Burns");
+        expect(text).toContain("Flame Sword");
+    });
+
+    it("lists the hands that would wound differently", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full" });
+        ctx.inflictsFrom = inflictedWoundTable({
+            system: {},
+            items: [
+                { name: "Arquebus", type: "weapon", system: { equipped: true, woundTable: "Gunshot" } },
+                { name: "Flame Sword", type: "weapon", system: { equipped: true, size: "heavy", woundTable: "Burns" } }
+            ]
+        });
+
+        const chips = [...new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document
+            .querySelectorAll(".glog-inflicts-weapon")].map(el => el.textContent.trim());
+
+        expect(chips).toEqual(["Arquebus: Gunshot", "Flame Sword: Burns"]);
     });
 
     it("never gives the class dropdown a name, which would let the form clobber the key", () => {

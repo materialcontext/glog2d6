@@ -17,6 +17,7 @@ import {
     encumbranceNote,
     hpBar,
     inEffectRows,
+    inflictedWoundTable,
     magicDicePips,
     partitionItems,
     skillChips,
@@ -171,6 +172,7 @@ class ContextEnhancer {
         this.context.encumbranceNote = encumbranceNote(system.inventory);
         this.context.inEffect = inEffectRows({ system, items });
         this.context.woundEffects = woundEffectRows(system.wounds?.effects);
+        this.context.inflictsFrom = inflictedWoundTable({ items, system });
         this.context.itemsByKind = partitionItems(items);
         return this;
     }

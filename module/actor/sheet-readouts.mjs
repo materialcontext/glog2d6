@@ -7,7 +7,9 @@
  */
 
 import { BreakageCalculator, BREAKABLE_TYPES } from "../systems/breakage-calculator.mjs";
+import { DEFAULT_WOUND_TABLE, woundTableRef } from "../systems/damage-source.mjs";
 import { combatEffectLabel } from "../systems/wounds.mjs";
+import { findBestWeapon } from "../utils/actor-analysis.mjs";
 
 const num = value => Number(value) || 0;
 
@@ -387,4 +389,50 @@ export function featureBadge(item) {
 
     if (!label) return source;
     return source ? `${source} ${label}` : label;
+}
+
+
+/* -------------------------------------------- */
+/*  Which table this character's blows draw from */
+/* -------------------------------------------- */
+
+/**
+ * The table a blow from this character would draw from, and what decides it.
+ *
+ * Nothing here chooses anything: `damageSource` already prefers the weapon
+ * that struck over the character carrying it, per blow. This only reports
+ * that choice, because the sheet's own field loses to any weapon that
+ * declares one and there was no way to tell from looking.
+ *
+ * "Would" is doing work: the weapon named is the one an attack with no weapon
+ * chosen would swing, which is what `findBestWeapon` picks. A character
+ * holding two armed differently is told so rather than told half the truth.
+ *
+ * @param {object} source
+ * @param {object[]} source.items   the character's items
+ * @param {object} source.system    the character's system data
+ * @returns {{table: string, from: string, origin: string, varies: object[]}}
+ */
+export function inflictedWoundTable({ items = [], system = {} } = {}) {
+    const own = woundTableRef({ system });
+    const fallback = own
+        ? { table: own, from: "character", origin: "this character" }
+        : { table: DEFAULT_WOUND_TABLE, from: "default", origin: "the world default" };
+
+    const armed = [...items].filter(item => item?.type === "weapon" && item?.system?.equipped);
+    const declaring = armed.filter(weapon => woundTableRef(weapon));
+
+    // Every other equipped weapon that would wound differently. Read against
+    // whatever applies when a weapon says nothing, so a plain sword shows as
+    // the fallback rather than as nothing at all.
+    const varies = armed
+        .map(weapon => ({ weapon: weapon.name, table: woundTableRef(weapon) || fallback.table }))
+        .filter((entry, _, all) => all.some(other => other.table !== entry.table));
+
+    const swung = findBestWeapon(declaring.length ? armed : []);
+    const declared = swung && woundTableRef(swung);
+
+    return declared
+        ? { table: declared, from: "weapon", origin: swung.name, varies }
+        : { ...fallback, varies };
 }

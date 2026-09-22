@@ -11,6 +11,7 @@ import {
     featureBadge,
     hpBar,
     inEffectRows,
+    inflictedWoundTable,
     itemSummary,
     magicDicePips,
     partitionItems,
@@ -419,5 +420,103 @@ describe("the feature badge", () => {
         expect(of({ classSource: "", template: "" })).toBe("");
         expect(featureBadge({})).toBe("");
         expect(featureBadge(undefined)).toBe("");
+    });
+});
+
+
+/* -------------------------------------------- */
+/*  Which table this character's blows draw from */
+/* -------------------------------------------- */
+
+const armed = (name, over = {}) => ({
+    name, type: "weapon", system: { equipped: true, size: "medium", ...over }
+});
+
+/**
+ * The sheet's own field is only a fallback: `damageSource` prefers the weapon
+ * that struck, per blow, so a character holding a flaming sword already
+ * wounds differently than the field says. There was no way to tell that from
+ * looking, which is all this reports.
+ */
+describe("what a blow from this character draws from", () => {
+    it("is the world default when nothing says otherwise", () => {
+        expect(inflictedWoundTable({})).toMatchObject({
+            table: "GLOG Wounds Table", from: "default"
+        });
+    });
+
+    it("is the character's own field when they have one", () => {
+        expect(inflictedWoundTable({ system: { woundTable: "Beast Maulings" } }))
+            .toMatchObject({ table: "Beast Maulings", from: "character" });
+    });
+
+    it("is the weapon's, which beats the character's", () => {
+        expect(inflictedWoundTable({
+            items: [armed("Flame Sword", { woundTable: "Burns" })],
+            system: { woundTable: "Beast Maulings" }
+        })).toMatchObject({ table: "Burns", from: "weapon", origin: "Flame Sword" });
+    });
+
+    it("names what decides it, which is the whole point", () => {
+        expect(inflictedWoundTable({ system: { woundTable: "Beast Maulings" } }).origin)
+            .toBe("this character");
+        expect(inflictedWoundTable({}).origin).toBe("the world default");
+    });
+
+    /** A weapon in the pack wounds nobody. */
+    it("reads only what is equipped", () => {
+        expect(inflictedWoundTable({
+            items: [armed("Flame Sword", { woundTable: "Burns", equipped: false })]
+        })).toMatchObject({ table: "GLOG Wounds Table", from: "default" });
+    });
+
+    /**
+     * The weapon named is the one an attack with no weapon chosen would
+     * swing, which is what findBestWeapon picks -- so a heavy plain axe
+     * beside a light burning dagger reports the axe's answer, not the one
+     * that sounds more interesting.
+     */
+    it("reports the weapon an unspecified attack would actually swing", () => {
+        const readout = inflictedWoundTable({
+            items: [armed("Great Axe", { size: "heavy" }), armed("Flame Dagger", { size: "light", woundTable: "Burns" })]
+        });
+
+        expect(readout.table).toBe("GLOG Wounds Table");
+        expect(readout.from).toBe("default");
+    });
+
+    it("says so when two hands would wound differently", () => {
+        const readout = inflictedWoundTable({
+            items: [armed("Arquebus", { woundTable: "Gunshot" }), armed("Flame Sword", { size: "heavy", woundTable: "Burns" })]
+        });
+
+        expect(readout.table).toBe("Burns");
+        expect(readout.varies).toEqual([
+            { weapon: "Arquebus", table: "Gunshot" },
+            { weapon: "Flame Sword", table: "Burns" }
+        ]);
+    });
+
+    /** A plain weapon varies by falling back, which is worth spelling out. */
+    it("reads a silent weapon against whatever applies when it says nothing", () => {
+        const readout = inflictedWoundTable({
+            items: [armed("Axe"), armed("Flame Sword", { size: "heavy", woundTable: "Burns" })],
+            system: { woundTable: "Beast Maulings" }
+        });
+
+        expect(readout.varies).toEqual([
+            { weapon: "Axe", table: "Beast Maulings" },
+            { weapon: "Flame Sword", table: "Burns" }
+        ]);
+    });
+
+    it("says nothing varies when everything agrees", () => {
+        expect(inflictedWoundTable({ items: [armed("Axe"), armed("Sword")] }).varies).toEqual([]);
+        expect(inflictedWoundTable({}).varies).toEqual([]);
+    });
+
+    it("ignores a blank or whitespace field", () => {
+        expect(inflictedWoundTable({ system: { woundTable: "   " } }).from).toBe("default");
+        expect(inflictedWoundTable({ items: [armed("Axe", { woundTable: "  " })] }).from).toBe("default");
     });
 });
