@@ -1,6 +1,6 @@
 {
     "name": "glog2d6",
-    "version": "1.0.347",
+    "version": "1.0.348",
     "private": true,
     "scripts": {
         "test": "vitest",
