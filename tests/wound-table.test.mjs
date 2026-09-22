@@ -70,6 +70,21 @@ describe("the number the ranges are read against", () => {
         expect(severityFor(shipped, { total: 40, damage: 2, entryCount: 12 })).toBeLessThanOrEqual(12);
     });
 
+    /**
+     * Carried wounds read one row worse either way. A table that owns its
+     * roll keeps its own ranges, so nothing clamps it back.
+     */
+    it("counts the wounds already carried, whoever rolled", () => {
+        expect(severityFor(shipped, { total: 6, damage: 4, entryCount: 12, carried: 2 }))
+            .toBe(woundSeverity(6, 4, 12, 2));
+        expect(severityFor(authored, { total: 8, carried: 2 })).toBe(10);
+    });
+
+    it("leaves an unhurt character where they were", () => {
+        expect(severityFor(authored, { total: 8, carried: 0 })).toBe(8);
+        expect(severityFor(authored, { total: 8 })).toBe(8);
+    });
+
     it("survives a total that never arrived", () => {
         expect(severityFor(authored, {})).toBe(0);
         expect(severityFor(authored, { total: 3.7 })).toBe(3);
@@ -183,6 +198,20 @@ describe("the system wires it up", () => {
         expect(trauma).toContain("severityFor(worldTable");
     });
 
+    /** The count is what is on the body, and a scar is not on the body. */
+    it("counts the unhealed wounds a character is carrying", () => {
+        expect(trauma).toContain("woundsFromItems(this.actor.items).length");
+        expect(trauma).toContain("let carried = this._carriedWounds()");
+    });
+
+    /**
+     * A wound taken a moment ago is one you are carrying, so the second of a
+     * "take 2 wounds instead of 1" lands harder than the first.
+     */
+    it("counts a wound taken earlier in the same blow", () => {
+        expect(trauma).toContain("this._rollWound(table, ++carried)");
+    });
+
     it("takes an authored wound over anything matched back to the list", () => {
         expect(trauma).toContain("_authoredEntry(result)");
         expect(trauma).toContain("woundEntryFromItem(document)");
@@ -193,7 +222,7 @@ describe("the system wires it up", () => {
      * card must not read as though it were added on top a second time.
      */
     it("describes the roll in the table's own terms", () => {
-        expect(trauma).toContain("_rollDetail(worldTable, roll)");
+        expect(trauma).toContain("_rollDetail(worldTable, roll, carried)");
         expect(trauma).toContain("Severity ${severity} (${detail})");
         expect(trauma).not.toContain("Severity ${severity} (d${SEVERITY_DIE} ${roll.total}");
     });

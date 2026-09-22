@@ -13,7 +13,7 @@
  * always has, so existing tables keep behaving exactly as before.
  */
 
-import { SEVERITY_DIE, woundSeverity } from "./wounds.mjs";
+import { SEVERITY_DIE, carriedBonus, woundSeverity } from "./wounds.mjs";
 
 /** The damage a blow carried past your last hit point. */
 export const DAMAGE_VARIABLE = "@excess";
@@ -43,10 +43,13 @@ export function rollFormulaFor(table) {
  * The number a table's ranges are read against: its own total when it owns the
  * roll, and a computed severity when it does not.
  */
-export function severityFor(table, { total, damage, entryCount } = {}) {
+export function severityFor(table, { total, damage, entryCount, carried = 0 } = {}) {
+    // Wounds already carried push the lookup down the table either way. A
+    // table that owns its roll keeps its own ranges, so nothing is clamped;
+    // a plain list is still bounded by its own length.
     return ownsItsRoll(table)
-        ? Math.floor(Number(total) || 0)
-        : woundSeverity(total, damage, entryCount);
+        ? Math.floor(Number(total) || 0) + carriedBonus(carried)
+        : woundSeverity(total, damage, entryCount, carried);
 }
 
 /** The result whose range covers a value. */

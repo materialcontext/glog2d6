@@ -83,16 +83,37 @@ export const SEVERITY_DIE = 12;
  *   excess  6 -> entries 4-9
  *   excess 12 -> entries 7-12
  *
- * @param {number} dieResult     A d12 result, 1..SEVERITY_DIE.
- * @param {number} excessDamage  Damage taken past 0 HP.
- * @param {number} tableSize     How many wounds the table holds.
+ * Wounds already being carried push the result down the table, one row each.
+ * A body that is already broken has less left to give, which is what the
+ * nastiest entries mean by "take 2 wounds instead of 1" -- the second of those
+ * two is read one row worse than the first.
+ *
+ * @param {number} dieResult      A d12 result, 1..SEVERITY_DIE.
+ * @param {number} excessDamage   Damage taken past 0 HP.
+ * @param {number} tableSize      How many wounds the table holds.
+ * @param {number} [carriedWounds] Unhealed wounds already on the body.
  * @returns {number} A 1-based index into the wound table.
  */
-export function woundSeverity(dieResult, excessDamage, tableSize) {
+export function woundSeverity(dieResult, excessDamage, tableSize, carriedWounds = 0) {
     const die = clampInt(dieResult, 1, SEVERITY_DIE);
     const excess = Math.max(1, Math.floor(Number(excessDamage) || 1));
     const size = Math.max(1, Math.floor(Number(tableSize) || 1));
-    return clampInt(Math.ceil((die + excess) / 2), 1, size);
+    return clampInt(Math.ceil((die + excess) / 2) + carriedBonus(carriedWounds), 1, size);
+}
+
+/**
+ * What already being hurt adds to the lookup: one row per unhealed wound.
+ *
+ * Every wound still on the body counts, whatever state it is in -- a wound
+ * that has *healed* was removed and left a scar, so there is nothing of it
+ * left to make the next blow worse.
+ *
+ * @param {number} carriedWounds
+ * @returns {number}
+ */
+export function carriedBonus(carriedWounds) {
+    const carried = Math.floor(Number(carriedWounds) || 0);
+    return carried > 0 ? carried : 0;
 }
 
 function clampInt(value, min, max) {
