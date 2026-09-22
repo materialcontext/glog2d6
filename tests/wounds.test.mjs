@@ -5,6 +5,8 @@ import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
 import {
+    describeBodyPartRoll,
+    recordsBodyPart,
     BODY_PARTS,
     BODY_PART_BIAS,
     SEVERITY_DIE,
@@ -98,11 +100,30 @@ describe("body parts", () => {
     });
 
     it("only ever names a real body part", () => {
-        const valid = new Set(BODY_PARTS);
+        // The head is reachable by a weapon and not by the game's own d6, so
+        // it is the one part the canonical list does not carry.
+        const valid = new Set([...BODY_PARTS, "Head"]);
         for (const [tag, table] of Object.entries(BODY_PART_BIAS)) {
             expect(table, tag).toHaveLength(6);
             for (const part of table) expect(valid, `${tag}: ${part}`).toContain(part);
         }
+    });
+
+    /**
+     * A firearm that cannot find a head is the gap that made this worth
+     * changing: the canonical table has no head at all, so a blow from a
+     * known weapon is the only way to take one.
+     */
+    it("lets every weapon reach the head, and the bare table reach none", () => {
+        for (const [tag, table] of Object.entries(BODY_PART_BIAS)) {
+            expect(table, `${tag} cannot reach a head`).toContain("Head");
+        }
+        expect(BODY_PARTS).not.toContain("Head");
+    });
+
+    /** Fists go for the face more than anything else does. */
+    it("sends fists to the head twice over", () => {
+        expect(BODY_PART_BIAS.unarmed.filter(p => p === "Head")).toHaveLength(2);
     });
 
     it("sends bullets to the body and axes to the limbs", () => {
@@ -319,18 +340,86 @@ describe("wound instances", () => {
     });
 });
 
+/**
+ * Every wound used to be stamped with a body part, which made a concussion
+ * read as "took it in the arm". Only a wound whose own text asks the question
+ * records an answer -- in the shipped data, Marked and nothing else.
+ */
+describe("which wounds are about where they landed", () => {
+    it("is the one that asks", () => {
+        expect(recordsBodyPart({ effects: { specialRoll: "bodyPart" } })).toBe(true);
+    });
+
+    it("is not the ones that do not", () => {
+        expect(recordsBodyPart({ effects: { specialRoll: "maimed" } })).toBe(false);
+        expect(recordsBodyPart({ effects: {} })).toBe(false);
+        expect(recordsBodyPart(null)).toBe(false);
+    });
+
+    it("is exactly one of the wounds this system ships", () => {
+        const asking = WOUNDS.wounds.filter(recordsBodyPart).map(w => w.id);
+        expect(asking).toEqual(["marked"]);
+    });
+
+    /** Concussed is a head injury by its own effects; it has no limb. */
+    it("is not the concussion that started this", () => {
+        const concussed = WOUNDS.wounds.find(w => w.id === "concussed");
+        expect(recordsBodyPart(concussed)).toBe(false);
+        expect(concussed.effects.statReduction).toMatchObject({ int: 1, wis: 1 });
+    });
+});
+
+describe("a description once the roll has happened", () => {
+    const marked = () => WOUNDS.wounds.find(w => w.id === "marked").description;
+
+    it("states the answer instead of asking for it", () => {
+        const told = describeBodyPartRoll(marked(), "Head");
+        expect(told).toContain("Rolled Head");
+        expect(told).not.toContain("Roll 1d6 to see");
+    });
+
+    /**
+     * The trailing "1: Leg, 2: Chest, ..." is instructions for a roll that has
+     * already happened -- and a biased blow may not have rolled on that list
+     * at all, which is how a head gets there.
+     */
+    it("drops the list of instructions for a roll already made", () => {
+        const told = describeBodyPartRoll(marked(), "Head");
+        expect(told).not.toContain("1: Leg");
+        expect(told.trim().endsWith(".")).toBe(true);
+    });
+
+    it("leaves the max-HP reroll alone, which is a different d6", () => {
+        expect(describeBodyPartRoll(marked(), "Arm")).toContain("reroll your 1d6 for max HP");
+    });
+
+    it("leaves a description alone when nothing was rolled", () => {
+        expect(describeBodyPartRoll(marked(), "")).toBe(marked());
+        expect(describeBodyPartRoll(undefined, "Arm")).toBe("");
+    });
+});
+
 describe("scars", () => {
     const healed = {
         name: "Ruptured", bodyPart: "Shoulder",
         dateAcquired: "2026-01-02T00:00:00.000Z", effects: {}
     };
 
-    it("names itself after where it landed", () => {
-        expect(scarFromWound(healed).name).toBe("Scar: Shoulder");
+    /**
+     * The cause names the scar. It used to be the body part, so a wound that
+     * had been stamped with a limb became "Scar: Arm" and lost what actually
+     * happened.
+     */
+    it("names itself after what caused it, and says where", () => {
+        expect(scarFromWound(healed).name).toBe("Scar: Ruptured (Shoulder)");
     });
 
-    it("falls back to the wound name when anatomy is unknown", () => {
+    it("says only the cause when the wound was never placed", () => {
         expect(scarFromWound({ name: "Doomed", effects: {} }).name).toBe("Scar: Doomed");
+    });
+
+    it("has something to call itself even for a nameless wound", () => {
+        expect(scarFromWound({ effects: {} }).name).toBe("Scar: Old Wound");
     });
 
     it("is an inactive feature, so nothing mechanical picks it up", () => {

@@ -5,8 +5,10 @@ import {
     aggregateWoundEffects,
     bodyPartFor,
     hpRerollFormula,
+    describeBodyPartRoll,
     nextWoundState,
     normalizeWound,
+    recordsBodyPart,
     scarFromWound,
     woundEntryFromItem,
     woundItemData,
@@ -420,12 +422,17 @@ class WoundApplier {
         });
         const entry = await this._entryFor(severity, table, worldTable);
 
+        // Where the blow landed, rolled once: the card always says so, and the
+        // wound keeps it only if the wound is about location at all.
+        const location = await this._rollBodyPart();
+
         return {
             entry,
             severity,
             roll,
+            location,
             detail: this._rollDetail(worldTable, roll),
-            wound: await this._createWoundInstance(entry, severity)
+            wound: await this._createWoundInstance(entry, severity, location)
         };
     }
 
@@ -490,30 +497,40 @@ class WoundApplier {
         }
     }
 
-    async _createWoundInstance(woundEntry, severity) {
+    /**
+     * @param {object} woundEntry
+     * @param {number} severity
+     * @param {string} location  where the blow landed.
+     */
+    async _createWoundInstance(woundEntry, severity, location) {
+        // Only a wound whose own text asks where it landed keeps an answer.
+        // Stamping every wound with one made a concussion read as "took it in
+        // the arm", and the anatomy table has no head to place it in.
+        const placed = recordsBodyPart(woundEntry);
+
         const wound = {
             id: foundry.utils.randomID(),
             typeId: woundEntry.id,
             name: woundEntry.name,
-            description: woundEntry.description,
+            description: placed
+                ? describeBodyPartRoll(woundEntry.description, location)
+                : woundEntry.description,
             damage: this.damage,
             severity,
             state: WOUND_STATES.UNTREATED,
-            bodyPart: await this._rollBodyPart(),
+            bodyPart: placed ? location : "",
             dateAcquired: new Date().toISOString(),
             effects: { ...woundEntry.effects }
         };
 
-        if (woundEntry.effects.specialRoll === 'bodyPart') {
-            wound.description = wound.description.replace("Roll 1d6", `Rolled ${wound.bodyPart}`);
-        } else if (woundEntry.effects.specialRoll === 'maimed') {
+        if (woundEntry.effects.specialRoll === 'maimed') {
             wound.maimedResult = await this._rollMaimedResult();
         }
 
         return wound;
     }
 
-    /** Anatomy is now rolled for every wound, biased by what struck you. */
+    /** Where a blow lands, biased by what struck you. */
     async _rollBodyPart() {
         const roll = new Roll("1d6");
         await roll.evaluate();
@@ -533,11 +550,11 @@ class WoundApplier {
     }
 
     async _sendWoundChatMessage(rolled) {
-        const cards = rolled.map(({ wound, severity, detail }) => `
+        const cards = rolled.map(({ wound, severity, detail, location }) => `
             <div class="p-8 section mb-8">
                 <div class="text-small mb-4">
                     <strong>${wound.name}</strong>
-                    <span class="text-muted">&mdash; ${wound.bodyPart}</span>
+                    <span class="text-muted">&mdash; struck in the ${String(location ?? "").toLowerCase()}</span>
                 </div>
                 <div class="text-small text-muted mb-4">
                     Severity ${severity} (${detail})
