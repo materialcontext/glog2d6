@@ -10,14 +10,15 @@
 import {
     CONTEST,
     OUTCOMES,
+    callsForTraumaSave,
     criticalExcess,
     defenseModifier,
     excessDamage,
-    isDropped,
     resolveContest,
     takesWounds
 } from "./contest.mjs";
 import { attackModifier } from "./contest.mjs";
+import { actorFrom, actorRef } from "./actor-ref.mjs";
 import { RELAY, askTheGM, onlyTheGMCan } from "./gm-relay.mjs";
 import { callForTraumaSave } from "./gm-roll-system.mjs";
 
@@ -119,39 +120,39 @@ export function contestLine(contest) {
  * into a template that was never compiled, so base damage was always NaN and
  * therefore always zero.
  */
-export function damageButton(contest, { actorId, weaponId }) {
+export function damageButton(contest, { attacker, weaponId }) {
     if (!contest?.hit) return "";
 
     // Nothing to roll for a blow with no weapon behind it -- the margin is
     // the whole of the damage, so it goes straight to being spent.
     if (!weaponId) {
         return applyDamageButton({
-            targetId: contest.defender?.id,
+            targetUuid: actorRef(contest.defender),
             amount: contest.baseDamage,
             dieTotal: 0,
             crit: contest.crit,
-            attackerId: actorId
+            attacker
         });
     }
 
     return `<br><button type="button" class="damage-roll-btn"
-        data-actor-id="${actorId}"
+        data-attacker="${attacker}"
         data-weapon-id="${weaponId}"
         data-base-damage="${contest.baseDamage}"
         data-crit="${contest.crit ? "1" : ""}"
-        data-target-id="${contest.defender?.id ?? ""}">Roll Damage</button>`;
+        data-target-uuid="${actorRef(contest.defender)}">Roll Damage</button>`;
 }
 
 /** The button that spends the damage, once someone decides it landed. */
-export function applyDamageButton({ targetId, amount, dieTotal, crit, attackerId, weaponId }) {
-    if (!targetId) return "";
+export function applyDamageButton({ targetUuid, amount, dieTotal, crit, attacker, weaponId }) {
+    if (!targetUuid) return "";
 
     return `<br><button type="button" class="btn btn-danger p-4 mt-4 apply-damage-btn"
-        data-target-id="${targetId}"
+        data-target-uuid="${targetUuid}"
         data-damage="${amount}"
         data-die-total="${dieTotal}"
         data-crit="${crit ? "1" : ""}"
-        data-attacker-id="${attackerId ?? ""}"
+        data-attacker="${attacker ?? ""}"
         data-weapon-id="${weaponId ?? ""}">Apply ${crit ? "Critical " : ""}Damage${crit ? "" : ` (${amount})`}</button>`;
 }
 
@@ -161,30 +162,57 @@ export function applyDamageButton({ targetId, amount, dieTotal, crit, attackerId
  * A critical hit does not subtract: it puts them on the floor, and twice the
  * weapon die is what the wound is rolled on.
  */
-export async function applyDamage({ targetId, amount = 0, dieTotal = 0, crit = false, attackerId = "", weaponId = "" }) {
-    const target = game.actors.get(targetId);
-    if (!target) return null;
-
-    // Hit points on someone else's sheet are the GM's to write.
-    if (!target.isOwner) {
-        await askTheGM(RELAY.APPLY_DAMAGE, { targetId, amount, dieTotal, crit, attackerId, weaponId });
+export async function applyDamage({ targetUuid, amount = 0, dieTotal = 0, crit = false, attacker = "", weaponId = "" }) {
+    const target = actorFrom(targetUuid);
+    if (!target) {
+        ui.notifications.warn("glog2d6: that blow has no target left to land on.");
         return null;
     }
 
-    const remaining = Number(target.system?.hp?.value) || 0;
-    const dealt = Math.max(0, Math.floor(Number(amount) || 0));
-
-    const dropped = crit || isDropped(dealt, remaining);
-    const excess = crit ? criticalExcess(dieTotal) : excessDamage(dealt, remaining);
-
-    await target.update({ "system.hp.value": crit ? 0 : Math.max(0, remaining - dealt) });
-
-    // The GM's own creatures keep no ledger, so they are simply down.
-    if (dropped && takesWounds(target)) {
-        await callForTraumaSave([target.id], { damage: excess, attacker: attackerId, weapon: weaponId });
+    // Hit points on someone else's sheet are the GM's to write.
+    if (!target.isOwner) {
+        await askTheGM(RELAY.APPLY_DAMAGE, { targetUuid, amount, dieTotal, crit, attacker, weaponId });
+        return null;
     }
 
-    return { dropped, excess, remaining: crit ? 0 : Math.max(0, remaining - dealt) };
+    const remaining = Math.max(0, Math.floor(Number(target.system?.hp?.value) || 0));
+    const dealt = Math.max(0, Math.floor(Number(amount) || 0));
+
+    const left = crit ? 0 : Math.max(0, remaining - dealt);
+    const excess = crit ? criticalExcess(dieTotal) : excessDamage(dealt, remaining);
+    const wounded = crit || callsForTraumaSave(dealt, remaining);
+
+    await target.update({ "system.hp.value": left });
+
+    // The GM's own creatures keep no ledger, so they are simply down.
+    const asks = wounded && takesWounds(target);
+    if (asks) {
+        await callForTraumaSave([target.id], { damage: excess, attacker, weapon: weaponId });
+    }
+
+    await reportDamage({ target, dealt, left, excess, crit, wounded, asks });
+
+    return { target, dealt, left, excess, wounded, asked: asks };
+}
+
+/** Say what the damage did, so a blow that lands is never silent. */
+async function reportDamage({ target, dealt, left, excess, crit, wounded, asks }) {
+    const state = left > 0
+        ? `${left} hit point${left === 1 ? "" : "s"} left`
+        : crit ? "on the floor" : "down to nothing";
+
+    const after = wounded
+        ? (asks
+            ? `<div class="text-small text-danger">${excess} past it &mdash; a trauma save is called for.</div>`
+            : `<div class="text-small text-muted">${excess} past it, and no wounds to keep.</div>`)
+        : "";
+
+    await ChatMessage.create({
+        content: `<div class="section p-10">
+            <div class="text-small"><strong>${target.name}</strong> takes ${dealt} &mdash; ${state}.</div>
+            ${after}
+        </div>`
+    });
 }
 
 /**
@@ -201,14 +229,14 @@ export async function fumbleBreakage(contest) {
         .some(item => item?.type === "weapon" && item?.system?.equipped);
     if (!armed) return null;
 
-    await askTheGM(RELAY.BREAK_WEAPON, { actorId: attacker.id });
-    return attacker.id;
+    await askTheGM(RELAY.BREAK_WEAPON, { attacker: actorRef(attacker) });
+    return actorRef(attacker);
 }
 
 /** Registered during init; takes no live game state to do it. */
 export function initContestFlow() {
-    onlyTheGMCan(RELAY.APPLY_DAMAGE, (data) => applyDamage({ ...data, targetId: data.targetId }));
+    onlyTheGMCan(RELAY.APPLY_DAMAGE, (data) => applyDamage(data));
 
     onlyTheGMCan(RELAY.BREAK_WEAPON, (data) =>
-        game.actors.get(data.actorId)?.breakEquippedItem("weapon"));
+        actorFrom(data.attacker)?.breakEquippedItem("weapon"));
 }
