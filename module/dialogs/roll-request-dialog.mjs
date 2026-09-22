@@ -42,11 +42,17 @@ export class RollRequestDialog extends FormApplication {
         };
     }
 
-    /** Anything that could have struck someone: the world's NPCs, then the party. */
+    /**
+     * Anything that could have struck someone. Monsters are characters the GM
+     * runs, so the ones nobody plays are listed first -- that is as close to
+     * "the world's monsters" as the data now gets.
+     */
     _attackers() {
         return [...game.actors]
             .filter(actor => actor?.name)
-            .sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name) : a.type === "npc" ? -1 : 1))
+            .sort((a, b) => (a.hasPlayerOwner === b.hasPlayerOwner
+                ? a.name.localeCompare(b.name)
+                : a.hasPlayerOwner ? 1 : -1))
             .map(actor => ({ id: actor.id, name: actor.name }));
     }
 

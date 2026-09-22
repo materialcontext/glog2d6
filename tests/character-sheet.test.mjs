@@ -81,6 +81,7 @@ function emptySystem() {
                 .map(k => [k, { bonus: 0, breakdown: [] }])
         ),
         details: { class: "", classKey: "", level: 1, movement: 4 },
+        woundTable: "",
         combat: { attack: { value: 0, bonus: 0 }, firearm: { bonus: 0 } },
         defense: { total: 0, meleeTotal: 0, rangedTotal: 0, armor: 0 },
         inventory: { slots: { used: 0, max: 6 }, encumbrance: 0 },
@@ -99,6 +100,7 @@ function loadedSystem() {
     const system = emptySystem();
     system.hp = { value: 6, max: 11 };
     system.details = { class: "Bone Surgeon", classKey: "custom", level: 3, movement: 4, effectiveMovement: 2 };
+    system.woundTable = "Beast Maulings";
     system.combat.attack = { value: 4, bonus: 1 };
     system.defense = { total: 12, meleeTotal: 13, rangedTotal: 11, armor: 2 };
     system.inventory = { slots: { used: 9, max: 6 }, encumbrance: 3, slotEncumbrance: 2, equipmentEncumbrance: 1 };
@@ -363,6 +365,23 @@ describe("the full sheet", () => {
         expect(d.querySelector('input[name="system.details.class"]')).toBeNull();
     });
 
+    /**
+     * The npc sheet is retired -- a monster is a character the GM runs -- so
+     * the table a creature's blows draw from had to come with it.
+     */
+    it("lets a character declare the table its blows draw from", () => {
+        const d = render("full", { loaded: true, editMode: true });
+        const field = d.querySelector('input[name="system.woundTable"]');
+
+        expect(field).not.toBeNull();
+        expect(field.value).toBe("Beast Maulings");
+        expect(field.closest(".glog-panel-wounds"), "it belongs with the wounds").not.toBeNull();
+    });
+
+    it("keeps that field out of the way while playing", () => {
+        expect(render("full", { loaded: true }).querySelector('input[name="system.woundTable"]')).toBeNull();
+    });
+
     it("never gives the class dropdown a name, which would let the form clobber the key", () => {
         const d = render("full", { loaded: true, editMode: true });
         expect(d.querySelector("select.class-select").getAttribute("name")).toBeNull();
@@ -378,7 +397,6 @@ describe("the sheet's wiring", () => {
     const markup = [
         ...Object.values(SHEETS).map(read),
         ...PARTS.map(read),
-        read("templates/actor/actor-npc-sheet.hbs"),
         read("templates/actor/actor-hireling-sheet.hbs")
     ].join("\n");
 
@@ -564,8 +582,8 @@ describe("the sheets that are not characters", () => {
         expect(css).not.toMatch(/\.window-app\.glog2d6 \.window-content/);
     });
 
-    it("keeps the NPC and hireling templates off the new parts", () => {
-        for (const file of ["templates/actor/actor-npc-sheet.hbs", "templates/actor/actor-hireling-sheet.hbs"]) {
+    it("keeps the hireling template off the new parts", () => {
+        for (const file of ["templates/actor/actor-hireling-sheet.hbs"]) {
             expect(read(file), `${file} should not use the character parts`).not.toMatch(/\{\{>\s*(band|tests|panel-)/);
         }
     });

@@ -139,7 +139,7 @@ describe("actor sheets are still ApplicationV1", () => {
     // FormApplication#_renderInner takes `this.form` from the rendered root or
     // a <form> inside it. No form element means no submit data, so the sheet
     // silently stops saving.
-    it.each(["actor-character-sheet", "actor-npc-sheet"])("%s renders a <form>", name => {
+    it.each(["actor-character-sheet", "actor-hireling-sheet"])("%s renders a <form>", name => {
         const source = readFileSync(resolve(ROOT, `templates/actor/${name}.hbs`), "utf8");
         expect(source).toMatch(/<form[\s>]/);
         expect(source).toMatch(/<\/form>/);

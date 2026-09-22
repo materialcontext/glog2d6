@@ -153,6 +153,9 @@ describe("the system wires it up", () => {
         expect(template.Actor.templates.base).toHaveProperty("woundTable");
 
         expect(read("templates/item/item-weapon-sheet.hbs")).toContain('name="system.woundTable"');
-        expect(read("templates/actor/actor-npc-sheet.hbs")).toContain('name="system.woundTable"');
+
+        // A monster is a character the GM runs, so the field it declares its
+        // table in sits with that character's wounds.
+        expect(read("templates/actor/parts/panel-character.hbs")).toContain('name="system.woundTable"');
     });
 });

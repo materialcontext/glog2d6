@@ -221,9 +221,12 @@ describe("the system wires it up", () => {
      */
     it("sends a player's click to the GM, who holds the request", () => {
         const gm = read("module/systems/gm-roll-system.mjs");
-        expect(gm).toMatch(/if \(game\.user\.isGM\) return game\.glog2d6\.gmRollSystem\.execute/);
-        expect(gm).toContain("game.socket.emit(SOCKET, { type: EXECUTE_REQUEST");
-        expect(gm).toContain("userId: game.user.id");
+        expect(gm).toContain("askTheGM(RELAY.EXECUTE_REQUEST, { rollId, actorId })");
+        expect(gm).toContain("onlyTheGMCan(RELAY.EXECUTE_REQUEST");
+
+        const relay = read("module/systems/gm-relay.mjs");
+        expect(relay).toMatch(/if \(game\.user\.isGM\) return handlers\.get\(type\)/);
+        expect(relay).toContain("userId: game.user.id");
     });
 
     it("asks about the clicking user's ownership, not the running client's", () => {

@@ -101,6 +101,17 @@
         </header>
 
         <div class="glog-panel-body">
+            {{!-- A monster is a character the GM runs, so the table its blows
+                  draw from lives with the wounds rather than on a sheet of
+                  its own. --}}
+            {{#if editMode}}
+            <label class="glog-wound-table">
+                <span>INFLICTS FROM</span>
+                <input name="system.woundTable" type="text" value="{{system.woundTable}}"
+                    placeholder="Default wounds table" title="A roll table by name or uuid" />
+            </label>
+            {{/if}}
+
             {{#each wounds as |wound|}}
             <div class="glog-wound wound-state-{{wound.state}}" data-wound-id="{{wound.id}}">
                 <div class="glog-entry-head">

@@ -1,7 +1,7 @@
 import { breakageMigration } from "../module/systems/breakage-calculator.mjs";
 
 const GLOG = CONFIG.GLOG
-const CONTENT_VERSION = "1.3.0"
+const CONTENT_VERSION = "1.4.0"
 
 // create the system folder structure
 export async function createDefaultFolders() {
@@ -451,6 +451,7 @@ export async function migrateContent() {
     try {
         await createMissingContent();
         await migrateBreakage();
+        await migrateRetiredNpcs();
         await game.settings.set("glog2d6", "contentVersion", CONTENT_VERSION);
         console.log(`glog2d6 | Content migration complete`);
         ui.notifications.info("glog2d6: New content added. Check Class Features for updates.");
@@ -494,6 +495,56 @@ async function migrateBreakage() {
 
     if (migrated) console.log(`glog2d6 | Normalised breakage on ${migrated} items`);
     return migrated;
+}
+
+/**
+ * Carry the retired `npc` actors over to `character`.
+ *
+ * The npc type held hit points, attributes and nothing else -- no attack, no
+ * defence -- so a monster could not take part in a contest at all. Retiring it
+ * makes the character sheet the only sheet, which is what the rules wanted all
+ * along: a monster is a character the GM runs.
+ *
+ * An actor whose type a system no longer declares does not load. It is still
+ * in the database, and Foundry keeps its id in `invalidDocumentIds` and will
+ * hand back its source, so the conversion still has everything it needs --
+ * it just cannot go through the usual collection.
+ *
+ * A document's type cannot be updated, so each one is recreated. The id is
+ * kept, because every token on every scene points at it.
+ */
+export async function migrateRetiredNpcs() {
+    const stranded = [];
+
+    for (const id of game.actors.invalidDocumentIds ?? []) {
+        const broken = game.actors.getInvalid(id, { strict: false });
+        const source = broken?._source ?? broken?.toObject?.();
+        if (source?.type === "npc") stranded.push(source);
+    }
+
+    if (!stranded.length) return 0;
+
+    let carried = 0;
+    for (const source of stranded) {
+        // Printed before anything is deleted, so a failure below leaves the
+        // actor recoverable by hand rather than only regrettable.
+        console.log(`glog2d6 | Carrying over retired NPC ${source.name}`, JSON.stringify(source));
+
+        try {
+            await Actor.deleteDocuments([source._id]);
+            await Actor.createDocuments([{ ...source, type: "character" }], { keepId: true });
+            carried += 1;
+        } catch (error) {
+            console.error(`glog2d6 | Could not carry over ${source.name}; its data is logged above`, error);
+        }
+    }
+
+    console.log(`glog2d6 | Carried ${carried} of ${stranded.length} NPCs onto the character sheet`);
+    if (carried) {
+        ui.notifications.info(`glog2d6: ${carried} NPC${carried === 1 ? "" : "s"} moved onto the character sheet.`);
+    }
+
+    return carried;
 }
 
 async function createMissingContent() {

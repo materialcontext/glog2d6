@@ -3,6 +3,8 @@
  */
 import { findBestWeapon } from "../utils/actor-analysis.mjs"
 import { hasWeaponType, getWeaponTypes } from '../utils/weapon-utils.mjs';
+import { CONTEST } from "../systems/contest.mjs";
+import { applyDamageButton, contestAgainst, contestLine, damageButton, fumbleBreakage, opponentActor } from "../systems/contest-flow.mjs";
 export class ActorRolls {
     constructor(actor) {
         this.actor = actor;
@@ -94,7 +96,20 @@ export class ActorRolls {
         const roll = this.actor.createRoll(attackData.formula, attackData.data, 'attack');
         await roll.evaluate();
 
-        const extraContent = this._buildAttackChatContent(attackData, roll);
+        // Against a target, the roll is half of a contest; against nobody it
+        // is what it has always been -- a number the GM reads.
+        const contest = contestAgainst({
+            mode: CONTEST.ATTACK,
+            actor: this.actor,
+            roll,
+            weaponType: attackData.weaponType,
+            strMod: this.actor.system.attributes.str.mod
+        });
+
+        // A fumble costs the weapon a step, whoever has to write it.
+        await fumbleBreakage(contest);
+
+        const extraContent = this._buildAttackChatContent(attackData, roll, contest);
 
         this.actor._createRollChatMessage(
             `${this.actor.name} - ${attackData.description}`,
@@ -264,7 +279,7 @@ export class ActorRolls {
     }
 
     // Private helper: Build chat message content
-    _buildAttackChatContent(attackData, roll) {
+    _buildAttackChatContent(attackData, roll, contest = null) {
         const bonuses = [
             { key: 'atk', label: 'Base attack', value: attackData.data.atk },
             { key: 'bonus', label: 'Attack bonus', value: attackData.data.bonus },
@@ -283,10 +298,15 @@ export class ActorRolls {
             `${attackData.damageFormula} + base damage`;
         parts.push(`<br><small>Damage: ${damageText}</small>`);
 
-        // Damage button
-        if (attackData.weapon) {
-            const damageButton = `<button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${attackData.weapon.id}" data-attack-result="{{roll.total}}">Roll Damage</button>`;
-            parts.push(`<br>${damageButton}`);
+        if (contest) {
+            parts.push(contestLine(contest));
+            parts.push(damageButton(contest, { actorId: this.actor.id, weaponId: attackData.weapon?.id }));
+            if (contest.fumble && attackData.weapon) {
+                parts.push(`<br><small class="text-danger">${attackData.weapon.name} takes a step on the breakage track.</small>`);
+            }
+        } else if (attackData.weapon) {
+            // No target: the old behaviour, where the GM decides what it beat.
+            parts.push(`<br><button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${attackData.weapon.id}" data-base-damage="0">Roll Damage</button>`);
         }
 
         // reload
@@ -311,57 +331,77 @@ export class ActorRolls {
 
     // Defense rolls - separate melee and ranged
     async rollMeleeDefense() {
-        const defense = this.actor.system.defense?.meleeTotal || 0;
-        const roll = this.actor.createRoll("2d6 + @def", { def: defense }, 'defense');
-        await roll.evaluate();
-
-        const extraContent = this.actor.system.defense ?
-            `<br><small>Armor: +${this.actor.system.defense.armor}, Dex: +${this.actor.system.defense.dexBonus}, Melee: +${this.actor.system.defense.meleeBonus}</small>` : '';
-
-        this.actor._createRollChatMessage(
-            `${this.actor.name} - Melee Defense`,
-            roll,
-            extraContent,
-            'defense'
-        );
-
-        return roll;
+        return this._rollDefense({ stat: "meleeTotal", title: "Melee Defense", against: "melee", extra: ["Melee", "meleeBonus"] });
     }
 
     async rollRangedDefense() {
-        const defense = this.actor.system.defense?.rangedTotal || 0;
+        return this._rollDefense({ stat: "rangedTotal", title: "Ranged Defense", against: "ranged", extra: ["Ranged", "rangedBonus"] });
+    }
+
+    async rollDefense() {
+        return this._rollDefense({ stat: "total", title: "Defense", against: "melee" });
+    }
+
+    /**
+     * Defending is the same contest an attack is, rolled from the other end:
+     * the defender rolls and the attacker stands on six plus what they would
+     * have added. With nobody targeted it stays the bare roll it always was.
+     */
+    async _rollDefense({ stat, title, against, extra = null }) {
+        const defense = this.actor.system.defense?.[stat] || 0;
         const roll = this.actor.createRoll("2d6 + @def", { def: defense }, 'defense');
         await roll.evaluate();
 
-        const extraContent = this.actor.system.defense ?
-            `<br><small>Armor: +${this.actor.system.defense.armor}, Dex: +${this.actor.system.defense.dexBonus}, Ranged: +${this.actor.system.defense.rangedBonus}</small>` : '';
-
-        this.actor._createRollChatMessage(
-            `${this.actor.name} - Ranged Defense`,
+        const attacker = this._attackerContext();
+        const contest = contestAgainst({
+            mode: CONTEST.DEFENSE,
+            actor: this.actor,
             roll,
-            extraContent,
-            'defense'
-        );
+            weaponType: attacker?.weaponType ?? against,
+            strMod: attacker?.strMod ?? 0,
+            attackData: attacker?.data ?? null
+        });
+
+        const parts = [];
+        const breakdown = this.actor.system.defense;
+        if (breakdown) {
+            const extraBonus = extra ? `, ${extra[0]}: +${breakdown[extra[1]] ?? 0}` : "";
+            parts.push(`<br><small>Armor: +${breakdown.armor}, Dex: +${breakdown.dexBonus}${extraBonus}</small>`);
+        }
+        if (contest) {
+            parts.push(contestLine(contest));
+            parts.push(damageButton(contest, {
+                actorId: contest.attacker.id,
+                weaponId: attacker?.weapon?.id
+            }));
+            // The fumbling weapon is the attacker's, which this client may
+            // have no business editing -- fumbleBreakage asks the GM.
+            await fumbleBreakage(contest);
+        }
+
+        this.actor._createRollChatMessage(`${this.actor.name} - ${title}`, roll, parts.join(''), 'defense');
 
         return roll;
     }
 
-    async rollDefense() {
-        const defense = this.actor.system.defense?.total || 0;
-        const roll = this.actor.createRoll("2d6 + @def", { def: defense }, 'defense');
-        await roll.evaluate();
+    /**
+     * What the targeted attacker brings to the contest. Read through their own
+     * roll builder rather than a second copy of it, so a defender is measured
+     * against exactly the attack that actor would have rolled.
+     */
+    _attackerContext() {
+        const attacker = opponentActor(this.actor);
+        if (!attacker?.rolls) return null;
 
-        const extraContent = this.actor.system.defense ?
-            `<br><small>Armor: +${this.actor.system.defense.armor}, Dex: +${this.actor.system.defense.dexBonus}</small>` : '';
+        const attackData = attacker.rolls._buildAttackData();
+        if (!attackData) return null;
 
-        this.actor._createRollChatMessage(
-            `${this.actor.name} - Defense`,
-            roll,
-            extraContent,
-            'defense'
-        );
-
-        return roll;
+        return {
+            data: attackData.data,
+            weapon: attackData.weapon,
+            weaponType: attackData.weaponType,
+            strMod: attacker.system.attributes?.str?.mod ?? 0
+        };
     }
 
     async rollMovement() {
@@ -376,61 +416,51 @@ export class ActorRolls {
         return roll;
     }
 
-    async rollWeaponDamage(weapon, attackResult, defenseResult = null) {
-        const strMod = this.actor.system.attributes.str.mod;
-        const weaponType = weapon.system.weaponType || "melee";
-
-        // Calculate base damage (attack - defense + str for melee)
-        let baseDamage = 0;
-        if (defenseResult !== null) {
-            baseDamage = Math.max(0, attackResult - defenseResult);
-            if (weaponType === "melee" || weaponType === "thrown") {
-                baseDamage += strMod;
-            }
-        }
-
-        // Roll weapon damage
+    /**
+     * Roll a weapon's damage on top of what the contest already earned.
+     *
+     * The base damage is the margin the contest was won by, worked out where
+     * the contest was -- it is passed in rather than re-derived, because the
+     * two ends of a contest arrive at it by different arithmetic.
+     *
+     * A critical hit doubles the weapon dice and is not subtracted from
+     * anything: it puts them on the floor, and the doubled die is what the
+     * wound is rolled on.
+     */
+    async rollWeaponDamage(weapon, baseDamage = 0, { crit = false, targetId = "" } = {}) {
+        const base = Math.max(0, Math.floor(Number(baseDamage) || 0));
         const weaponDamage = weapon.system.damage || "0";
+        const hasDice = weaponDamage !== "0" && weaponDamage !== "";
 
-        if (weaponDamage === "0" || weaponDamage === "") {
-            // No weapon damage, just show base damage
-            const extraContent = `
-                <br><strong>Base Damage:</strong> ${baseDamage}
-                ${defenseResult === null ? '<br><small>Note: Base damage assumes hit vs defense</small>' : ''}
-            `;
+        const dice = hasDice ? new Roll(crit ? `2 * (${weaponDamage})` : weaponDamage) : null;
+        if (dice) await dice.evaluate();
 
-            // Create a "fake" roll just for display purposes
-            const displayRoll = new Roll("0 + @base", { base: baseDamage });
-            await displayRoll.evaluate();
+        const dieTotal = dice?.total ?? 0;
+        const damageRoll = new Roll("@die + @base", { die: dieTotal, base });
+        await damageRoll.evaluate();
 
-            this.actor._createRollChatMessage(
-                `${this.actor.name} - ${weapon.name} Damage`,
-                displayRoll,
-                extraContent,
-                'damage'
-            );
+        const parts = [
+            hasDice ? `<br><strong>Weapon Damage:</strong> ${weaponDamage}${crit ? ' (doubled)' : ''} = ${dieTotal}` : '',
+            `<br><strong>Base Damage:</strong> ${base}`,
+            targetId ? '' : '<br><small>Note: base damage assumes a hit vs defense</small>',
+            applyDamageButton({
+                targetId,
+                amount: damageRoll.total,
+                dieTotal,
+                crit,
+                attackerId: this.actor.id,
+                weaponId: weapon.id
+            })
+        ];
 
-            return baseDamage;
-        } else {
-            // Roll weapon damage and add base damage
-            const damageRoll = new Roll(`${weaponDamage} + @base`, { base: baseDamage });
-            await damageRoll.evaluate();
+        this.actor._createRollChatMessage(
+            `${this.actor.name} - ${weapon.name} Damage`,
+            damageRoll,
+            parts.join(''),
+            'damage'
+        );
 
-            const extraContent = `
-                <br><strong>Weapon Damage:</strong> ${weaponDamage}
-                <br><strong>Base Damage:</strong> ${baseDamage}
-                ${defenseResult === null ? '<br><small>Note: Base damage assumes hit vs defense</small>' : ''}
-            `;
-
-            this.actor._createRollChatMessage(
-                `${this.actor.name} - ${weapon.name} Damage`,
-                damageRoll,
-                extraContent,
-                'damage'
-            );
-
-            return damageRoll.total;
-        }
+        return damageRoll.total;
     }
 
     // Stealth rolls

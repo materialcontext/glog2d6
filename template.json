@@ -2,7 +2,6 @@
     "Actor": {
         "types": [
             "character",
-            "npc",
             "hireling"
         ],
         "templates": {
@@ -161,14 +160,6 @@
             "torch": {
                 "lit": false,
                 "activeTorchId": null
-            }
-        },
-        "npc": {
-            "templates": [
-                "base"
-            ],
-            "details": {
-                "description": ""
             }
         },
         "hireling": {
