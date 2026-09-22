@@ -92,31 +92,31 @@ describe("resolving a roll against a target", () => {
     const mareth = makeActor("a", "Mareth");
     const roll = (total, over = {}) => ({ total, isCriticalHit: false, isCriticalFailure: false, ...over });
 
-    it("stands the defender on six plus their defense", () => {
+    it("stands the defender on seven plus their defense", () => {
         target(wolf);
         const contest = contestAgainst({ mode: CONTEST.ATTACK, actor: mareth, roll: roll(10), weaponType: "melee", strMod: 2 });
 
-        expect(contest.target).toBe(9);
+        expect(contest.target).toBe(10);
         expect(contest.outcome).toBe(OUTCOMES.HIT);
-        expect(contest.baseDamage).toBe(3);
+        expect(contest.baseDamage).toBe(2);
         expect(contest.defender).toBe(wolf);
     });
 
     it("reads the defense the weapon is coming at", () => {
         target(wolf);
-        expect(contestAgainst({ mode: CONTEST.ATTACK, actor: mareth, roll: roll(8), weaponType: "ranged" }).target).toBe(7);
+        expect(contestAgainst({ mode: CONTEST.ATTACK, actor: mareth, roll: roll(8), weaponType: "ranged" }).target).toBe(8);
     });
 
-    it("stands the attacker on six plus what they would have added", () => {
+    it("stands the attacker on seven plus what they would have added", () => {
         target(wolf);
         const contest = contestAgainst({
             mode: CONTEST.DEFENSE, actor: mareth, roll: roll(5),
             weaponType: "melee", strMod: 1, attackData: { atk: 2, bonus: 1, penalty: 1 }
         });
 
-        expect(contest.target).toBe(8);
+        expect(contest.target).toBe(9);
         expect(contest.outcome).toBe(OUTCOMES.HIT);
-        expect(contest.baseDamage).toBe(4);
+        expect(contest.baseDamage).toBe(5);
         expect(contest.attacker).toBe(wolf);
     });
 

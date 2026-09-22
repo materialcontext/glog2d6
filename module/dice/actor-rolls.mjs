@@ -345,7 +345,7 @@ export class ActorRolls {
 
     /**
      * Defending is the same contest an attack is, rolled from the other end:
-     * the defender rolls and the attacker stands on six plus what they would
+     * the defender rolls and the attacker stands on seven plus what they would
      * have added. With nobody targeted it stays the bare roll it always was.
      */
     async _rollDefense({ stat, title, against, extra = null }) {

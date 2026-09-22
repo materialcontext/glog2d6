@@ -5,6 +5,7 @@ import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
 import {
+    carriedBonus,
     describeBodyPartRoll,
     recordsBodyPart,
     BODY_PARTS,
@@ -87,6 +88,35 @@ describe("wound severity", () => {
             expect(result).toBeGreaterThanOrEqual(1);
             expect(result).toBeLessThanOrEqual(TABLE.length);
         }
+    });
+});
+
+/**
+ * A body that is already broken has less left to give. This is what the worst
+ * entries mean by "take 2 wounds instead of 1": the second of those two is
+ * read one row worse than the first, because by then you are carrying it.
+ */
+describe("wounds already carried", () => {
+    it("push the lookup one row down each", () => {
+        const clean = woundSeverity(6, 4, TABLE.length);
+        expect(woundSeverity(6, 4, TABLE.length, 1)).toBe(clean + 1);
+        expect(woundSeverity(6, 4, TABLE.length, 3)).toBe(clean + 3);
+    });
+
+    it("change nothing for someone who is unhurt", () => {
+        expect(woundSeverity(6, 4, TABLE.length, 0)).toBe(woundSeverity(6, 4, TABLE.length));
+    });
+
+    /** The worst row is the worst there is; it cannot push past the end. */
+    it("still stop at the bottom of the table", () => {
+        expect(woundSeverity(6, 4, TABLE.length, 99)).toBe(TABLE.length);
+    });
+
+    it("are never a mercy, whatever arrives", () => {
+        for (const carried of [-3, NaN, null, undefined, "lots"]) {
+            expect(carriedBonus(carried), String(carried)).toBe(0);
+        }
+        expect(carriedBonus(2.7)).toBe(2);
     });
 });
 

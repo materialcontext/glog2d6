@@ -52,10 +52,10 @@ export function contestAgainst({ mode, actor, roll, weaponType = "melee", strMod
 
     // Defending against something whose attack cannot be read would quietly
     // measure it as zero, which reads as a real contest against a target of
-    // six. Better to leave the roll standing on its own.
+    // seven. Better to leave the roll standing on its own.
     if (!attacking && !attackData) return null;
 
-    // Whoever is not rolling stands on six plus what they would have added.
+    // Whoever is not rolling stands on seven plus what they would have added.
     const opponentModifier = attacking
         ? defenseModifier(opponent.system, weaponType)
         : attackModifier(attackData ?? {});

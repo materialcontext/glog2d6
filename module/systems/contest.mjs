@@ -13,8 +13,13 @@
  * hit is testable on its own.
  */
 
-/** A roll of 7 is average on 2d6; standing still is worth 6. */
-export const STATIC_BASE = 6;
+/**
+ * What standing still is worth: the average roll on 2d6, so a still actor is
+ * treated as having rolled what they would most likely have rolled. It was a
+ * point lower, which quietly favoured whichever side happened to pick up the
+ * dice.
+ */
+export const STATIC_BASE = 7;
 
 export const CONTEST = Object.freeze({ ATTACK: "attack", DEFENSE: "defense" });
 

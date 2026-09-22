@@ -389,11 +389,19 @@ class WoundApplier {
             return [];
         }
 
-        const rolled = [await this._rollWound(table)];
+        // Every unhealed wound already on the body reads one row worse. A
+        // wound taken a moment ago is one of them, so the second of a "take 2
+        // wounds instead of 1" lands harder than the first -- which is what
+        // that entry was always reaching for.
+        let carried = this._carriedWounds();
+
+        const rolled = [await this._rollWound(table, carried)];
 
         // The worst entries declare `multipleWounds`, which nothing read before.
         const extra = woundCount(rolled[0].entry) - 1;
-        for (let i = 0; i < extra; i++) rolled.push(await this._rollWound(table));
+        for (let i = 0; i < extra; i++) {
+            rolled.push(await this._rollWound(table, ++carried));
+        }
 
         const wounds = rolled.map(r => r.wound);
         await this._addWoundsToActor(wounds);
@@ -406,7 +414,7 @@ class WoundApplier {
      * Roll one wound. Damage sets the band and the die sets the position in it,
      * so the same damage no longer always produces the same wound.
      */
-    async _rollWound(table) {
+    async _rollWound(table, carried = 0) {
         const worldTable = this._worldTable();
 
         // A table that says how damage enters its formula is rolled as written
@@ -418,7 +426,8 @@ class WoundApplier {
         const severity = severityFor(worldTable, {
             total: roll.total,
             damage: this.damage,
-            entryCount: table.length
+            entryCount: table.length,
+            carried
         });
         const entry = await this._entryFor(severity, table, worldTable);
 
@@ -431,7 +440,8 @@ class WoundApplier {
             severity,
             roll,
             location,
-            detail: this._rollDetail(worldTable, roll),
+            carried,
+            detail: this._rollDetail(worldTable, roll, carried),
             wound: await this._createWoundInstance(entry, severity, location)
         };
     }
@@ -441,10 +451,14 @@ class WoundApplier {
      * owns its roll already counted the damage, so saying so twice would read
      * as though it had been added again.
      */
-    _rollDetail(worldTable, roll) {
-        return ownsItsRoll(worldTable)
+    _rollDetail(worldTable, roll, carried = 0) {
+        const rolled = ownsItsRoll(worldTable)
             ? `${roll.formula} = ${roll.total}`
             : `d${SEVERITY_DIE} ${roll.total} + ${this.damage} damage`;
+
+        return carried > 0
+            ? `${rolled}, +${carried} already hurt`
+            : rolled;
     }
 
     /**
@@ -528,6 +542,14 @@ class WoundApplier {
         }
 
         return wound;
+    }
+
+    /**
+     * Unhealed wounds already on the body. A healed one was removed and left
+     * a scar, so there is nothing of it left to make the next blow worse.
+     */
+    _carriedWounds() {
+        return woundsFromItems(this.actor.items).length;
     }
 
     /** Where a blow lands, biased by what struck you. */
