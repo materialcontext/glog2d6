@@ -8,8 +8,8 @@ import {
     attackModifier,
     criticalExcess,
     defenseModifier,
+    callsForTraumaSave,
     excessDamage,
-    isDropped,
     isRangedType,
     resolveContest,
     staticTarget,
@@ -159,10 +159,20 @@ describe("damage past what was left", () => {
         expect(excessDamage(2, 4)).toBe(0);
     });
 
-    it("counts a blow that exactly empties them as dropping them", () => {
-        expect(isDropped(4, 4)).toBe(true);
-        expect(isDropped(3, 4)).toBe(false);
-        expect(isDropped(1, 0)).toBe(true);
+    /**
+     * Damage that brings you exactly to zero leaves you at zero and no worse.
+     * What wounds you is damage with nowhere left to go.
+     */
+    it("calls for a trauma save only when there is damage past the end", () => {
+        expect(callsForTraumaSave(5, 4)).toBe(true);
+        expect(callsForTraumaSave(4, 4)).toBe(false);
+        expect(callsForTraumaSave(3, 4)).toBe(false);
+    });
+
+    /** Already at zero is the same question with nothing remaining. */
+    it("calls for one on any damage at all once they are at zero", () => {
+        expect(callsForTraumaSave(1, 0)).toBe(true);
+        expect(callsForTraumaSave(0, 0)).toBe(false);
     });
 });
 

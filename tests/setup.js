@@ -214,6 +214,9 @@ globalThis.FormApplication = class FormApplication extends globalThis.Applicatio
     constructor(object, options) { super(options); this.object = object; }
 };
 
+/** Tests that care install their own; the default resolves nothing. */
+globalThis.fromUuid = globalThis.fromUuid ?? (async () => null);
+
 globalThis.Dialog = class Dialog {
     static async confirm() { return false; }
     render() {}

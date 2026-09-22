@@ -12,6 +12,7 @@ import { createDefaultFolders, migrateContent } from "./scripts/initialize-conte
 import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { blowFrom, initGMRolls } from "./module/systems/gm-roll-system.mjs";
 import { applyDamage, initContestFlow } from "./module/systems/contest-flow.mjs";
+import { actorFrom } from "./module/systems/actor-ref.mjs";
 import { RollRequestDialog } from "./module/dialogs/roll-request-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
@@ -380,9 +381,10 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         const messageId = html.dataset?.messageId
             ?? html.closest?.('[data-message-id]')?.dataset.messageId;
         const msg = messageId ? game.messages.get(messageId) : null;
-        if (!msg) return;
 
-        const subtleData = msg.flags?.glog2d6?.subtleRoll;
+        // A missing message means no reveal button, not no buttons at all.
+        // This used to `return`, which took every binding below with it.
+        const subtleData = msg?.flags?.glog2d6?.subtleRoll;
         if (subtleData && !subtleData.revealed) {
             const revealBtn = $(`
                 <div class="subtle-controls mt-8 pt-8" style="border-top: 1px solid var(--color-border-light-tertiary);">
@@ -406,7 +408,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         const spellId = button.dataset.spellId;
         const actorId = message.flags?.glog2d6?.actorId;
 
-        const actor = game.actors.get(actorId);
+        const actor = actorFrom(actorId);
         const spell = actor?.items.get(spellId);
 
         if (actor && spell) {
@@ -422,7 +424,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         const actorId = button.dataset.actorId;
         const damage = parseInt(button.dataset.damage);
 
-        const actor = game.actors.get(actorId);
+        const actor = actorFrom(actorId);
         if (actor) {
             // What struck, where the GM said so, so the wound is drawn from
             // that attacker's table and rolled against the right anatomy.
@@ -444,7 +446,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
         const actorId = button.dataset.actorId;
         const itemType = button.dataset.itemType;
 
-        const actor = game.actors.get(actorId);
+        const actor = actorFrom(actorId);
         console.log('Actor found:', actor);
         console.log('Actor methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(actor)));
         console.log('breakEquippedItem exists:', typeof actor.breakEquippedItem);
@@ -475,9 +477,9 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     $html.find('.damage-roll-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
-        const { actorId, weaponId, targetId, crit } = button.dataset;
+        const { attacker, weaponId, targetUuid, crit } = button.dataset;
 
-        const actor = game.actors.get(actorId);
+        const actor = actorFrom(attacker);
         const weapon = actor?.items.get(weaponId);
 
         if (actor && weapon) {
@@ -485,7 +487,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
             // was. This used to be the literal string "{{roll.total}}".
             await actor.rollWeaponDamage(weapon, parseInt(button.dataset.baseDamage) || 0, {
                 crit: Boolean(crit),
-                targetId: targetId ?? ""
+                targetUuid: targetUuid ?? ""
             });
             button.disabled = true;
             button.textContent = "Rolled";
@@ -497,14 +499,14 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     $html.find('.apply-damage-btn').click(async (event) => {
         event.preventDefault();
         const button = event.currentTarget;
-        const { targetId, attackerId, weaponId, crit } = button.dataset;
+        const { targetUuid, attacker, weaponId, crit } = button.dataset;
 
         await applyDamage({
-            targetId,
+            targetUuid,
             amount: parseInt(button.dataset.damage) || 0,
             dieTotal: parseInt(button.dataset.dieTotal) || 0,
             crit: Boolean(crit),
-            attackerId,
+            attacker,
             weaponId
         });
 

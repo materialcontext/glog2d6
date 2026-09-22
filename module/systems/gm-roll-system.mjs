@@ -23,6 +23,7 @@ import {
     succeeded
 } from "./roll-requests.mjs";
 import { reconRow, reconSummary, rollRecon } from "./recon-system.mjs";
+import { actorFrom } from "./actor-ref.mjs";
 import { damageSource, withTable, woundTableFor } from "./damage-source.mjs";
 import { RELAY, askTheGM, listenForRelays, onlyTheGMCan } from "./gm-relay.mjs";
 
@@ -268,7 +269,9 @@ export function initGMRolls() {
  * own, because naming one is the GM saying what this particular blow was.
  */
 export function blowFrom(params = {}) {
-    const attacker = params.attacker ? game.actors.get(params.attacker) : null;
+    // By uuid where there is one: a monster on the canvas is not the sheet in
+    // the sidebar, and its weapon and wound table are its own.
+    const attacker = actorFrom(params.attacker);
     const weapon = params.weapon ? attacker?.items?.get(params.weapon) : null;
 
     return withTable(damageSource({ actor: attacker, item: weapon }), params.woundTable);

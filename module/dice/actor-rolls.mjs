@@ -5,6 +5,7 @@ import { findBestWeapon } from "../utils/actor-analysis.mjs"
 import { hasWeaponType, getWeaponTypes } from '../utils/weapon-utils.mjs';
 import { CONTEST } from "../systems/contest.mjs";
 import { applyDamageButton, contestAgainst, contestLine, damageButton, fumbleBreakage, opponentActor } from "../systems/contest-flow.mjs";
+import { actorRef } from "../systems/actor-ref.mjs";
 export class ActorRolls {
     constructor(actor) {
         this.actor = actor;
@@ -300,13 +301,13 @@ export class ActorRolls {
 
         if (contest) {
             parts.push(contestLine(contest));
-            parts.push(damageButton(contest, { actorId: this.actor.id, weaponId: attackData.weapon?.id }));
+            parts.push(damageButton(contest, { attacker: actorRef(this.actor), weaponId: attackData.weapon?.id }));
             if (contest.fumble && attackData.weapon) {
                 parts.push(`<br><small class="text-danger">${attackData.weapon.name} takes a step on the breakage track.</small>`);
             }
         } else if (attackData.weapon) {
             // No target: the old behaviour, where the GM decides what it beat.
-            parts.push(`<br><button type="button" class="damage-roll-btn" data-actor-id="${this.actor.id}" data-weapon-id="${attackData.weapon.id}" data-base-damage="0">Roll Damage</button>`);
+            parts.push(`<br><button type="button" class="damage-roll-btn" data-attacker="${actorRef(this.actor)}" data-weapon-id="${attackData.weapon.id}" data-base-damage="0">Roll Damage</button>`);
         }
 
         // reload
@@ -371,7 +372,7 @@ export class ActorRolls {
         if (contest) {
             parts.push(contestLine(contest));
             parts.push(damageButton(contest, {
-                actorId: contest.attacker.id,
+                attacker: actorRef(contest.attacker),
                 weaponId: attacker?.weapon?.id
             }));
             // The fumbling weapon is the attacker's, which this client may
@@ -427,7 +428,7 @@ export class ActorRolls {
      * anything: it puts them on the floor, and the doubled die is what the
      * wound is rolled on.
      */
-    async rollWeaponDamage(weapon, baseDamage = 0, { crit = false, targetId = "" } = {}) {
+    async rollWeaponDamage(weapon, baseDamage = 0, { crit = false, targetUuid = "" } = {}) {
         const base = Math.max(0, Math.floor(Number(baseDamage) || 0));
         const weaponDamage = weapon.system.damage || "0";
         const hasDice = weaponDamage !== "0" && weaponDamage !== "";
@@ -442,13 +443,13 @@ export class ActorRolls {
         const parts = [
             hasDice ? `<br><strong>Weapon Damage:</strong> ${weaponDamage}${crit ? ' (doubled)' : ''} = ${dieTotal}` : '',
             `<br><strong>Base Damage:</strong> ${base}`,
-            targetId ? '' : '<br><small>Note: base damage assumes a hit vs defense</small>',
+            targetUuid ? '' : '<br><small>Note: base damage assumes a hit vs defense</small>',
             applyDamageButton({
-                targetId,
+                targetUuid,
                 amount: damageRoll.total,
                 dieTotal,
                 crit,
-                attackerId: this.actor.id,
+                attacker: actorRef(this.actor),
                 weaponId: weapon.id
             })
         ];

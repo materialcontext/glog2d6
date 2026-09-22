@@ -139,9 +139,16 @@ export function excessDamage(damage, remainingHp) {
     return Math.max(0, Math.floor(num(damage)) - Math.max(0, Math.floor(num(remainingHp))));
 }
 
-/** Whether a blow took them down at all. */
-export function isDropped(damage, remainingHp) {
-    return Math.floor(num(damage)) >= Math.max(0, Math.floor(num(remainingHp)));
+/**
+ * Whether a blow calls for a trauma save.
+ *
+ * Damage that brings you exactly to zero leaves you at zero and no worse:
+ * what wounds you is damage with nowhere left to go. Being already at zero is
+ * the same question asked with nothing remaining, so any damage at all counts
+ * there -- which is what "damage at 0 HP calls for a Trauma save" means.
+ */
+export function callsForTraumaSave(damage, remainingHp) {
+    return excessDamage(damage, remainingHp) > 0;
 }
 
 /**

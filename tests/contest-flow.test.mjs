@@ -22,6 +22,7 @@ function makeActor(id, name, over = {}) {
     return {
         id,
         name,
+        uuid: over.uuid ?? `Actor.${id}`,
         isOwner: true,
         hasPlayerOwner: false,
         system: {
@@ -46,6 +47,8 @@ beforeEach(() => {
     relayed = [];
     game.user = { id: "u1", isGM: true, targets: new Set() };
     game.actors = { get: () => null };
+    globalThis.fromUuidSync = () => null;
+    globalThis.ChatMessage = class ChatMessage { static async create(data) { return { id: "m", ...data }; } };
 
     // The real relay, with the GM's side of each message recorded.
     onlyTheGMCan(RELAY.CALL_TRAUMA, (data) => { relayed.push(["trauma", data]); });
@@ -148,29 +151,29 @@ describe("what the card says", () => {
     });
 
     it("carries the margin into the damage button", () => {
-        const doc = new JSDOM(damageButton(contest, { actorId: "a", weaponId: "w1" })).window.document;
+        const doc = new JSDOM(damageButton(contest, { attacker: "Actor.a", weaponId: "w1" })).window.document;
         expect(doc.querySelector(".damage-roll-btn").dataset).toMatchObject({
-            actorId: "a", weaponId: "w1", baseDamage: "3", targetId: "n1"
+            attacker: "Actor.a", weaponId: "w1", baseDamage: "3", targetUuid: "Actor.n1"
         });
     });
 
     it("offers no damage for a miss", () => {
-        expect(damageButton({ ...contest, hit: false }, { actorId: "a", weaponId: "w1" })).toBe("");
+        expect(damageButton({ ...contest, hit: false }, { attacker: "Actor.a", weaponId: "w1" })).toBe("");
     });
 
     /** A bare-handed blow has nothing to roll: the margin is all of it. */
     it("offers the margin straight to be spent when there is no weapon", () => {
-        const button = new JSDOM(damageButton(contest, { actorId: "a" })).window.document
+        const button = new JSDOM(damageButton(contest, { attacker: "Actor.a" })).window.document
             .querySelector(".apply-damage-btn");
 
-        expect(button.dataset).toMatchObject({ targetId: "n1", damage: "3", attackerId: "a" });
+        expect(button.dataset).toMatchObject({ targetUuid: "Actor.n1", damage: "3", attacker: "Actor.a" });
     });
 
     it("offers the damage to be applied, with the blow attached", () => {
-        const markup = applyDamageButton({ targetId: "n1", amount: 7, dieTotal: 4, crit: false, attackerId: "a", weaponId: "w1" });
+        const markup = applyDamageButton({ targetUuid: "Actor.n1", amount: 7, dieTotal: 4, crit: false, attacker: "Actor.a", weaponId: "w1" });
         const button = new JSDOM(markup).window.document.querySelector(".apply-damage-btn");
 
-        expect(button.dataset).toMatchObject({ targetId: "n1", damage: "7", dieTotal: "4", attackerId: "a", weaponId: "w1" });
+        expect(button.dataset).toMatchObject({ targetUuid: "Actor.n1", damage: "7", dieTotal: "4", attacker: "Actor.a", weaponId: "w1" });
         expect(button.textContent).toContain("Apply Damage (7)");
     });
 });
@@ -208,7 +211,7 @@ describe("fumbling", () => {
 
     it("breaks the attacker's weapon a little", async () => {
         await fumbleBreakage({ fumble: true, attacker: armed });
-        expect(relayed).toEqual([["break", { actorId: "a" }]]);
+        expect(relayed).toEqual([["break", { attacker: "Actor.a" }]]);
     });
 
     /**
@@ -228,37 +231,93 @@ describe("fumbling", () => {
     });
 });
 
+/**
+ * The bug: a token that is not linked to its prototype carries a *synthetic*
+ * actor, and Foundry gives that actor its base actor's id. Looking the target
+ * up in `game.actors` therefore handed back the sheet in the sidebar. Damage
+ * went to the prototype, and the hit points the trauma check read were the
+ * prototype's -- so nothing happened to the creature you had targeted, and
+ * the save was decided against the wrong numbers.
+ */
 describe("spending the damage", () => {
+    /** The regression: the token's own copy, never the sheet in the sidebar. */
+    it("writes to the creature on the canvas, not its prototype", async () => {
+        const prototype = makeActor("n1", "Dire Wolf", { system: { hp: { value: 20 } } });
+        const onCanvas = makeActor("n1", "Dire Wolf", {
+            uuid: "Scene.s1.Token.t1.Actor.n1", system: { hp: { value: 6 } }
+        });
+
+        game.actors = { get: () => prototype };
+        globalThis.fromUuidSync = () => ({ documentName: "Token", actor: onCanvas });
+
+        await applyDamage({ targetUuid: "Scene.s1.Token.t1", amount: 4 });
+
+        expect(onCanvas.updates).toEqual({ "system.hp.value": 2 });
+        expect(prototype.updates, "the sidebar sheet is untouched").toBeUndefined();
+    });
+
     it("takes it off the target", async () => {
         const wolf = makeActor("n1", "Dire Wolf");
-        game.actors = { get: () => wolf };
+        globalThis.fromUuidSync = () => wolf;
 
-        const result = await applyDamage({ targetId: "n1", amount: 4 });
+        const result = await applyDamage({ targetUuid: "Actor.n1", amount: 4 });
 
         expect(wolf.updates).toEqual({ "system.hp.value": 6 });
-        expect(result.dropped).toBe(false);
+        expect(result).toMatchObject({ dealt: 4, left: 6, wounded: false });
         expect(relayed).toEqual([]);
     });
 
-    it("asks for a trauma save when it takes a character down", async () => {
-        const mareth = makeActor("a", "Mareth", { hasPlayerOwner: true, system: { hp: { value: 3 } } });
-        game.actors = { get: () => mareth };
+    it("never takes them below nothing", async () => {
+        const wolf = makeActor("n1", "Dire Wolf", { system: { hp: { value: 3 } } });
+        globalThis.fromUuidSync = () => wolf;
 
-        await applyDamage({ targetId: "a", amount: 8, attackerId: "n1", weaponId: "w1" });
+        await applyDamage({ targetUuid: "Actor.n1", amount: 90 });
+        expect(wolf.updates).toEqual({ "system.hp.value": 0 });
+    });
+
+    /**
+     * Damage that brings you exactly to zero leaves you at zero and no worse.
+     * What wounds you is damage with nowhere left to go.
+     */
+    it("asks for no save when the blow only empties them", async () => {
+        const mareth = makeActor("a", "Mareth", { hasPlayerOwner: true, system: { hp: { value: 8 } } });
+        globalThis.fromUuidSync = () => mareth;
+
+        const result = await applyDamage({ targetUuid: "Actor.a", amount: 8 });
+
+        expect(mareth.updates).toEqual({ "system.hp.value": 0 });
+        expect(result.wounded).toBe(false);
+        expect(relayed).toEqual([]);
+    });
+
+    it("asks for one on the damage past the end, and sends exactly that much", async () => {
+        const mareth = makeActor("a", "Mareth", { hasPlayerOwner: true, system: { hp: { value: 3 } } });
+        globalThis.fromUuidSync = () => mareth;
+
+        await applyDamage({ targetUuid: "Actor.a", amount: 8, attacker: "Actor.n1", weaponId: "w1" });
 
         expect(mareth.updates).toEqual({ "system.hp.value": 0 });
         expect(relayed).toEqual([["trauma", {
             actorIds: ["a"],
-            params: { damage: 5, attacker: "n1", weapon: "w1" }
+            params: { damage: 5, attacker: "Actor.n1", weapon: "w1" }
         }]]);
+    });
+
+    /** Already at zero is the same question asked with nothing remaining. */
+    it("asks for one on any damage at all once they are down", async () => {
+        const mareth = makeActor("a", "Mareth", { hasPlayerOwner: true, system: { hp: { value: 0 } } });
+        globalThis.fromUuidSync = () => mareth;
+
+        await applyDamage({ targetUuid: "Actor.a", amount: 2 });
+        expect(relayed[0][1].params.damage).toBe(2);
     });
 
     /** The GM's own creatures keep no ledger, so they are simply down. */
     it("asks for nothing when the GM's monster drops", async () => {
         const wolf = makeActor("n1", "Dire Wolf", { system: { hp: { value: 3 } } });
-        game.actors = { get: () => wolf };
+        globalThis.fromUuidSync = () => wolf;
 
-        await applyDamage({ targetId: "n1", amount: 8 });
+        await applyDamage({ targetUuid: "Actor.n1", amount: 8 });
 
         expect(wolf.updates).toEqual({ "system.hp.value": 0 });
         expect(relayed).toEqual([]);
@@ -270,9 +329,9 @@ describe("spending the damage", () => {
      */
     it("puts a critical hit's target on the floor at double the die", async () => {
         const mareth = makeActor("a", "Mareth", { hasPlayerOwner: true, system: { hp: { value: 40 } } });
-        game.actors = { get: () => mareth };
+        globalThis.fromUuidSync = () => mareth;
 
-        await applyDamage({ targetId: "a", amount: 6, dieTotal: 5, crit: true, attackerId: "n1" });
+        await applyDamage({ targetUuid: "Actor.a", amount: 6, dieTotal: 5, crit: true, attacker: "Actor.n1" });
 
         expect(mareth.updates).toEqual({ "system.hp.value": 0 });
         expect(relayed[0][1].params.damage).toBe(10);
@@ -280,19 +339,33 @@ describe("spending the damage", () => {
 
     it("hands hit points it cannot write to the GM", async () => {
         const wolf = makeActor("n1", "Dire Wolf", { isOwner: false });
-        game.actors = { get: () => wolf };
+        globalThis.fromUuidSync = () => wolf;
 
-        await applyDamage({ targetId: "n1", amount: 4 });
+        await applyDamage({ targetUuid: "Actor.n1", amount: 4 });
 
         expect(wolf.updates).toBeUndefined();
         expect(relayed).toEqual([["damage", {
-            targetId: "n1", amount: 4, dieTotal: 0, crit: false, attackerId: "", weaponId: ""
+            targetUuid: "Actor.n1", amount: 4, dieTotal: 0, crit: false, attacker: "", weaponId: ""
         }]]);
     });
 
     it("does nothing about a target that is not there", async () => {
-        game.actors = { get: () => null };
-        expect(await applyDamage({ targetId: "gone", amount: 4 })).toBeNull();
+        expect(await applyDamage({ targetUuid: "Actor.gone", amount: 4 })).toBeNull();
+    });
+
+    /** A blow that lands is never silent, so "it did nothing" is checkable. */
+    it("says what it did", async () => {
+        const said = [];
+        globalThis.ChatMessage = class { static async create(data) { said.push(data.content); return {}; } };
+
+        const mareth = makeActor("a", "Mareth", { hasPlayerOwner: true, system: { hp: { value: 3 } } });
+        globalThis.fromUuidSync = () => mareth;
+
+        await applyDamage({ targetUuid: "Actor.a", amount: 8 });
+
+        expect(said.join("")).toContain("Mareth");
+        expect(said.join("")).toContain("takes 8");
+        expect(said.join("")).toContain("5 past it");
     });
 });
 
