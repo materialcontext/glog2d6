@@ -28,7 +28,6 @@
     "documentTypes": {
         "Actor": {
             "character": {},
-            "npc": {},
             "hireling": {}
         },
         "Item": {

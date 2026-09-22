@@ -55,7 +55,7 @@ function registerDocumentSheets() {
         foundry.appv1?.sheets?.ActorSheet
     ]);
     foundry.documents.collections.Actors.registerSheet("glog2d6", GLOG2D6ActorSheet, {
-        types: ["character", "npc"],
+        types: ["character"],
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Actor"
     });
@@ -223,7 +223,6 @@ Hooks.once("ready", async function() {
         // sheets
         "systems/glog2d6/templates/actor/actor-character-sheet.hbs",
         "systems/glog2d6/templates/actor/actor-character-compact.hbs",
-        "systems/glog2d6/templates/actor/actor-npc-sheet.hbs",
         "systems/glog2d6/templates/actor/actor-hireling-sheet.hbs",
         ...itemSheetTemplates(),
         "systems/glog2d6/templates/dialogs/roll-request.hbs"

@@ -63,7 +63,7 @@ class PackBuilder {
       return {
         _id: this.generateId(),
         name: actor.name,
-        type: actor.type || 'npc',
+        type: actor.type || 'character',
         img: actor.img || 'icons/svg/mystery-man.svg',
         system: actor.system || {},
         folder: null,

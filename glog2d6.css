@@ -126,6 +126,29 @@
  * so a filtered-out character or a field group the request does not use went
  * on taking up the dialog.
  */
+/* The table a character's blows draw from, kept with their wounds. */
+.glog-sheet .glog-wound-table {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.glog-sheet .glog-wound-table span {
+    font-size: var(--fs-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.glog-sheet .glog-wound-table input {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--fs-small);
+    padding: 2px 4px;
+}
+
 .glog2d6 [hidden] {
     display: none !important;
 }
