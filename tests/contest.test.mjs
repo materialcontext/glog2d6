@@ -20,15 +20,17 @@ const attack = over => resolveContest({ mode: CONTEST.ATTACK, ...over });
 const defend = over => resolveContest({ mode: CONTEST.DEFENSE, ...over });
 
 describe("the number a still actor presents", () => {
-    it("is six plus what they would have added", () => {
-        expect(staticTarget(3)).toBe(STATIC_BASE + 3);
-        expect(staticTarget(0)).toBe(6);
-        expect(staticTarget(-2)).toBe(4);
+    /** The average roll on 2d6: what they would most likely have rolled. */
+    it("is seven plus what they would have added", () => {
+        expect(STATIC_BASE).toBe(7);
+        expect(staticTarget(3)).toBe(10);
+        expect(staticTarget(0)).toBe(7);
+        expect(staticTarget(-2)).toBe(5);
     });
 
-    it("is six when there is nothing to read", () => {
-        expect(staticTarget(undefined)).toBe(6);
-        expect(staticTarget("nonsense")).toBe(6);
+    it("is seven when there is nothing to read", () => {
+        expect(staticTarget(undefined)).toBe(7);
+        expect(staticTarget("nonsense")).toBe(7);
     });
 });
 
@@ -71,35 +73,34 @@ describe("what a defense adds", () => {
 
 /**
  * Either side can roll it, and the outcome must not depend on which did.
- * A defender on 4 against an attacker who adds 3 is hit either way: the
- * attacker needs 4+ to beat 6+0... so both ends are checked against the same
- * pair of numbers below.
+ * The still side stands on 7 plus what they add, so the numbers below are
+ * read against that from both ends.
  */
 describe("a contest rolled from either end", () => {
     it("agrees with itself, whoever picked up the dice", () => {
-        // Attacker adds 3 and rolls 9; defender adds 2 and rolls 5.
-        // Attacking: 9 vs 6+2=8 -> hit by 1. Defending: 5 vs 6+3=9 -> hit by 4.
-        expect(attack({ rollTotal: 9, opponentModifier: 2 }).hit).toBe(true);
+        // Attacker adds 3 and rolls 10; defender adds 2 and rolls 5.
+        // Attacking: 10 vs 7+2=9 -> hit by 1. Defending: 5 vs 7+3=10 -> hit by 5.
+        expect(attack({ rollTotal: 10, opponentModifier: 2 }).hit).toBe(true);
         expect(defend({ rollTotal: 5, opponentModifier: 3 }).hit).toBe(true);
 
         // A defender who rolls well enough escapes.
-        expect(defend({ rollTotal: 10, opponentModifier: 3 }).hit).toBe(false);
-        expect(attack({ rollTotal: 7, opponentModifier: 4 }).hit).toBe(false);
+        expect(defend({ rollTotal: 11, opponentModifier: 3 }).hit).toBe(false);
+        expect(attack({ rollTotal: 8, opponentModifier: 4 }).hit).toBe(false);
     });
 
     it("lands on a tie, because the attacker met the number", () => {
-        expect(attack({ rollTotal: 8, opponentModifier: 2 }).outcome).toBe(OUTCOMES.HIT);
-        expect(defend({ rollTotal: 9, opponentModifier: 3 }).outcome).toBe(OUTCOMES.HIT);
+        expect(attack({ rollTotal: 9, opponentModifier: 2 }).outcome).toBe(OUTCOMES.HIT);
+        expect(defend({ rollTotal: 10, opponentModifier: 3 }).outcome).toBe(OUTCOMES.HIT);
     });
 
     it("carries the margin into the damage", () => {
-        expect(attack({ rollTotal: 12, opponentModifier: 2 }).baseDamage).toBe(4);
-        expect(defend({ rollTotal: 4, opponentModifier: 3 }).baseDamage).toBe(5);
+        expect(attack({ rollTotal: 12, opponentModifier: 2 }).baseDamage).toBe(3);
+        expect(defend({ rollTotal: 4, opponentModifier: 3 }).baseDamage).toBe(6);
     });
 
     it("adds the attacker's strength in the hand but not at a distance", () => {
-        expect(attack({ rollTotal: 10, opponentModifier: 2, strMod: 2 }).baseDamage).toBe(4);
-        expect(attack({ rollTotal: 10, opponentModifier: 2, strMod: 2, weaponType: "ranged" }).baseDamage).toBe(2);
+        expect(attack({ rollTotal: 11, opponentModifier: 2, strMod: 2 }).baseDamage).toBe(4);
+        expect(attack({ rollTotal: 11, opponentModifier: 2, strMod: 2, weaponType: "ranged" }).baseDamage).toBe(2);
         expect(addsStrength("thrown")).toBe(true);
     });
 
