@@ -105,21 +105,32 @@ function clampInt(value, min, max) {
 /*  Anatomy                                     */
 /* -------------------------------------------- */
 
-/** The canonical 1d6 body part table, mirrored from wounds.json. */
+/**
+ * The canonical 1d6 body part table, mirrored from wounds.json.
+ *
+ * It has no head, and it keeps none: the Marked wound's own text enumerates
+ * this list ("1: Leg, 2: Chest, 3: Arm..."), so changing it would make the
+ * shipped description a lie. A head is reachable through the bias rows below,
+ * which are a different question -- where a *particular weapon* lands.
+ */
 export const BODY_PARTS = Object.freeze(["Leg", "Chest", "Arm", "Shoulder", "Abdomen", "Hand"]);
 
 /**
- * Where a blow lands, biased by what struck you. Each row is still a d6 table,
- * so the canonical parts are unchanged -- only their odds move. A bullet finds
- * the body; an axe finds what you raised to stop it.
+ * Where a blow lands, biased by what struck you. Each row is still a d6 table;
+ * only the odds move. A bullet finds the body, an axe finds what you raised to
+ * stop it, and a fist goes for the face.
+ *
+ * Every row can reach the head, which the unweighted table cannot -- a blow
+ * with no known source is the one case where the game's own list is all there
+ * is to go on.
  */
 export const BODY_PART_BIAS = Object.freeze({
-    firearm: Object.freeze(["Chest", "Chest", "Abdomen", "Abdomen", "Shoulder", "Leg"]),
-    ranged: Object.freeze(["Chest", "Abdomen", "Shoulder", "Leg", "Arm", "Chest"]),
-    explosive: Object.freeze(["Leg", "Leg", "Abdomen", "Arm", "Hand", "Chest"]),
-    melee: Object.freeze(["Arm", "Shoulder", "Leg", "Hand", "Chest", "Arm"]),
-    thrown: Object.freeze(["Chest", "Shoulder", "Arm", "Leg", "Abdomen", "Hand"]),
-    unarmed: Object.freeze(["Chest", "Abdomen", "Arm", "Shoulder", "Hand", "Chest"])
+    firearm: Object.freeze(["Chest", "Chest", "Abdomen", "Shoulder", "Leg", "Head"]),
+    ranged: Object.freeze(["Chest", "Abdomen", "Shoulder", "Leg", "Arm", "Head"]),
+    explosive: Object.freeze(["Leg", "Leg", "Abdomen", "Arm", "Chest", "Head"]),
+    melee: Object.freeze(["Arm", "Shoulder", "Leg", "Hand", "Chest", "Head"]),
+    thrown: Object.freeze(["Chest", "Shoulder", "Arm", "Leg", "Abdomen", "Head"]),
+    unarmed: Object.freeze(["Head", "Chest", "Abdomen", "Arm", "Shoulder", "Head"])
 });
 
 /**
@@ -166,6 +177,44 @@ export function normalizeWound(wound) {
     if (!wound) return wound;
     const state = WOUND_STATE_ORDER.includes(wound.state) ? wound.state : WOUND_STATES.UNTREATED;
     return { ...wound, state, effects: wound.effects ?? {} };
+}
+
+/**
+ * Whether this wound is about *where* it landed.
+ *
+ * Every wound used to be stamped with a body part, which made a concussion
+ * read as "took it in the arm" -- and the anatomy table has no head, so a
+ * concussion could never be placed correctly even in principle. Only a wound
+ * whose own text asks the question records an answer; in the shipped data
+ * that is Marked and nothing else.
+ *
+ * @param {object} woundEntry
+ * @returns {boolean}
+ */
+export function recordsBodyPart(woundEntry) {
+    return woundEntry?.effects?.specialRoll === "bodyPart";
+}
+
+/**
+ * A description with its "roll for it" turned into the answer.
+ *
+ * Marked ends with the canonical list -- "1: Leg, 2: Chest, ..." -- which is
+ * instructions for a roll that has already happened, and which a biased blow
+ * may not even have rolled on. Both go.
+ *
+ * @param {string} description
+ * @param {string} bodyPart
+ * @returns {string}
+ */
+export function describeBodyPartRoll(description, bodyPart) {
+    const text = String(description ?? "");
+    if (!bodyPart) return text;
+
+    return text
+        .replace(/Roll 1d6/i, `Rolled ${bodyPart}`)
+        // The enumeration, however it is punctuated, up to the end.
+        .replace(/\s*[\u2013\u2014-]\s*1:\s*Leg[^.]*\.?\s*$/i, "")
+        .trim();
 }
 
 /**
@@ -357,7 +406,11 @@ export function woundRemoval(wound, allWounds = [], now = Date.now()) {
  */
 export function scarFromWound(wound) {
     const normalized = normalizeWound(wound) ?? {};
-    const place = normalized.bodyPart ? `${normalized.bodyPart}` : normalized.name;
+    const cause = normalized.name || "Old Wound";
+    // The cause names the scar. It used to be the body part, so a concussion
+    // that had been stamped with a limb became "Scar: Arm" and lost what had
+    // actually happened.
+    const place = normalized.bodyPart ? `${cause} (${normalized.bodyPart})` : cause;
     const taken = Number.isNaN(Date.parse(normalized.dateAcquired ?? ""))
         ? null
         : new Date(normalized.dateAcquired);
@@ -368,7 +421,7 @@ export function scarFromWound(wound) {
     if (taken) lines.push(`Suffered ${taken.toLocaleDateString()}.`);
 
     return {
-        name: `Scar: ${place ?? "Old Wound"}`,
+        name: `Scar: ${place}`,
         type: "feature",
         system: {
             description: lines.join(" "),

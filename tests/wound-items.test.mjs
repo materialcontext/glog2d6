@@ -151,3 +151,34 @@ describe("the system knows about the type", () => {
         expect(read("module/actor/actor.mjs")).toMatch(/wounds\.count = this\.items\.filter/);
     });
 });
+
+
+/**
+ * The bug: a concussion came out "took it in the arm". Anatomy was rolled and
+ * stored for every wound, whether or not the wound was about where it landed.
+ */
+describe("where a wound says it landed", () => {
+    const trauma = read("module/actor/systems/actor-trauma-system.mjs");
+
+    it("is kept only by the wounds that ask", () => {
+        expect(trauma).toContain("const placed = recordsBodyPart(woundEntry)");
+        expect(trauma).toContain('bodyPart: placed ? location : ""');
+    });
+
+    /** One roll: the Mark lands where the blow landed, not somewhere else. */
+    it("is where the blow landed, rolled once", () => {
+        expect(trauma).toContain("const location = await this._rollBodyPart()");
+        expect(trauma).toContain("this._createWoundInstance(entry, severity, location)");
+        expect(trauma).not.toContain("bodyPart: await this._rollBodyPart()");
+    });
+
+    /** The card can always say where it hit; that is never a lie. */
+    it("is still reported on the chat card, whatever the wound keeps", () => {
+        expect(trauma).toContain("struck in the ${String(location ?? \"\").toLowerCase()}");
+    });
+
+    it("turns the asked-for roll into its answer", () => {
+        expect(trauma).toContain("describeBodyPartRoll(woundEntry.description, location)");
+        expect(trauma).not.toContain('wound.description.replace("Roll 1d6"');
+    });
+});
