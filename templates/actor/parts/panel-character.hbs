@@ -103,7 +103,12 @@
         <div class="glog-panel-body">
             {{!-- A monster is a character the GM runs, so the table its blows
                   draw from lives with the wounds rather than on a sheet of
-                  its own. --}}
+                  its own.
+
+                  The field below is only this character's fallback: a weapon
+                  that names a table of its own beats it, per blow. So what
+                  actually applies is reported rather than left to be guessed
+                  at -- see sheet-readouts/inflictedWoundTable. --}}
             {{#if editMode}}
             <label class="glog-wound-table">
                 <span>INFLICTS FROM</span>
@@ -111,6 +116,18 @@
                     placeholder="Default wounds table" title="A roll table by name or uuid" />
             </label>
             {{/if}}
+
+            <div class="glog-inflicts" title="The table a blow from this character draws from">
+                <span class="glog-inflicts-table">{{inflictsFrom.table}}</span>
+                <span class="glog-inflicts-origin">from {{inflictsFrom.origin}}</span>
+                {{#if inflictsFrom.varies.length}}
+                <span class="glog-inflicts-varies">
+                    {{#each inflictsFrom.varies as |entry|}}
+                    <span class="glog-inflicts-weapon">{{entry.weapon}}: {{entry.table}}</span>
+                    {{/each}}
+                </span>
+                {{/if}}
+            </div>
 
             {{#each wounds as |wound|}}
             <div class="glog-wound wound-state-{{wound.state}}" data-wound-id="{{wound.id}}">

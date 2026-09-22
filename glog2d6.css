@@ -126,6 +126,42 @@
  * so a filtered-out character or a field group the request does not use went
  * on taking up the dialog.
  */
+/* What a blow from this character draws from, and what decides it. The
+   character's own field loses to any weapon that names a table, so the
+   effective answer is reported rather than left to be inferred. */
+.glog-sheet .glog-inflicts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+    /* Subordinate to the wounds below it: this says where a wound would come
+       from, which matters less than the ones already being carried. */
+    font-size: var(--fs-micro);
+    color: var(--muted);
+}
+
+.glog-sheet .glog-inflicts-table {
+    font-weight: 600;
+}
+
+.glog-sheet .glog-inflicts-origin {
+    opacity: 0.8;
+}
+
+.glog-sheet .glog-inflicts-varies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+}
+
+.glog-sheet .glog-inflicts-weapon {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 4px;
+}
+
 /* The table a character's blows draw from, kept with their wounds. */
 .glog-sheet .glog-wound-table {
     display: flex;
