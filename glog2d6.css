@@ -2246,3 +2246,221 @@
 .glog-subtle-hidden {
     display: none !important;
 }
+
+
+/* ==========================================================================
+   QUEST LOG
+   --------------------------------------------------------------------------
+   The player view needs no filtering: a quest or objective they may not see
+   was never sent to their client. What the GM sees extra is the visibility
+   controls and the notes only they hold.
+   ========================================================================== */
+
+.glog-quest-log {
+    --fs-tag: 9px;
+    --fs-meta: 11px;
+    --fs-row: 12px;
+}
+
+.glog-quest-log .glog-quest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+    overflow-y: auto;
+}
+
+.glog-quest-log .glog-quest {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    padding: 8px;
+    background: var(--surface, #fff);
+}
+
+.glog-quest-log .glog-quest.state-complete { border-left-color: var(--success); opacity: 0.75; }
+.glog-quest-log .glog-quest.state-failed { border-left-color: var(--danger); opacity: 0.75; }
+.glog-quest-log .glog-quest.state-dormant { border-left-color: var(--muted); opacity: 0.85; }
+
+/* What the party cannot read, marked so the GM never has to guess. */
+.glog-quest-log .is-hidden-from-players {
+    background-image: repeating-linear-gradient(
+        45deg, transparent, transparent 6px,
+        rgba(128, 128, 128, 0.08) 6px, rgba(128, 128, 128, 0.08) 12px);
+}
+
+.glog-quest-log .glog-quest-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.glog-quest-log .glog-quest-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.glog-quest-log .glog-quest-progress,
+.glog-quest-log .glog-objective-count {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-meta);
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.glog-quest-log .glog-quest-state,
+.glog-quest-log .glog-quest-state-tag {
+    font-size: var(--fs-meta);
+    max-width: 110px;
+}
+
+.glog-quest-log .glog-quest-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    flex: 0 0 auto;
+    line-height: 1;
+    font-size: var(--fs-meta);
+}
+
+.glog-quest-log .glog-quest-line {
+    font-size: var(--fs-meta);
+    color: var(--muted);
+}
+
+.glog-quest-log .glog-quest-line span {
+    font-size: var(--fs-tag);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.glog-quest-log .glog-quest-brief {
+    display: inline-block;
+    font-size: var(--fs-meta);
+    margin: 2px 0 6px;
+}
+
+.glog-quest-log .glog-objectives {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.glog-quest-log .glog-objective {
+    display: grid;
+    grid-template-columns: 16px 1fr auto auto;
+    align-items: center;
+    gap: 4px 6px;
+    padding: 4px 6px;
+    border-radius: 3px;
+    background: rgba(128, 128, 128, 0.06);
+}
+
+.glog-quest-log .glog-objective.is-done .glog-objective-name {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.glog-quest-log .glog-objective.is-empty {
+    display: block;
+    font-style: italic;
+    color: var(--muted);
+    font-size: var(--fs-meta);
+}
+
+.glog-quest-log .glog-objective-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--fs-row);
+}
+
+.glog-quest-log .glog-objective-icon {
+    font-size: var(--fs-meta);
+    color: var(--muted);
+}
+
+.glog-quest-log .glog-objective-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.glog-quest-log .glog-objective-bar {
+    grid-column: 1 / -1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(128, 128, 128, 0.2);
+    overflow: hidden;
+}
+
+.glog-quest-log .glog-objective-fill {
+    height: 100%;
+    background: var(--primary);
+}
+
+.glog-quest-log .glog-objective-text {
+    grid-column: 1 / -1;
+    font-size: var(--fs-meta);
+    color: var(--muted);
+}
+
+.glog-quest-log .glog-objective-text.is-secret,
+.glog-objective-page-text.is-secret {
+    border-left: 2px solid var(--danger);
+    padding-left: 6px;
+}
+
+.glog-quest-log .glog-quest-note {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 8px;
+}
+
+.glog-quest-log .glog-quest-note span {
+    font-size: var(--fs-tag);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.glog-quest-log .glog-quest-note textarea {
+    font-size: var(--fs-meta);
+    resize: vertical;
+}
+
+.glog-quest-log .glog-quest-empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 32px 16px;
+}
+
+.glog-quest-log .glog-quest-empty i {
+    /* An icon, not type. */
+    font-size: 28px;
+    opacity: 0.4;
+}
+
+/* The objective as it reads inside its own journal page. */
+.glog-objective-page-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--fs-row);
+    color: var(--muted);
+}
+
+.glog-objective-form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 8px;
+}

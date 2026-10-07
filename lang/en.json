@@ -2,7 +2,8 @@
   "GLOG2D6": {
     "SheetLabels": {
       "Actor": "GLOG2D6 Actor",
-      "Item": "GLOG2D6 Item"
+      "Item": "GLOG2D6 Item",
+      "Objective": "GLOG2D6 Objective"
     },
     "ActorSheet": {
       "Attributes": "Attributes",

@@ -1,0 +1,107 @@
+{{!-- templates/quests/quest-log.hbs
+
+      The player view needs no filtering: a quest or objective they may not
+      see was never sent to their client. What the GM sees extra is the
+      visibility controls and the secret notes. --}}
+
+<div class="glog-quest-list">
+    {{#each quests as |quest|}}
+    <section class="glog-quest state-{{quest.state}}{{#unless quest.shown}} is-hidden-from-players{{/unless}}">
+
+        <header class="glog-quest-head">
+            <span class="glog-quest-name" title="{{quest.name}}">{{quest.name}}</span>
+            <span class="glog-quest-progress" title="Objectives complete">{{quest.progress.label}}</span>
+
+            {{#if @root.isGM}}
+            <select class="glog-quest-state" data-action="setState" data-uuid="{{quest.uuid}}" title="Quest state">
+                {{#each @root.states as |state|}}
+                <option value="{{state.key}}" {{#if (eq state.key quest.state)}}selected{{/if}}>{{state.label}}</option>
+                {{/each}}
+            </select>
+
+            <button type="button" class="glog-quest-btn" data-action="toggleQuest"
+                data-uuid="{{quest.uuid}}" data-shown="{{quest.shown}}"
+                title="{{#if quest.shown}}The party can read this{{else}}Hidden from the party{{/if}}">
+                <i class="fas {{#if quest.shown}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+            </button>
+
+            <button type="button" class="glog-quest-btn" data-action="editQuest" data-uuid="{{quest.uuid}}"
+                title="Edit this quest"><i class="fas fa-pen"></i></button>
+            {{else}}
+            <span class="glog-quest-state-tag">{{quest.stateLabel}}</span>
+            {{/if}}
+        </header>
+
+        {{#if quest.giver}}
+        <div class="glog-quest-line"><span>FROM</span> {{quest.giver}}</div>
+        {{/if}}
+        {{#if quest.reward}}
+        <div class="glog-quest-line"><span>REWARD</span> {{quest.reward}}</div>
+        {{/if}}
+
+        {{#if quest.brief}}
+        <a class="glog-quest-brief" data-action="openBrief" data-uuid="{{quest.brief}}">Read the brief</a>
+        {{/if}}
+
+        <ol class="glog-objectives">
+            {{#each quest.objectives as |objective|}}
+            <li class="glog-objective{{#if objective.progress.complete}} is-done{{/if}}{{#unless objective.shown}} is-hidden-from-players{{/unless}}">
+                <i class="glog-objective-icon {{objective.kind.icon}}" title="{{objective.kind.label}}"></i>
+
+                <span class="glog-objective-name" title="{{objective.name}}">{{objective.name}}</span>
+
+                {{!-- Every objective is a counter, including the ones that only
+                      ever reach one: a lone checkbox in a column of 2/6 reads
+                      as a different kind of thing when it is not one. --}}
+                <span class="glog-objective-count">{{objective.progress.label}}</span>
+
+                {{#if @root.isGM}}
+                <span class="glog-objective-actions">
+                    <button type="button" class="glog-quest-btn" data-action="advance"
+                        data-uuid="{{objective.uuid}}" data-by="-1" title="Back one">&minus;</button>
+                    <button type="button" class="glog-quest-btn" data-action="advance"
+                        data-uuid="{{objective.uuid}}" data-by="1" title="On one">+</button>
+                    <button type="button" class="glog-quest-btn" data-action="toggleObjective"
+                        data-uuid="{{objective.uuid}}" data-shown="{{objective.shown}}"
+                        title="{{#if objective.shown}}The party can read this{{else}}Hidden from the party{{/if}}">
+                        <i class="fas {{#if objective.shown}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+                    </button>
+                </span>
+                {{/if}}
+
+                <div class="glog-objective-bar">
+                    <div class="glog-objective-fill" style="width: {{objective.progress.percent}}%"></div>
+                </div>
+
+                {{#if objective.description}}
+                <div class="glog-objective-text">{{{objective.description}}}</div>
+                {{/if}}
+                {{#if objective.secret}}
+                <div class="glog-objective-text is-secret">{{{objective.secret}}}</div>
+                {{/if}}
+            </li>
+            {{else}}
+            <li class="glog-objective is-empty">Nothing set down yet.</li>
+            {{/each}}
+        </ol>
+
+        {{!-- A player's own note lives on the player, so nobody overwrites
+              anybody. --}}
+        <label class="glog-quest-note">
+            <span>YOUR NOTES</span>
+            <textarea rows="2" data-note-for="{{quest.uuid}}"
+                placeholder="What you made of it&hellip;">{{quest.note}}</textarea>
+        </label>
+    </section>
+    {{else}}
+    <div class="glog-quest-empty">
+        <i class="fas fa-scroll"></i>
+        <p>No quests yet.</p>
+        {{#if isGM}}
+        <p class="glog-hint">Make a journal entry, flag it as a quest, and give it objective pages.</p>
+        {{else}}
+        <p class="glog-hint">Nothing has been written down for you to read.</p>
+        {{/if}}
+    </div>
+    {{/each}}
+</div>
