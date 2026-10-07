@@ -1,0 +1,40 @@
+{{!-- The GM's form for one objective. --}}
+<div class="glog-objective-form">
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" value="{{document.name}}" placeholder="What has to happen" />
+    </div>
+
+    <div class="glog-objective-form-row">
+        <div class="form-group">
+            <label>Counting</label>
+            <select name="system.kind">
+                {{#each kinds as |kind|}}
+                <option value="{{kind.key}}" {{#if (eq kind.key ../system.kind)}}selected{{/if}}>{{kind.label}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Done</label>
+            <input type="number" name="system.current" value="{{system.current}}" min="0" />
+        </div>
+
+        <div class="form-group">
+            <label>Needed</label>
+            <input type="number" name="system.required" value="{{system.required}}" min="1" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>What the party is told</label>
+        {{formInput (lookup fields "description") value=system.description enriched=enrichedDescription}}
+    </div>
+
+    {{!-- A page the party cannot see is never sent to them, so this rides
+          along with it rather than needing secrecy of its own. --}}
+    <div class="form-group">
+        <label>What only you know</label>
+        {{formInput (lookup fields "secret") value=system.secret enriched=enrichedSecret}}
+    </div>
+</div>

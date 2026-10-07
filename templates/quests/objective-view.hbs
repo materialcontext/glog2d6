@@ -1,0 +1,15 @@
+{{!-- An objective as it reads inside its quest. --}}
+<section class="glog-objective-page">
+    <div class="glog-objective-page-head">
+        <i class="{{kind.icon}}" title="{{kind.label}}"></i>
+        <span class="glog-objective-page-count">{{progress.label}}</span>
+    </div>
+
+    {{#if system.description}}
+    <div class="glog-objective-page-text">{{{system.description}}}</div>
+    {{/if}}
+
+    {{#if isGM}}{{#if system.secret}}
+    <div class="glog-objective-page-text is-secret">{{{system.secret}}}</div>
+    {{/if}}{{/if}}
+</section>

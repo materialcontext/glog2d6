@@ -849,8 +849,9 @@ describe("the type scale", () => {
         const strays = rules
             .filter(r => CSS.indexOf(r.selector) > start)
             .filter(r => !r.selector.includes("is-compact"))
-            // The empty-state glyph is an icon, not type.
-            .filter(r => !r.selector.includes("glog-empty"))
+            // The empty-state glyph is an icon, not type. Matches the quest
+            // log's empty state too, which is the same thing by another name.
+            .filter(r => !/glog-[a-z-]*empty/.test(r.selector))
             .filter(r => /font-size:\s*\d+px/.test(r.body))
             .map(r => r.selector);
 

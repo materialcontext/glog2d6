@@ -131,7 +131,32 @@ const HandlebarsApplicationMixin = Base => class extends Base {};
 /*  Globals                                     */
 /* -------------------------------------------- */
 
+/**
+ * Document subtypes outside Actor and Item come from a `TypeDataModel` rather
+ * than template.json. The double is inert: the schema is declared, so it can
+ * be read back and checked, and nothing initialises it.
+ */
+class TypeDataModel {
+    constructor(source = {}) { Object.assign(this, source); }
+    prepareDerivedData() {}
+}
+
+const field = kind => class {
+    constructor(options = {}) { Object.assign(this, { kind, ...options }); }
+};
+
 globalThis.foundry = {
+    abstract: { TypeDataModel },
+    data: {
+        fields: {
+            HTMLField: field("html"),
+            StringField: field("string"),
+            NumberField: field("number"),
+            BooleanField: field("boolean"),
+            ArrayField: field("array"),
+            SchemaField: field("schema")
+        }
+    },
     utils: { deepClone, getProperty, setProperty, expandObject, mergeObject, randomID },
     applications: {
         api: { ApplicationV2, DocumentSheetV2, HandlebarsApplicationMixin },

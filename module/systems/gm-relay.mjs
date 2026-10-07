@@ -19,7 +19,10 @@ export const RELAY = Object.freeze({
     EXECUTE_REQUEST: "rollExecute",
     CALL_TRAUMA: "traumaCall",
     APPLY_DAMAGE: "applyDamage",
-    BREAK_WEAPON: "breakWeapon"
+    BREAK_WEAPON: "breakWeapon",
+    ADVANCE_OBJECTIVE: "advanceObjective",
+    SET_QUEST_STATE: "setQuestState",
+    SET_VISIBILITY: "setVisibility"
 });
 
 const handlers = new Map();

@@ -40,6 +40,14 @@
             "spell": {},
             "note": {},
             "wound": {}
+        },
+        "JournalEntryPage": {
+            "objective": {
+                "htmlFields": [
+                    "description",
+                    "secret"
+                ]
+            }
         }
     },
     "primaryTokenAttribute": "hp",

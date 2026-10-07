@@ -13,6 +13,10 @@ import { setupSystemHooks } from './scripts/system-hooks.mjs';
 import { blowFrom, initGMRolls } from "./module/systems/gm-roll-system.mjs";
 import { applyDamage, initContestFlow } from "./module/systems/contest-flow.mjs";
 import { actorFrom } from "./module/systems/actor-ref.mjs";
+import { initQuests, questApi } from "./module/quests/quest-system.mjs";
+import { ObjectiveSheet } from "./module/quests/objective-sheet.mjs";
+import { refreshQuestLog, toggleQuestLog } from "./module/quests/quest-log.mjs";
+import { OBJECTIVE_TYPE } from "./module/systems/quests.mjs";
 import { RollRequestDialog } from "./module/dialogs/roll-request-dialog.mjs";
 import { BreakageCalculator } from "./module/systems/breakage-calculator.mjs";
 import { WOUND_STATE_LABELS, combatEffectLabel } from "./module/systems/wounds.mjs";
@@ -76,6 +80,14 @@ function registerDocumentSheets() {
         makeDefault: true,
         label: "GLOG2D6.SheetLabels.Item"
     });
+
+    // An objective is a journal page, so it registers through
+    // DocumentSheetConfig rather than a world collection -- a different door
+    // to the same room.
+    foundry.applications.apps.DocumentSheetConfig.registerSheet(
+        JournalEntryPage, "glog2d6", ObjectiveSheet,
+        { types: [OBJECTIVE_TYPE], makeDefault: true, label: "GLOG2D6.SheetLabels.Objective" }
+    );
 }
 
 // Define custom Document classes
@@ -99,6 +111,13 @@ Hooks.once('init', async function() {
     // called for through the one dialog.
     game.glog2d6 ??= {};
     game.glog2d6.rollRequest = (type) => new RollRequestDialog(type).render(true);
+
+    // The quest log. Registered here rather than later because a keybinding
+    // has to exist before Foundry initialises them, which it does just after
+    // `setup`.
+    initQuests(toggleQuestLog);
+    game.glog2d6.questLog = toggleQuestLog;
+    game.glog2d6.quests = questApi();
 
     // Load all JSON data files
     await loadSystemData();
@@ -226,7 +245,10 @@ Hooks.once("ready", async function() {
         "systems/glog2d6/templates/actor/actor-character-compact.hbs",
         "systems/glog2d6/templates/actor/actor-hireling-sheet.hbs",
         ...itemSheetTemplates(),
-        "systems/glog2d6/templates/dialogs/roll-request.hbs"
+        "systems/glog2d6/templates/dialogs/roll-request.hbs",
+        "systems/glog2d6/templates/quests/quest-log.hbs",
+        "systems/glog2d6/templates/quests/objective-view.hbs",
+        "systems/glog2d6/templates/quests/objective-edit.hbs"
     ]);
 
     // Register partials. Compact and full share the four parts that carry the
@@ -354,7 +376,23 @@ Hooks.on("getSceneControlButtons", controls => {
         order: Object.keys(tokenControls.tools).length,
         onChange: () => game.glog2d6.rollRequest()
     };
+
+    tokenControls.tools.glog2d6QuestLog = {
+        name: "glog2d6QuestLog",
+        title: "Quest Log",
+        icon: "fas fa-scroll",
+        button: true,
+        visible: true,
+        order: Object.keys(tokenControls.tools).length,
+        onChange: () => toggleQuestLog()
+    };
 });
+
+// An open log follows the documents behind it.
+for (const hook of ["createJournalEntryPage", "updateJournalEntryPage", "deleteJournalEntryPage",
+                    "updateJournalEntry", "createJournalEntry", "deleteJournalEntry"]) {
+    Hooks.on(hook, () => refreshQuestLog());
+}
 
 // GM Chat Commands
 Hooks.on("chatMessage", (log, msg) => {
@@ -364,6 +402,10 @@ Hooks.on("chatMessage", (log, msg) => {
         game.glog2d6.rollRequest("recon");
         return false;
     }
+});
+
+Hooks.on("chatMessage", (log, msg) => {
+    if (msg === "/quests") { toggleQuestLog(); return false; }
 });
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
