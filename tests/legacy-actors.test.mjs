@@ -220,3 +220,57 @@ describe("actors saved by earlier versions", () => {
         expect(context.isCompact).toBe(false);
     });
 });
+
+
+/* -------------------------------------------- */
+/*  Magic dice: the grant, not the total        */
+/* -------------------------------------------- */
+
+/**
+ * `magicDiceMax` is stored as a base and *added to* by features during
+ * derivation, so a prepared actor carries the total while the database holds
+ * only what was granted by hand. The sheet's field must read the stored
+ * number: bound to the derived one it would write the total back as the base,
+ * and a wizard would gain their training again on every save.
+ */
+describe("the magic dice field the builder prepares", () => {
+    const trained = () => {
+        const prepared = actor({
+            attributes: {}, skills: {}, details: {}, combat: {}, defense: {},
+            inventory: {}, wounds: {}, hp: { value: 4, max: 4 },
+            // What derivation produced: the grant plus three from training.
+            magicDiceMax: 5, magicDiceCurrent: 4
+        });
+        // What the database holds.
+        prepared._source = { system: { magicDiceMax: 2 } };
+        return prepared;
+    };
+
+    const pool = (a) => new DataContextBuilder(a)
+        .buildCompleteContext({ actor: a, cssClass: "editable" }, {}).magicDicePool;
+
+    it("offers the grant for editing, never the derived total", () => {
+        expect(pool(trained())).toMatchObject({ granted: 2, total: 5, fromFeatures: 3 });
+    });
+
+    /** Round-tripping the field must leave the pool where it was. */
+    it("writes back the same number it was shown", () => {
+        const { granted } = pool(trained());
+
+        const resaved = trained();
+        resaved._source.system.magicDiceMax = granted;
+        resaved.system.magicDiceMax = granted + 3;
+
+        expect(pool(resaved)).toMatchObject({ granted: 2, total: 5 });
+    });
+
+    /** An actor stored before any of this reads as having been granted none. */
+    it("reads an actor with no stored value as holding nothing granted", () => {
+        const bare = actor({
+            attributes: {}, skills: {}, details: {}, combat: {}, defense: {},
+            inventory: {}, wounds: {}, hp: {}
+        });
+
+        expect(pool(bare)).toMatchObject({ granted: 0, total: 0, note: "" });
+    });
+});

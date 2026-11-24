@@ -13,6 +13,7 @@ import {
     inEffectRows,
     inflictedWoundTable,
     itemSummary,
+    magicDiceFields,
     magicDicePips,
     partitionItems,
     signed,
@@ -518,5 +519,50 @@ describe("what a blow from this character draws from", () => {
     it("ignores a blank or whitespace field", () => {
         expect(inflictedWoundTable({ system: { woundTable: "   " } }).from).toBe("default");
         expect(inflictedWoundTable({ items: [armed("Axe", { woundTable: "  " })] }).from).toBe("default");
+    });
+});
+
+
+/* -------------------------------------------- */
+/*  The magic dice field                        */
+/* -------------------------------------------- */
+
+/**
+ * `magicDiceMax` is stored as a base and *added to* by features during
+ * derivation, so the number on a prepared actor is the total while the number
+ * in the database is only what was granted by hand. An input bound to the
+ * derived value writes the total back as the base, and a wizard gains their
+ * training again every time anyone saves the sheet.
+ */
+describe("the magic dice a character has been given", () => {
+    it("is what was granted, not what it adds up to", () => {
+        expect(magicDiceFields({ granted: 0, total: 3, current: 2 }))
+            .toMatchObject({ granted: 0, total: 3, fromFeatures: 3 });
+    });
+
+    /** Grant two to a wizard who trained for three, and they hold five. */
+    it("reports what features add on top of the grant", () => {
+        expect(magicDiceFields({ granted: 2, total: 5 }))
+            .toMatchObject({ granted: 2, fromFeatures: 3, note: "+3" });
+    });
+
+    /** A character nobody trained holds exactly what they were given. */
+    it("says nothing extra when the grant is the whole pool", () => {
+        expect(magicDiceFields({ granted: 2, total: 2 }))
+            .toMatchObject({ granted: 2, fromFeatures: 0, note: "" });
+    });
+
+    it("never reports a negative contribution", () => {
+        expect(magicDiceFields({ granted: 4, total: 1 }).fromFeatures).toBe(0);
+    });
+
+    it("never holds more unspent dice than there are dice", () => {
+        expect(magicDiceFields({ granted: 0, total: 3, current: 9 }).current).toBe(3);
+        expect(magicDiceFields({ granted: 0, total: 3, current: -2 }).current).toBe(0);
+    });
+
+    it("reads an untouched character as holding nothing", () => {
+        expect(magicDiceFields()).toMatchObject({ granted: 0, total: 0, current: 0, note: "" });
+        expect(magicDiceFields({ granted: "two", total: null })).toMatchObject({ granted: 0, total: 0 });
     });
 });

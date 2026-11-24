@@ -17,6 +17,7 @@ import {
     inEffectRows,
     inflictedWoundTable,
     itemSummary,
+    magicDiceFields,
     magicDicePips,
     partitionItems,
     skillChips,
@@ -187,6 +188,11 @@ function context({ loaded, mode, editMode = false }) {
         attributeTiles: attributeTiles(system.attributes),
         skillChips: skillChips(system.skills),
         magicDice: magicDicePips(system.magicDiceCurrent, system.magicDiceMax),
+        magicDicePool: magicDiceFields({
+            granted: loaded ? 1 : 0,
+            total: system.magicDiceMax,
+            current: system.magicDiceCurrent
+        }),
         castingOptions: castingOptions(system.magicDiceCurrent),
         encumbranceNote: encumbranceNote(system.inventory),
         inEffect: inEffectRows({ system, items: list }),
@@ -427,6 +433,49 @@ describe("the full sheet", () => {
             .querySelectorAll(".glog-inflicts-weapon")].map(el => el.textContent.trim());
 
         expect(chips).toEqual(["Arquebus: Gunshot", "Flame Sword: Burns"]);
+    });
+
+    /**
+     * Magic dice used to arrive only through Wizard training, with no way to
+     * hand one to anybody else.
+     */
+    it("lets any character be given magic dice", () => {
+        const d = render("full", { loaded: true, editMode: true });
+
+        expect(d.querySelector('input[name="system.magicDiceMax"]')).not.toBeNull();
+        expect(d.querySelector('input[name="system.magicDiceCurrent"]')).not.toBeNull();
+    });
+
+    /**
+     * The field holds the grant, not the total: features add during
+     * derivation, so writing the total back as the base would give a wizard
+     * their training twice over on every save.
+     */
+    it("puts the grant in the field and what features add beside it", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full", editMode: true });
+        ctx.magicDicePool = magicDiceFields({ granted: 2, total: 5, current: 4 });
+
+        const d = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document;
+
+        expect(d.querySelector('input[name="system.magicDiceMax"]').value).toBe("2");
+        expect(d.querySelector(".glog-md-note").textContent.trim()).toBe("+3");
+    });
+
+    it("says nothing extra when the grant is the whole pool", () => {
+        const hbs = environment();
+        const ctx = context({ loaded: true, mode: "full", editMode: true });
+        ctx.magicDicePool = magicDiceFields({ granted: 2, total: 2, current: 2 });
+
+        const d = new JSDOM(hbs.compile(read(SHEETS.full))(ctx)).window.document;
+        expect(d.querySelector(".glog-md-note")).toBeNull();
+    });
+
+    /** While playing, the pool is pips: the field is for setting it up. */
+    it("keeps the dice as pips while playing", () => {
+        const d = render("full", { loaded: true });
+        expect(d.querySelector('input[name="system.magicDiceMax"]')).toBeNull();
+        expect(d.querySelector(".glog-pips")).not.toBeNull();
     });
 
     it("never gives the class dropdown a name, which would let the form clobber the key", () => {

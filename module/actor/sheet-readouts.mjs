@@ -106,6 +106,38 @@ export function magicDicePips(current, max) {
 }
 
 /**
+ * The magic dice pool as the sheet edits it.
+ *
+ * `magicDiceMax` is stored as a base and *added to* by features during
+ * derivation, so the number on a prepared actor is the total while the number
+ * in the database is only what was granted by hand. An input bound to the
+ * derived value would write the total back as the base, and a wizard would
+ * gain their training twice over every time anyone saved the sheet.
+ *
+ * So the field edits the granted dice, and what features add is reported
+ * beside it rather than folded in.
+ *
+ * @param {object} pool
+ * @param {number} pool.granted  the stored base: `_source.system.magicDiceMax`
+ * @param {number} pool.total    the derived total: `system.magicDiceMax`
+ * @param {number} pool.current  dice still unspent
+ */
+export function magicDiceFields({ granted, total, current } = {}) {
+    const base = Math.max(0, num(granted));
+    const derived = Math.max(0, num(total));
+    const fromFeatures = Math.max(0, derived - base);
+
+    return {
+        granted: base,
+        total: derived,
+        fromFeatures,
+        // Only worth saying when something else is contributing.
+        note: fromFeatures > 0 ? `+${fromFeatures}` : "",
+        current: Math.max(0, Math.min(num(current), derived))
+    };
+}
+
+/**
  * Slot pressure, as a sentence fragment the inventory bar can print.
  */
 export function encumbranceNote(inventory = {}) {
