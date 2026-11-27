@@ -18,6 +18,7 @@ import {
     hpBar,
     inEffectRows,
     inflictedWoundTable,
+    magicDiceFields,
     magicDicePips,
     partitionItems,
     skillChips,
@@ -168,6 +169,14 @@ class ContextEnhancer {
         this.context.attributeTiles = attributeTiles(system.attributes);
         this.context.skillChips = skillChips(system.skills);
         this.context.magicDice = magicDicePips(system.magicDiceCurrent, system.magicDiceMax);
+
+        // The field edits what was granted by hand, not the derived total --
+        // see sheet-readouts/magicDiceFields.
+        this.context.magicDicePool = magicDiceFields({
+            granted: this.actor._source?.system?.magicDiceMax,
+            total: system.magicDiceMax,
+            current: system.magicDiceCurrent
+        });
         this.context.castingOptions = castingOptions(system.magicDiceCurrent);
         this.context.encumbranceNote = encumbranceNote(system.inventory);
         this.context.inEffect = inEffectRows({ system, items });

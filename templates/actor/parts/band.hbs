@@ -82,6 +82,25 @@
         </div>
         {{/if}}
 
+        {{!-- The field edits the dice granted by hand. Features add to the
+              total during derivation, so binding an input to the derived
+              number would write the total back as the base and a wizard would
+              gain their training again on every save. --}}
+        {{#if editMode}}
+        <div class="glog-readout-row is-magic" title="Magic dice: unspent, and how many this character has been given">
+            <span>MAGIC DICE</span>
+            <span class="glog-md-edit">
+                <input name="system.magicDiceCurrent" type="number" min="0"
+                    value="{{magicDicePool.current}}" class="glog-readout-input" title="Unspent" />
+                <span class="glog-md-slash">/</span>
+                <input name="system.magicDiceMax" type="number" min="0"
+                    value="{{magicDicePool.granted}}" class="glog-readout-input" title="Granted by hand" />
+                {{#if magicDicePool.note}}
+                <span class="glog-md-note" title="{{magicDicePool.fromFeatures}} from features">{{magicDicePool.note}}</span>
+                {{/if}}
+            </span>
+        </div>
+        {{else}}
         <div class="glog-readout-row is-magic" title="Magic dice remaining">
             <span>MAGIC DICE</span>
             {{#if magicDice.length}}
@@ -94,6 +113,7 @@
             <span class="glog-readout-value">&mdash;</span>
             {{/if}}
         </div>
+        {{/if}}
     </div>
 
     {{> utility-stack }}
